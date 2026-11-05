@@ -13,3 +13,9 @@ Regenerate after editing the xacro / `web/premaid-sim.src.html`:
 
 Outputs: `mujoco/premaidai.xml` (self-contained MJCF) and `web/premaid-sim.html` (src + MJCF + coloured meshes).
 Scripting from the console: `PMSIM.setTarget(k, deg)`, `PMSIM.applyPose({r_kny_joint: 40})`, `PMSIM.reset()`.
+
+## GitHub Pages
+Repo → Settings → Pages → *Deploy from a branch* → `master` / `/ (root)`. After a minute:
+`https://<user>.github.io/premaidai_description/web/premaid-sim.html` (the repo-root `index.html` redirects there).
+Everything is loaded by relative path (`vendor/three.min.js`, `vendor/OrbitControls.js`, `vendor/mujoco/mujoco.{js,wasm}`), so no build step on the server.
+`.nojekyll` in the root stops Pages from running Jekyll over the repo.
