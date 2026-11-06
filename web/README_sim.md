@@ -21,8 +21,8 @@ Everything is loaded by relative path (`vendor/three.min.js`, `vendor/OrbitContr
 `.nojekyll` in the root stops Pages from running Jekyll over the repo.
 
 ## .pma replay
-Load a PreMaid AI motion file (`📂 載入 .pma`, drag & drop onto the view, or the built-in `範例`); `files/pma.zip` in
-`arthurson/premaiduino2` has samples.  UTF-8 and Shift-JIS files are both accepted.
+The 10 motions of `arthurson/premaiduino2` `files/pma.zip` are embedded and listed in the side panel (click = load + play).
+Your own files: `📂 載入 .pma` or drag & drop onto the view.  UTF-8 and Shift-JIS files are both accepted.
 
 * Packets `[LEN][CMD]…[XOR]`; `0x18` = raw ICS position per servo (`0` = release -> servo stiffness 0), `payload[1]` = SPD.
 * Frame time = `max(SPD × 15 ms, largest travel / 12.7 pulse·ms⁻¹)` — the rule used by `motionPlaybackUpdate()` in `PmaProtocol.h`.
