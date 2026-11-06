@@ -48,6 +48,12 @@
   details { font-size: 12px; color: var(--mute); margin-top: 12px; }
   details p { margin: 4px 0; }
   code { background: var(--bg); padding: 0 3px; border-radius: 4px; }
+  .player { border: 1px solid var(--line); border-radius: 10px; padding: 8px; margin: 8px 0; }
+  .player input[type=range] { width: 100%; margin: 6px 0 0; accent-color: var(--accent); }
+  .player .info { font-size: 12px; margin: 4px 0 0; word-break: break-all; }
+  #stage.drag::after { content: "放開 .pma 檔案載入"; position: absolute; inset: 8px; border: 2px dashed var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--accent); background: color-mix(in srgb, var(--bg) 75%, transparent); z-index: 6; pointer-events: none; }
+  table.map { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 4px; }
+  table.map td { padding: 1px 4px; border-bottom: 1px solid var(--line); }
   @media (max-width: 820px) { .bar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; } .bar > * { flex: none; } #hud { gap: 4px; left: 6px; right: 6px; top: 6px; } #app { grid-template-columns: 1fr; grid-template-rows: 52vh minmax(0, 1fr); } #side { border-left: 0; border-top: 1px solid var(--line); } }
 </style>
 </head>
@@ -93,6 +99,28 @@
     <div class="row">
       <button id="bCopy">複製姿勢 JSON</button><button id="bPaste">貼上姿勢</button>
     </div>
+    <h2>PMA 動作回放 <small id="pmaState">未載入</small></h2>
+    <div class="player">
+      <div class="row" style="margin-top:0">
+        <label class="btn" title="載入 PreMaid AI 動作檔（.pma，premaiduino2 嘅 files/pma.zip 有範例）；亦可以拖放到畫面"><input type="file" id="fPma" accept=".pma,.txt" hidden>📂 載入 .pma</label>
+        <button id="bSample" title="內置範例（premaiduino2 files/pma.zip）">範例</button>
+        <select id="pSec" style="display:none" title="檔內有多個動作"></select>
+      </div>
+      <div class="row">
+        <button id="pPlay" disabled>▶ 播放</button><button id="pStop" disabled>■ 停止</button>
+        <label><input type="checkbox" id="pLoop" checked> 循環</label>
+        <label title="平滑：由上一幀線性過渡到呢一幀（SPD×15 ms，唔快過舵機全速）；逐幀跳：直接送目標，由舵機自己追"><select id="pInterp"><option value="1">平滑</option><option value="0">逐幀跳</option></select></label>
+      </div>
+      <input type="range" id="pSeek" min="0" max="1000" value="0" disabled>
+      <div id="pTime" class="mono info">—</div>
+      <div id="pInfo" class="info sub"></div>
+      <div class="info sub">動作係開環播放（冇平衡控制），跳舞類建議勾選上面「吊起機身」；撳 slider／預設姿勢會暫停回放。</div>
+      <details>
+        <summary>PMA 對照表（25 舵機，可逐個反向）</summary>
+        <p>θ = ± × (raw − 7500) × 270/8000°。標「推定」嘅舵機，絕對方向未能由資料確定（左右對稱關係係啱嘅，但成對可能反咗）；睇到動作方向反，就剔「反向」。</p>
+        <table class="map"><tbody id="pmaMap"></tbody></table>
+      </details>
+    </div>
     <div id="servos"></div>
     <details>
       <summary>模型同物理設定</summary>
@@ -122,7 +150,8 @@ var PRESETS = {
 var N = A.servos.length;                                   // 25
 var S = { mj: null, m: null, d: null, ready: false, run: true, pin: false, mu: A.params.mu, kp: A.params.kp, speed: 1, acc: 0, simT: 0, last: 0, statT: 0, tqT: 0 };
 var target = A.servos.map(function () { return 0; });      // degrees, one per servo (UI order)
-var ui = [], SW = { on: false, k: 0, t: 0, base: 0 }, bodyMesh = {}, bid = {}, act = [], qadr = [], world, com;
+function touch() { if (SW.on) stopSweep(); pausePlay(); }
+var jid = [], ui = [], SW = { on: false, k: 0, t: 0, base: 0 }, bodyMesh = {}, bid = {}, act = [], qadr = [], world, com;
 
 // ------------------------------------------------------------------ servo UI
 function clampDeg(k, v) { var s = A.servos[k], lo = s.lo / D2R, hi = s.hi / D2R; v = +v; if (!isFinite(v)) v = 0; return Math.min(hi, Math.max(lo, v)); }
@@ -146,16 +175,16 @@ function setTarget(k, v, fromUi) {
       host.appendChild(el);
       var r = el.querySelector('input[type=range]'), nu = el.querySelector('input[type=number]'), z = el.querySelector('button'), bar = el.querySelector('.tq i');
       ui[k] = { range: r, num: nu, bar: bar };
-      r.addEventListener('input', function () { if (SW.on) stopSweep(); setTarget(k, r.value, 'range'); });
-      nu.addEventListener('change', function () { if (SW.on) stopSweep(); setTarget(k, nu.value, 'num'); });
-      z.addEventListener('click', function () { if (SW.on) stopSweep(); setTarget(k, 0); });
+      r.addEventListener('input', function () { touch(); setTarget(k, r.value, 'range'); });
+      nu.addEventListener('change', function () { touch(); setTarget(k, nu.value, 'num'); });
+      z.addEventListener('click', function () { touch(); setTarget(k, 0); });
     });
     h.querySelector('small').textContent = n + ' servos';
   });
 })();
 
 function applyPose(p, base) {       // p: {joint: deg}; joints not listed -> 0
-  if (SW.on) stopSweep();
+  touch();
   A.servos.forEach(function (s, k) { setTarget(k, p[s.joint] != null ? p[s.joint] : 0); });
 }
 Array.prototype.forEach.call(document.querySelectorAll('[data-pose]'), function (b) { b.addEventListener('click', function () { applyPose(PRESETS[b.getAttribute('data-pose')]); }); });
@@ -178,7 +207,7 @@ function sweepTick(dt) {
   var s = A.servos[SW.k], lo = s.lo / D2R, hi = s.hi / D2R, w = Math.sin(2 * Math.PI * SW.t / period);
   setTarget(SW.k, SW.base + 0.45 * w * (w >= 0 ? hi - SW.base : SW.base - lo));
 }
-function startSweep() { SW.on = true; SW.k = 0; SW.t = 0; SW.base = target[0]; $('bSweep').classList.add('on'); $('bSweep').textContent = '■ 停止掃描'; }
+function startSweep() { pausePlay(); SW.on = true; SW.k = 0; SW.t = 0; SW.base = target[0]; $('bSweep').classList.add('on'); $('bSweep').textContent = '■ 停止掃描'; }
 function stopSweep() { if (!SW.on) return; setTarget(SW.k, SW.base); SW.on = false; $('bSweep').classList.remove('on'); $('bSweep').textContent = '▶ 逐個掃描'; }
 $('bSweep').addEventListener('click', function () { SW.on ? stopSweep() : startSweep(); });
 
@@ -250,7 +279,7 @@ function build(mj) {
   A.servos.forEach(function (s, k) {
     var j = mj.mj_name2id(m, O.mjOBJ_JOINT.value, s.joint), a = mj.mj_name2id(m, O.mjOBJ_ACTUATOR.value, 'act_' + s.joint);
     if (j < 0 || a < 0) throw new Error('servo ' + (k + 1) + ' ' + s.joint + ' joint/actuator missing');
-    act[k] = a; qadr[k] = m.jnt_qposadr[j];
+    act[k] = a; jid[k] = j; qadr[k] = m.jnt_qposadr[j];
   });
   S.base = bid.base_link;
   var mass = 0; for (var i = 0; i < m.nbody; i++) mass += m.body_mass[i];
@@ -258,7 +287,11 @@ function build(mj) {
   setMu(S.mu); setKp(S.kp);
 }
 function setMu(v) { S.mu = +v; $('rMu').value = v; $('vMu').textContent = (+v).toFixed(2); if (!S.m) return; var f = S.m.geom_friction; for (var g = 0; g < S.m.ngeom; g++) f[3 * g] = S.mu; }
-function setKp(v) { S.kp = +v; $('rKp').value = v; $('vKp').textContent = String(Math.round(v)); if (!S.m) return; var gp = S.m.actuator_gainprm, bp = S.m.actuator_biasprm; for (var k = 0; k < N; k++) { gp[10 * act[k]] = S.kp; bp[10 * act[k] + 1] = -S.kp; } }
+function setKp(v) { S.kp = +v; $('rKp').value = v; $('vKp').textContent = String(Math.round(v)); applyGains(); }
+function applyGains() {   // position servo: gain = kp, bias = [0, -kp, -kv]; a released (free, raw 0) servo gets all three = 0
+  if (!S.m) return; var gp = S.m.actuator_gainprm, bp = S.m.actuator_biasprm, kv = A.params.kv;
+  for (var k = 0; k < N; k++) { var a = act[k], on = !P.freeNow[k]; gp[10 * a] = on ? S.kp : 0; bp[10 * a + 1] = on ? -S.kp : 0; bp[10 * a + 2] = on ? -kv : 0; }
+}
 function ctrlOf(k) { return clampDeg(k, target[k]) * D2R; }
 function setCtrl() { var ct = S.d.ctrl; for (var k = 0; k < N; k++) ct[act[k]] = ctrlOf(k); }
 function lowestZ() {   // lowest collision-hull vertex in the world (m.mesh_vert is in each mesh's own frame)
@@ -307,11 +340,137 @@ function frame(now) {
   var dt = S.last ? Math.min(0.05, (now - S.last) / 1000) : 0; S.last = now;
   if (S.ready) {
     if (SW.on) sweepTick(dt);
+    if (P.playing && S.run && P.total > 0) playTick(dt * S.speed);
     if (S.run) advance(dt * S.speed); else setCtrl();
     updateScene(); status(now);
   }
   controls.update(); renderer.render(scene, camera);
 }
+
+// ------------------------------------------------------------------ .pma replay (PreMaid AI motion files, see premaiduino2/PmaProtocol.h)
+// file = text, "[モーション(n)] / 番号= / 名前= / データ=<hex bytes>"; bytes = packets [LEN][CMD]...[XOR]; 0x18 = {pma_id, raw lo, raw hi} per servo
+// (raw 0 = release), payload[1] = SPD, 1 tick = 15 ms = time the firmware waits before the next packet (and never less than the servo's full-speed travel).
+var K_DEG = 270 / 8000, PULSE_PER_MS = (60 / 140) * (8000 / 270);
+var PM = { byJoint: {}, pid2k: {} };
+A.pma.forEach(function (e) { PM.byJoint[e.joint] = e; });
+A.servos.forEach(function (s, k) { var e = PM.byJoint[s.joint]; s.pid = e.pid; s.sign = e.sign; s.flip = false; PM.pid2k[e.pid] = k; });
+var P = { name: '', frames: null, T: [], D: [], total: 0, t: 0, playing: false, loop: true, interp: true, freeNow: new Uint8Array(N), dirty: false, uiT: 0, secs: [] };
+
+function parsePmaText(text) {
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  var re = /\[モーション\((\d+)\)\][\r\n]+番号=(\d+)[\r\n]+名前=([^\r\n]*)[\r\n]+データ=([0-9A-Fa-f ]+)/g, out = [], m;
+  while ((m = re.exec(text))) {
+    var hx = m[4].trim().split(/\s+/), b = new Uint8Array(hx.length);
+    for (var i = 0; i < hx.length; i++) b[i] = parseInt(hx[i], 16);
+    out.push({ name: m[3].trim(), bytes: b });
+  }
+  return out;
+}
+function decodePma(buf) {     // UTF-8 (with BOM) first, Shift-JIS as fallback for older files
+  var r = parsePmaText(new TextDecoder('utf-8').decode(buf));
+  if (!r.length) { try { r = parsePmaText(new TextDecoder('shift_jis').decode(buf)); } catch (e) {} }
+  return r;
+}
+function buildTimeline(bytes) {
+  var cur = new Int32Array(N).fill(7500), free = new Uint8Array(N), frames = [], bad = 0, other = 0, i = 0;
+  while (i < bytes.length) {
+    var L = bytes[i]; if (L === 0 || L === 0xFF || i + L > bytes.length) break;
+    var x = 0; for (var j = 0; j < L - 1; j++) x ^= bytes[i + j];
+    if (x !== bytes[i + L - 1]) bad++;
+    if (bytes[i + 1] === 0x18 && L >= 7) {
+      for (var q = 4; q + 2 < L - 1; q += 3) {
+        var k = PM.pid2k[bytes[i + q]]; if (k === undefined) continue;
+        var v = bytes[i + q + 1] | (bytes[i + q + 2] << 8);
+        if (v === 0) free[k] = 1; else { free[k] = 0; cur[k] = v; }
+      }
+      frames.push({ raw: cur.slice(), free: free.slice(), spd: bytes[i + 3] });
+    } else other++;
+    i += L;
+  }
+  var T = [], D = [], t = 0;
+  frames.forEach(function (f, n) {
+    var pf = n ? frames[n - 1] : f, md = 0;
+    for (var s = 0; s < N; s++) if (!f.free[s]) md = Math.max(md, Math.abs(f.raw[s] - pf.raw[s]));
+    var d = Math.max(Math.max(f.spd, 1) * 15, md / PULSE_PER_MS);     // same rule as motionPlaybackUpdate()
+    T.push(t); D.push(d); t += d;
+  });
+  return { frames: frames, T: T, D: D, total: t, bad: bad, other: other };
+}
+function findK(t) { var lo = 0, hi = P.frames.length - 1; while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (P.T[mid] <= t) lo = mid; else hi = mid - 1; } return lo; }
+function poseAt(t) {
+  var fs = P.frames, k = findK(t), f = fs[k], pf = k ? fs[k - 1] : f, a = 1;
+  if (P.interp && P.D[k] > 0) a = Math.min(1, Math.max(0, (t - P.T[k]) / P.D[k]));
+  for (var s = 0; s < N; s++) {
+    var raw = pf.raw[s] + (f.raw[s] - pf.raw[s]) * a, fr = f.free[s];
+    if (P.freeNow[s] !== fr) { P.freeNow[s] = fr; P.dirty = true; }
+    setTarget(s, A.servos[s].sign * (raw - 7500) * K_DEG);          // clamped to the servo's travel
+  }
+  if (P.dirty) { P.dirty = false; applyGains(); }
+}
+function fmt(t) { t /= 1000; var m = Math.floor(t / 60); return m + ':' + (t - m * 60).toFixed(1).padStart(4, '0'); }
+function updatePlayUI(force) {
+  var now = performance.now(); if (!force && now - P.uiT < 100) return; P.uiT = now;
+  $('pPlay').textContent = P.playing ? '⏸ 暫停' : '▶ 播放'; $('pPlay').classList.toggle('on', P.playing);
+  if (!P.frames) return;
+  $('pTime').textContent = fmt(P.t) + ' / ' + fmt(P.total) + ' · 幀 ' + (findK(P.t) + 1) + '/' + P.frames.length;
+  if (document.activeElement !== $('pSeek')) $('pSeek').value = P.total > 0 ? Math.round(P.t / P.total * 1000) : 0;
+}
+function pausePlay() { if (P.playing) { P.playing = false; updatePlayUI(true); } }
+function playTick(dt) {          // dt in seconds (sim time); the timeline is in ms
+  P.t += dt * 1000;
+  if (P.t >= P.total) { if (P.loop) P.t -= P.total; else { P.t = P.total; P.playing = false; } }
+  poseAt(P.t); updatePlayUI(!P.playing);
+}
+function useSection(i) {
+  var sec = P.secs[i], tl = buildTimeline(sec.bytes);
+  if (!tl.frames.length) { $('pmaState').textContent = '無 0x18 封包'; return; }
+  P.frames = tl.frames; P.T = tl.T; P.D = tl.D; P.total = tl.total; P.t = 0; P.playing = false; P.name = sec.name || P.file || '';
+  $('pmaState').textContent = P.name;
+  $('pInfo').textContent = tl.frames.length + ' 幀 · ' + (tl.total / 1000).toFixed(1) + ' s · ' + sec.bytes.length + ' bytes' + (tl.bad ? ' · ⚠ checksum 錯 ' + tl.bad + ' 個封包' : ' · checksum OK') + (tl.other ? ' · 略過 ' + tl.other + ' 個非 0x18 封包（速度/硬度設定等）' : '');
+  ['pPlay', 'pStop', 'pSeek'].forEach(function (id) { $(id).disabled = false; });
+  poseAt(0); updatePlayUI(true);
+}
+function loadSections(secs, file) {
+  if (!secs.length) { $('pmaState').textContent = '格式唔啱'; $('pInfo').textContent = '搵唔到 [モーション(N)] 段落／データ='; return; }
+  P.secs = secs; P.file = file || ''; var sel = $('pSec'); sel.innerHTML = '';
+  secs.forEach(function (c, i) { var o = document.createElement('option'); o.value = i; o.textContent = (i + 1) + '. ' + (c.name || '(no name)'); sel.appendChild(o); });
+  sel.style.display = secs.length > 1 ? '' : 'none'; useSection(0);
+}
+function loadFile(f) { if (!f) return; var r = new FileReader(); r.onload = function () { loadSections(decodePma(r.result), f.name); }; r.readAsArrayBuffer(f); }
+function b64bytes(b) { var bin = atob(b), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+$('fPma').addEventListener('change', function () { loadFile(this.files[0]); this.value = ''; });
+$('bSample').addEventListener('click', function () { var sm = A.samples && A.samples[0]; if (sm) loadSections([{ name: sm.name, bytes: b64bytes(sm.b64) }], sm.file); });
+if (!(A.samples && A.samples.length)) $('bSample').style.display = 'none';
+$('pSec').addEventListener('change', function () { useSection(+this.value); });
+$('pPlay').addEventListener('click', function () {
+  if (!P.frames) return;
+  if (P.playing) P.playing = false;
+  else { if (SW.on) stopSweep(); if (P.t <= 0.001 || P.t >= P.total - 0.001) { P.t = 0; poseAt(0); if (S.ready) reset(); } P.playing = true; }
+  updatePlayUI(true);
+});
+$('pStop').addEventListener('click', function () { if (!P.frames) return; P.playing = false; P.t = 0; poseAt(0); updatePlayUI(true); });
+$('pSeek').addEventListener('input', function () { if (!P.frames) return; P.t = this.value / 1000 * P.total; poseAt(P.t); updatePlayUI(true); });
+$('pLoop').addEventListener('change', function () { P.loop = this.checked; });
+$('pInterp').addEventListener('change', function () { P.interp = this.value === '1'; if (P.frames) poseAt(P.t); });
+['dragenter', 'dragover'].forEach(function (ev) { $('stage').addEventListener(ev, function (e) { e.preventDefault(); $('stage').classList.add('drag'); }); });
+['dragleave', 'drop'].forEach(function (ev) { $('stage').addEventListener(ev, function (e) { e.preventDefault(); $('stage').classList.remove('drag'); if (ev === 'drop' && e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]); }); });
+function setFlip(k, on) {      // flip one servo's direction: sign, travel (and the live MuJoCo joint/ctrl range) are mirrored
+  var s = A.servos[k]; on = !!on; if (!!s.flip === on) return;
+  var lo = s.lo, hi = s.hi; s.lo = -hi; s.hi = -lo; s.flip = on; s.sign = -s.sign;
+  if (S.m) { var m = S.m; m.jnt_range[2 * jid[k]] = s.lo; m.jnt_range[2 * jid[k] + 1] = s.hi; m.actuator_ctrlrange[2 * act[k]] = s.lo; m.actuator_ctrlrange[2 * act[k] + 1] = s.hi; }
+  var u = ui[k]; u.range.min = u.num.min = (s.lo / D2R).toFixed(2); u.range.max = u.num.max = (s.hi / D2R).toFixed(2);
+  setTarget(k, -target[k]); if (P.frames) poseAt(P.t);
+}
+(function buildMapTable() {
+  var tb = $('pmaMap');
+  A.servos.map(function (s, k) { return k; }).sort(function (a, b) { return A.servos[a].pid - A.servos[b].pid; }).forEach(function (k) {
+    var s = A.servos[k], e = PM.byJoint[s.joint], tr = document.createElement('tr');
+    tr.innerHTML = '<td class="mono">0x' + (s.pid < 16 ? '0' : '') + s.pid.toString(16).toUpperCase() + '</td><td class="mono">' + s.joint.replace('_joint', '') + '</td><td class="mono">' + (e.sign > 0 ? '+' : '−') + '</td>' +
+      '<td><label><input type="checkbox"> 反向</label></td><td title="' + (e.inferred ? '絕對方向未能由資料確定' : '由 firmware 約定、範例資料同開環站立測試驗證') + '">' + (e.inferred ? '推定' : '已驗證') + '</td>';
+    tr.querySelector('input').addEventListener('change', function () { setFlip(k, this.checked); });
+    tb.appendChild(tr);
+  });
+})();
 
 // ------------------------------------------------------------------ HUD wiring
 $('bRun').addEventListener('click', function () { S.run = !S.run; this.classList.toggle('on', S.run); this.textContent = S.run ? '⏸ 暫停' : '▶ 繼續'; });
@@ -325,7 +484,7 @@ setMu(S.mu); setKp(S.kp);
 
 loadMujoco().then(function (mj) {
   build(mj); buildMeshes(); reset(); S.ready = true; $('loader').style.display = 'none';
-  window.PMSIM = { S: S, target: target, setTarget: setTarget, reset: reset, advance: advance, applyPose: applyPose, PRESETS: PRESETS, view: view };   // for tests / scripting
+  window.PMSIM = { S: S, target: target, setTarget: setTarget, reset: reset, advance: advance, applyPose: applyPose, PRESETS: PRESETS, view: view, pma: { P: P, decode: decodePma, timeline: buildTimeline, load: loadSections, poseAt: poseAt, setFlip: setFlip } };   // for tests / scripting
 }).catch(function (e) { console.error(e); $('loadMsg').textContent = 'MuJoCo 載入失敗'; $('loadErr').textContent = String(e && e.message || e) + (location.protocol === 'file:' ? '' : '\n（要用 http(s) 開，例如 python -m http.server，然後開 /web/premaid-sim.html）'); });
 requestAnimationFrame(frame);
 })();

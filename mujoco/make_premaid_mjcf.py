@@ -38,6 +38,42 @@ LABEL = {  # joint suffix -> (zh, en)
     'shy': ('肩前後', 'shoulder pitch'), 'shx': ('肩側舉', 'shoulder roll'), 'ely': ('上臂旋轉', 'upper-arm twist'),
     'elx': ('手肘', 'elbow'), 'wry': ('手腕旋轉', 'wrist twist'),
     'ny': ('頭前後', 'neck pitch'), 'nz': ('轉頭', 'head yaw'), 'nx': ('頭側傾', 'head roll')}
+
+# ---- .pma replay calibration -------------------------------------------------------------------------------------
+# .pma packets carry raw ICS positions (3500..11500 = 270 deg, 7500 = centre).  Mapping used by the web replay:
+#     theta_urdf[deg] = sign * (raw - 7500) * 270/8000
+# Ranges come from premaiduino2/ServoConfig.h: the firmware clamps the PHYSICAL position  home + (raw - baseline)  to
+# [min, max], so the raw range a servo can reach is [min-home+baseline, max-home+baseline].  This matters for the shoulder
+# pitch (home 10200 / 4700) and wrist twist (home 5000 / 10000), whose real travel is far from the URDF's +-135.
+# sign: verified on the 10 sample .pma (3089 frames): knee/hip-pitch/ankle-pitch signs make hip+knee+ankle ~ 0 (RMS 2.7 deg,
+# all other combinations >= 21 deg); elbow/shoulder-roll/head-pitch signs keep the data inside the URDF limits (0 violations);
+# hip/ankle roll: same raw sign on both legs and ankle = -hip in pulses (LegIK.h, corr -0.62 in the data) => hip and ankle share
+# the URDF sign.  The absolute direction (+1) was settled by a dynamics test: replaying the 10 sample dances open-loop on the floor,
+# +1/+1 gives a median survival of >=40 s (5/10 never fall) versus 6.6 s (1/10) for -1/-1, and flipping only hip or only ankle is no better.
+# inferred=True: absolute direction could NOT be derived from the data (mirror pairs are correct, the pair as a
+# whole may be flipped) -> the web UI has a per-servo flip checkbox.
+#            joint      pma_id sign  fw_min fw_max  home  baseline inferred
+PMA_CAL = {
+    'r_shy_joint': (0x02, +1, 4300, 11500, 10200, 7500, False), 'l_shy_joint': (0x04, -1, 3500, 10700, 4700, 7500, False),
+    'r_hpz_joint': (0x06, +1, 6530, 9030, 7780, 7500, True),    'l_hpz_joint': (0x08, +1, 6250, 8750, 7500, 7500, True),
+    'r_hpx_joint': (0x0A, +1, 6700, 8300, 7400, 7500, False),    'l_hpx_joint': (0x0C, +1, 6700, 8300, 7600, 7500, False),
+    'r_hpy_joint': (0x0E, +1, 4700, 10200, 7500, 7500, False),  'l_hpy_joint': (0x10, -1, 4700, 10200, 7500, 7500, False),
+    'r_kny_joint': (0x12, -1, 3950, 7600, 7500, 7500, False),   'l_kny_joint': (0x14, +1, 7400, 11050, 7500, 7500, False),
+    'r_aky_joint': (0x16, +1, 5700, 8300, 7500, 7500, False),   'l_aky_joint': (0x18, -1, 6750, 9350, 7550, 7500, False),
+    'r_akx_joint': (0x1A, +1, 6800, 9150, 7825, 7500, False),    'l_akx_joint': (0x1C, +1, 6200, 8450, 7450, 7500, False),
+    'head_ny_joint': (0x03, +1, 7200, 8400, 7500, 7500, False), 'head_nz_joint': (0x05, +1, 5000, 10000, 7500, 7500, True),
+    'head_nx_joint': (0x07, +1, 6900, 8100, 7500, 7500, True),
+    'r_shx_joint': (0x09, +1, 7450, 10350, 9500, 9500, False),  'l_shx_joint': (0x0B, +1, 4550, 7550, 5500, 5500, False),
+    'r_ely_joint': (0x0D, +1, 4000, 11000, 7500, 7500, True),   'l_ely_joint': (0x0F, -1, 4000, 11000, 7500, 7500, True),
+    'r_elx_joint': (0x11, +1, 7100, 11000, 7500, 7500, False),  'l_elx_joint': (0x13, +1, 4000, 7900, 7500, 7500, False),
+    'r_wry_joint': (0x15, +1, 3500, 11500, 5000, 7500, True),   'l_wry_joint': (0x17, -1, 3500, 11500, 10000, 7500, True),
+}
+PULSE_DEG = 270.0 / 8000.0
+def pma_range(joint):
+    pid, sg, mn, mx, home, base, _ = PMA_CAL[joint]
+    a, b = sg * (mn - home + base - 7500) * PULSE_DEG, sg * (mx - home + base - 7500) * PULSE_DEG
+    return math.radians(min(a, b)), math.radians(max(a, b))
+
 GROUPS = [('head', '頭 Head'), ('r_arm', '右手 Right arm'), ('l_arm', '左手 Left arm'), ('r_leg', '右腳 Right leg'), ('l_leg', '左腳 Left leg')]
 
 # ------------------------------------------------------------------ xacro -> URDF
@@ -107,6 +143,8 @@ def b64(a): return base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 def build():
     import trimesh
     links, joints = parse_urdf(expand_xacro())
+    for j in joints:
+        if j.type == 'revolute' and j.name in PMA_CAL: j.lo, j.hi = pma_range(j.name)     # real servo travel (see PMA_CAL)
     kids = {}
     for j in joints: kids.setdefault(j.parent, []).append(j)
     # base_link (massless) + fixed identity child 'body' -> one MuJoCo root body called base_link
@@ -199,7 +237,15 @@ def main():
     z0 = zstart(xml) + 0.04
     xml = xml.replace('@ZSTART@', '%.5f' % z0)
     open(XML_OUT, 'w', encoding='utf-8').write(xml); print('wrote', XML_OUT, len(xml) // 1024, 'KB, base z %.4f' % z0)
-    assets = dict(xml=xml, links=visual, servos=servos, z0=z0, params=dict(kp=KP, kv=KV, armature=ARMATURE, damping=DAMPING, mu=MU, dt=TIMESTEP))
+    pma = [dict(joint=j, pid=v[0], sign=v[1], rawLo=v[2] - v[4] + v[5], rawHi=v[3] - v[4] + v[5], inferred=v[6]) for j, v in PMA_CAL.items()]
+    samples = []
+    sdir = os.path.join(PKG, 'web', 'samples')
+    for fn in (sorted(os.listdir(sdir)) if os.path.isdir(sdir) else []):
+        if fn.lower().endswith('.pma'):
+            t = open(os.path.join(sdir, fn), encoding='utf-8-sig', errors='replace').read()
+            m = re.search(r'\[\u30e2\u30fc\u30b7\u30e7\u30f3\(\d+\)\]\s*\u756a\u53f7=\d+\s*\u540d\u524d=([^\r\n]*)\s*\u30c7\u30fc\u30bf=([0-9A-Fa-f ]+)', t)
+            if m: samples.append(dict(file=fn, name=m.group(1).strip(), b64=base64.b64encode(bytes(int(x, 16) for x in m.group(2).split())).decode()))
+    assets = dict(xml=xml, links=visual, servos=servos, pma=pma, samples=samples, z0=z0, params=dict(kp=KP, kv=KV, armature=ARMATURE, damping=DAMPING, mu=MU, dt=TIMESTEP))
     if os.path.exists(SRC_HTML):
         html = open(SRC_HTML, encoding='utf-8').read(); assert '/*__ASSETS__*/' in html
         js = 'window.PREMAID=' + json.dumps(assets, separators=(',', ':'), ensure_ascii=False).replace('</', '<\\/') + ';'
