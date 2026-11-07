@@ -5,9 +5,9 @@
 
     <transmission name="${prefix}_shy_joint_trans">
       <type>transmission_interface/SimpleTransmission</type>
-      <jont name="${prefix}_shy_joint">
+      <joint name="${prefix}_shy_joint">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
-      </jont>
+      </joint>
       <actuator name="${prefix}_shy_motor">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
         <mechanicalReduction>1</mechanicalReduction>
@@ -16,9 +16,9 @@
 
     <transmission name="${prefix}_shx_joint_trans">
       <type>transmission_interface/SimpleTransmission</type>
-      <jont name="${prefix}_shx_joint">
+      <joint name="${prefix}_shx_joint">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
-      </jont>
+      </joint>
       <actuator name="${prefix}_shx_motor">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
         <mechanicalReduction>1</mechanicalReduction>
@@ -27,9 +27,9 @@
 
     <transmission name="${prefix}_ely_joint_trans">
       <type>transmission_interface/SimpleTransmission</type>
-      <jont name="${prefix}_ely_joint">
+      <joint name="${prefix}_ely_joint">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
-      </jont>
+      </joint>
       <actuator name="${prefix}_ely_motor">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
         <mechanicalReduction>1</mechanicalReduction>
@@ -38,9 +38,9 @@
 
     <transmission name="${prefix}_elx_joint_trans">
       <type>transmission_interface/SimpleTransmission</type>
-      <jont name="${prefix}_elx_joint">
+      <joint name="${prefix}_elx_joint">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
-      </jont>
+      </joint>
       <actuator name="${prefix}_elx_motor">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
         <mechanicalReduction>1</mechanicalReduction>
@@ -49,9 +49,9 @@
 
     <transmission name="${prefix}_wry_joint_trans">
       <type>transmission_interface/SimpleTransmission</type>
-      <jont name="${prefix}_wry_joint">
+      <joint name="${prefix}_wry_joint">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
-      </jont>
+      </joint>
       <actuator name="${prefix}_wry_motor">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
         <mechanicalReduction>1</mechanicalReduction>

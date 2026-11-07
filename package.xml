@@ -2,15 +2,22 @@
 <package format="2">
   <name>premaidai_description</name>
   <version>0.0.0</version>
-  <description>The premaidai_description package</description>
+  <description>URDF/xacro description, meshes and MuJoCo/web simulator assets for the PreMaid AI robot.</description>
 
   <maintainer email="chikuta@todo.todo">chikuta</maintainer>
 
   <license>Apache 2.0</license>
 
+  <url type="website">https://github.com/arthurson/premaidai_description</url>
+  <url type="repository">https://github.com/arthurson/premaidai_description</url>
+
   <buildtool_depend>catkin</buildtool_depend>
 
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>rviz</exec_depend>
+  <exec_depend>xacro</exec_depend>
 
   <export>
   </export>

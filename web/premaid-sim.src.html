@@ -84,6 +84,10 @@
     .servo { grid-template-columns: 80px minmax(0, 1fr) 58px 36px; padding: 5px 0; } .servo button { min-height: 32px; } .plist button { padding: 10px; }
   }
   .chip:has(input:disabled) { opacity: .45; cursor: default; }
+  .pads { display: flex; gap: 14px; justify-content: center; margin: 12px 0 8px; } .padwrap { text-align: center; font-size: 11px; color: var(--mute); }
+  .pad { position: relative; width: 118px; height: 118px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); touch-action: none; margin-bottom: 3px; }
+  .pad::before, .pad::after { content: ""; position: absolute; background: var(--line); } .pad::before { left: 50%; top: 8%; bottom: 8%; width: 1px; } .pad::after { top: 50%; left: 8%; right: 8%; height: 1px; }
+  .pad i { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 1px 6px rgba(0,0,0,.3); }
 </style>
 </head>
 <body>
@@ -122,7 +126,7 @@
   </div>
 
   <div id="leftcol" class="panel">
-    <div class="tabs"><button class="on" data-tab="motion" data-i18n="tabMotion"></button><button data-tab="robot" data-i18n="tabRobot"></button></div>
+    <div class="tabs"><button class="on" data-tab="motion" data-i18n="tabMotion"></button><button data-tab="robot" data-i18n="tabRobot"></button><button data-tab="walk" data-i18n="tabWalk"></button></div>
     <div id="pane_motion">
       <label class="btn primary wide" data-i18n-title="tipLoad"><input type="file" id="fPma" accept=".pma,.txt" hidden><span data-i18n="loadBtn"></span></label>
       <select id="pSec" style="display:none; width:100%; margin-top:8px" data-i18n-title="tipSec"></select>
@@ -140,6 +144,23 @@
         <div class="group" style="align-items:center"><span data-i18n="rbThinA"></span><input type="number" id="rbThin" min="2" value="2" style="width:56px"><span data-i18n="rbThinB"></span><button id="rbExp" data-i18n="rbExp"></button></div>
         <div class="lbl2" data-i18n="mapSummary"></div><p class="sub" data-i18n="mapNote"></p><table class="map"><tbody id="pmaMap"></tbody></table>
       </details>
+    </div>
+    <div id="pane_walk" hidden>
+      <div class="warnbox" data-i18n="walkWarn"></div>
+      <button id="wGo" class="primary wide"></button>
+      <div class="status"><span id="wState"></span><span id="wTick" class="mono"></span></div>
+      <div class="pads">
+        <div class="padwrap"><div class="pad" id="padA"><i></i></div><span data-i18n="padA"></span></div>
+        <div class="padwrap"><div class="pad" id="padB"><i></i></div><span data-i18n="padB"></span></div>
+      </div>
+      <label class="chip"><input type="checkbox" id="wHold"><span data-i18n="padHold"></span></label>
+      <div class="lbl2" data-i18n="walkParams"></div>
+      <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px"><span data-i18n="wLen"></span><input type="range" id="wLen" min="0.5" max="1.5" step="0.05" value="1"><span id="wLenV" class="mono">1.00</span></div>
+      <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px"><span data-i18n="wRoll"></span><input type="range" id="wRoll" min="0.5" max="1.5" step="0.05" value="1"><span id="wRollV" class="mono">1.00</span></div>
+      <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px"><span data-i18n="wPit"></span><input type="range" id="wPit" min="0.5" max="1.5" step="0.05" value="1"><span id="wPitV" class="mono">1.00</span></div>
+      <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px" data-i18n-title="wSpdTip"><span data-i18n="wSpd"></span><input type="range" id="wSpd" min="6" max="14" step="1" value="9"><span id="wSpdV" class="mono">135 ms</span></div>
+      <label class="chip" style="margin-top:6px"><input type="checkbox" id="wRobot" class="rbc"><span data-i18n="walkRobot"></span></label>
+      <p class="sub" style="margin-top:8px" data-i18n="walkNote"></p>
     </div>
     <div id="pane_robot" hidden>
       <div class="status"><span id="rbState"></span><span id="rbVolt" class="mono"></span></div>
@@ -293,6 +314,18 @@ Object.assign(I18N.en, {
   drop: 'Drop a .pma and/or audio file', audTitle: 'Music', audNone: 'no music', audLoad: '🎵 Load music', audLoadTip: 'Load mp3 / m4a / wav / ogg … (or drop it together with the .pma)', audVol: 'Volume', audOffL: 'Music sync offset (+ = music earlier)', tipAud: 'Music on / off',
   libErr: 'Cannot read pma/index.json. Open the page over http(s) (e.g. python -m http.server) or use "Load .pma".', libEmpty: 'No .pma in pma/ yet; add files and run python pma/make_index.py.',
   audDrm: 'A same-name .wsdcf exists, but it is an encrypted container (AES-128 + rights server) that a browser cannot play. Put a same-name .mp3/.m4a in pma/ and re-run make_index.py, or use "Load music".', audErr: 'Could not load the audio file (unsupported format?)'
+});
+Object.assign(I18N.zh, {
+  tabWalk: '步行', walkStart: '▶ 開始步行', walkStop: '■ 收步停止', walkIdle: '待機', walkStarting: '起步', walkWalking: '步行中', walkStopping: '收步',
+  padA: '步行：↑ 前進、↓ 後退、← → 轉向', padB: '腰轉／前傾（↑ 前傾、↓ 蹲低）', padHold: '鎖定搖桿位置', walkParams: '步態參數', wLen: '步幅', wRoll: '搖擺', wPit: '前後擺', wSpd: '步頻', wSpdTip: 'SPD（tick，1 tick ＝ 15 ms）：每個 pose 嘅時間，數字越細越快', walkRobot: '同步送去真機（需先連接）',
+  walkWarn: '開環步態（正弦表），冇平衡回饋：模擬入面可能跌，真機請吊起機身先試，手放喺電源附近。鍵盤：方向鍵 ＝ 左搖桿，WASD ＝ 右搖桿。',
+  walkNote: '步態來自 @kazzlog 嘅 pm_sample（Apache-2.0）：10 格正弦表，每個 pose 之間以 SPD 補間；17 粒舵機受控（腿、肩前後、髖旋轉、頭），其餘舵機保持原位。開始時會先設零位 T-pose。'
+});
+Object.assign(I18N.en, {
+  tabWalk: 'Walk', walkStart: '▶ Start walking', walkStop: '■ Stop (finish step)', walkIdle: 'idle', walkStarting: 'starting', walkWalking: 'walking', walkStopping: 'stopping',
+  padA: 'Walk: ↑ forward, ↓ back, ← → turn', padB: 'Waist yaw / lean (↑ lean, ↓ crouch)', padHold: 'Latch stick position', walkParams: 'Gait parameters', wLen: 'Stride', wRoll: 'Sway', wPit: 'Swing', wSpd: 'Cadence', wSpdTip: 'SPD (ticks, 1 tick = 15 ms): time per pose, smaller = faster', walkRobot: 'Also send to the robot (connect first)',
+  walkWarn: 'Open-loop gait (sine tables) without balance feedback: it may fall in the simulator; on the real robot hang the body first and keep a hand near the power switch. Keys: arrows = left stick, WASD = right stick.',
+  walkNote: 'Gait by @kazzlog (pm_sample, Apache-2.0): a 10-step sine table, poses interpolated by SPD; 17 servos are driven (legs, shoulder pitch, hip yaw, head), the rest keep their position. Starting sets the zero T-pose first.'
 });
 var LANG = 'zh';
 try { var _l = localStorage.getItem('pmsim.lang'); if (_l === 'zh' || _l === 'en') LANG = _l; } catch (e) {}
@@ -508,6 +541,7 @@ function frame(now) {
   if (S.ready) {
     if (SW.on) sweepTick(dt);
     if (P.playing && S.run && P.total > 0) playTick(dt * S.speed);
+    if (WK.on && S.run) walkTick(dt * S.speed);
     if (S.run) advance(dt * S.speed); else setCtrl();
     updateScene(); status(now); rbTick(now); audioSync();
   }
@@ -806,7 +840,7 @@ $('rbExp').addEventListener('click', rbExport);
 
 (function () {      // panels, tabs, settings card, robot control mode
   var h = document.documentElement;
-  function tab(n) { ['motion', 'robot'].forEach(function (x) { $('pane_' + x).hidden = x !== n; }); Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === n); }); h.setAttribute('data-tab', n); }
+  function tab(n) { ['motion', 'robot', 'walk'].forEach(function (x) { $('pane_' + x).hidden = x !== n; }); Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === n); }); h.setAttribute('data-tab', n); }
   Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (b) { b.addEventListener('click', function () { tab(b.getAttribute('data-tab')); }); });
   function drawer(side, n) { var cls = side === 'l' ? 'mobL' : 'mobR', open = h.classList.contains(cls) && (side === 'r' || h.getAttribute('data-tab') === n); h.classList.remove('mobL', 'mobR'); if (!open) { h.classList.add(cls); if (n) tab(n); } }
   $('mobL').addEventListener('click', function () { drawer('l', 'motion'); });
@@ -820,6 +854,103 @@ $('rbExp').addEventListener('click', rbExport);
   $('rbSp').addEventListener('input', function () { $('rbSpV').textContent = this.value; });
   tab('motion');
 })();
+// ------------------------------------------------------------------ walking generator
+// Gait idea and constants: @kazzlog, github.com/kazzlog/pm_sample (PreMaidMathWalkSample.cs, Apache-2.0), re-implemented here.
+// One call of step() = one pose every SPD x 15 ms; values are raw servo pulses around 7500 for the 17 servos of WALK.IDS.
+var WALK = (function () {
+  var SIN1 = [0, 0.59, 0.95, 0.95, 0.59, 0, -0.59, -0.95, -0.95, -0.59], SIN3 = [0, 0.2, 0.86, 0.86, 0.2, 0, -0.2, -0.86, -0.86, -0.2],
+      P1 = [0.7, 0.9, 0.6, -0.4, -0.9, -0.8, -0.5, -0.2, 0.1, 0.4], P2 = [-0.8, -0.5, -0.2, 0.1, 0.4, 0.7, 0.9, 0.6, -0.4, -0.9],
+      LEN = [2, 4, 2, -1, -2, -4, -2, 1, 0, 0, 0, 0], ROLL = [0, 0, 0, 0, 0, 0, 0, 0, 2, 2, -2, -2], PIT = [-1, 0, 1, 1, 1, 0, -1, -1, 0, 0, 0, 0],
+      IDS = [0x10, 0x14, 0x18, 0x02, 0x0e, 0x12, 0x16, 0x04, 0x0a, 0x0c, 0x1a, 0x1c, 0x08, 0x06, 0x05, 0x07, 0x03], tr = Math.trunc;
+  function make() {
+    var st = { cond: 0, tick: 0, steer: 0 };      // cond: 0 idle, 1 first half step, 2 walking, 3 last half step
+    function step(o) {      // o: {go, X1, Y1, X2, Y2, len, roll, pitch}
+      var V = [], i, X1 = o.X1, Y1 = o.Y1, X2 = o.X2, Y2 = o.Y2, DL = 140 * o.len, DR = 80 * o.roll, DP = 600 * o.pitch;
+      for (i = 0; i < 17; i++) V[i] = 7500;
+      if (Math.abs(X2) > 0.1) {      // waist yaw
+        V[12] += tr(600 * X2); V[13] += tr(600 * X2); V[14] += tr(600 * X2);
+        for (i = 0; i < 3; i++) { V[i] += tr(140 * X2 * PIT[i]); V[i + 4] -= tr(140 * X2 * PIT[i + 4]); }
+      }
+      if (Math.abs(Y2) > 0.1) {      // lean / crouch
+        V[15] += tr(300 * X2); V[16] -= tr(300 * Y2);
+        if (Y2 < 0) { for (i = 0; i < 8; i++) V[i] -= tr(400 * Y2 * LEN[i]); }
+        else { V[0] += tr(150 * Y2); V[4] -= tr(150 * Y2); V[3] -= tr(450 * Y2); V[7] += tr(450 * Y2); }
+      }
+      if (st.cond === 0 && o.go) { st.cond = 1; st.tick = 0; }
+      if (st.cond > 0) {
+        if (++st.tick >= 10) { st.tick = 0; if (st.cond === 1) st.cond = 2; if (!o.go) st.cond = 3; }
+        var rl = SIN3[st.tick], rr = SIN1[st.tick], p1 = P1[st.tick], p2 = P2[st.tick], ratio = 2;
+        if (st.cond === 1) { if (st.tick < 5) ratio = 1; else st.cond = 2; }
+        if (st.cond === 3) { if (st.tick < 5) ratio = 1; else st.cond = 0; }
+        for (i = 8; i < 12; i++) V[i] += tr(rr * DR * ROLL[i] * ratio);
+        var tmp = 0; if (rl < 0) { tmp = 4; rl = -rl; }
+        for (i = tmp; i < tmp + 4; i++) V[i] += tr(rl * DL * LEN[i] * ratio);
+        if (st.cond === 2) {
+          for (i = 0; i < 4; i++) { V[i] += tr(p1 * DP * PIT[i] * Y1); V[i + 4] += tr(p2 * DP * PIT[i + 4] * Y1); }
+          if (st.steer !== 0 || Math.abs(X1) > 0.1) {      // steering is spread over the swing phases
+            var sg = -tr(X1 * 250), tk = st.tick;
+            if (tk === 2 || tk === 3 || tk === 4) { if (sg > 0) st.steer += sg; else st.steer = (tk === 4) ? 0 : tr(st.steer / 2); }
+            if (tk === 7 || tk === 8 || tk === 9) { if (sg < 0) st.steer -= sg; else st.steer = (tk === 9) ? 0 : tr(st.steer / 2); }
+          }
+          V[12] += st.steer; V[13] -= st.steer;
+        }
+      }
+      return V;
+    }
+    return { st: st, step: step };
+  }
+  return { make: make, IDS: IDS };
+})();
+var WK = { gen: WALK.make(), on: false, go: false, acc: 0, T: 0.135, prev: null, cur: null, ids: WALK.IDS.map(function (pid) { return PM.pid2k[pid]; }), A: { x: 0, y: 0 }, B: { x: 0, y: 0 }, keys: {} };
+function wVal(id) { return +$(id).value; }
+function wDeg(V) { return V.map(function (v, i) { var k = WK.ids[i]; return clampDeg(k, A.servos[k].sign * (v - 7500) * K_DEG); }); }
+function wAxis(neg, pos) { return (WK.keys[pos] ? 1 : 0) - (WK.keys[neg] ? 1 : 0); }
+function walkPose() {      // next gait pose (one every SPD x 15 ms)
+  var cl = function (v) { return Math.max(-1, Math.min(1, v)); };
+  WK.prev = WK.cur;
+  WK.cur = wDeg(WK.gen.step({ go: WK.go, X1: cl(WK.A.x + wAxis('ArrowLeft', 'ArrowRight')), Y1: cl(WK.A.y + wAxis('ArrowDown', 'ArrowUp')), X2: cl(WK.B.x + wAxis('a', 'd')), Y2: cl(WK.B.y + wAxis('s', 'w')), len: wVal('wLen'), roll: wVal('wRoll'), pitch: wVal('wPit') }));
+  if ($('wRobot').checked && RB.writer) {      // the robot interpolates between poses itself (SPD ticks), like the sample program
+    var r = targetsRaw(); WK.ids.forEach(function (k, i) { r[k] = rawOf(k, WK.cur[i]); });
+    RB.retry = 0; rbSend(poseBytes(r, Math.round(WK.T / 0.015)), true);
+  }
+  if (!WK.go && WK.gen.st.cond === 0) { WK.on = false; wRender(); }
+}
+function walkTick(dt) {
+  if (P.playing) { WK.on = false; wRender(); return; }
+  WK.acc += dt;
+  while (WK.on && WK.acc >= WK.T) { WK.acc -= WK.T; walkPose(); }
+  var a = Math.min(1, WK.acc / WK.T); if (!WK.on) a = 1;
+  WK.ids.forEach(function (k, i) { setTarget(k, WK.prev[i] + (WK.cur[i] - WK.prev[i]) * a); });
+  wTick();
+}
+function walkStart() {
+  pausePlay(); applyPose(PRESETS.zero); WK.gen = WALK.make(); WK.T = wVal('wSpd') * 0.015;
+  WK.cur = WK.ids.map(function (k) { return target[k]; }); WK.prev = WK.cur; WK.go = true; WK.on = true; WK.acc = WK.T; wRender();
+}
+function wTick() { var s = WK.gen.st; $('wTick').textContent = WK.on ? 'cond ' + s.cond + ' · tick ' + s.tick : ''; $('wState').textContent = t(WK.on ? ['walkIdle', 'walkStarting', 'walkWalking', 'walkStopping'][s.cond] : 'walkIdle'); }
+function wRender() { $('wGo').textContent = t(WK.on && WK.go ? 'walkStop' : 'walkStart'); $('wGo').classList.toggle('danger', WK.on && WK.go); $('wGo').classList.toggle('primary', !(WK.on && WK.go)); wTick(); }
+function makePad(el, v) {
+  var knob = el.firstElementChild;
+  function draw() { knob.style.left = (50 + v.x * 38) + '%'; knob.style.top = (50 - v.y * 38) + '%'; }
+  function set(e) { var r = el.getBoundingClientRect(); v.x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width - 0.5) / 0.38)); v.y = Math.max(-1, Math.min(1, -((e.clientY - r.top) / r.height - 0.5) / 0.38)); draw(); }
+  function up() { el.dragging = false; if (!$('wHold').checked) { v.x = 0; v.y = 0; draw(); } }
+  el.addEventListener('pointerdown', function (e) { el.setPointerCapture(e.pointerId); el.dragging = true; set(e); });
+  el.addEventListener('pointermove', function (e) { if (el.dragging) set(e); });
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); draw();
+  return draw;
+}
+(function () {
+  var dA = makePad($('padA'), WK.A), dB = makePad($('padB'), WK.B);
+  $('wHold').addEventListener('change', function () { if (!this.checked) { WK.A.x = WK.A.y = WK.B.x = WK.B.y = 0; dA(); dB(); } });
+  $('wGo').addEventListener('click', function () { if (!WK.on) walkStart(); else if (WK.go) { WK.go = false; wRender(); } });
+  [['wLen', 'wLenV', function (v) { return (+v).toFixed(2); }], ['wRoll', 'wRollV', function (v) { return (+v).toFixed(2); }], ['wPit', 'wPitV', function (v) { return (+v).toFixed(2); }], ['wSpd', 'wSpdV', function (v) { return Math.round(v * 15) + ' ms'; }]].forEach(function (a) {
+    $(a[0]).addEventListener('input', function () { $(a[1]).textContent = a[2](this.value); if (a[0] === 'wSpd') WK.T = this.value * 0.015; });
+  });
+  document.addEventListener('keydown', function (e) { if (!WK.on || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName) && e.target.type !== 'range') return; var k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if ('ArrowUpArrowDownArrowLeftArrowRightwasd'.indexOf(k) >= 0) { WK.keys[k] = true; e.preventDefault(); } });
+  document.addEventListener('keyup', function (e) { var k = e.key.length === 1 ? e.key.toLowerCase() : e.key; delete WK.keys[k]; });
+  wRender();
+})();
+
 // ------------------------------------------------------------------ HUD wiring
 function refreshRun() { $('bRun').classList.toggle('on', !S.run); $('bRun').textContent = t('freeze'); }
 $('bRun').addEventListener('click', function () { S.run = !S.run; refreshRun(); });
@@ -837,7 +968,7 @@ function applyLang() {
   $('stage').setAttribute('data-drop', t('drop')); $('bLang').textContent = LANG === 'zh' ? 'EN' : '中文'; $('bLang2').textContent = $('bLang').textContent;
   groupEls.forEach(function (g) { g.h.firstChild.textContent = t('g_' + g.key); g.h.querySelector('small').textContent = t('nServos', g.n); });
   A.servos.forEach(function (s, k) { ui[k].lbl.innerHTML = servoLabel(s, k); });
-  refreshRun(); refreshSweep(); refreshList(); renderPma(); renderRb(); renderAudio(); renderInfo(); updatePlayUI(true); S.statT = 0; if (S.ready) status(performance.now());
+  refreshRun(); refreshSweep(); refreshList(); renderPma(); renderRb(); renderAudio(); wRender(); renderInfo(); updatePlayUI(true); S.statT = 0; if (S.ready) status(performance.now());
 }
 $('bLang').addEventListener('click', function () { LANG = LANG === 'zh' ? 'en' : 'zh'; try { localStorage.setItem('pmsim.lang', LANG); } catch (e) {} applyLang(); });
 applyLang();

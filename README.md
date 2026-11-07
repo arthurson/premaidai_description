@@ -15,6 +15,7 @@ PreMaid AI（プリメイドAI，DMM 桌面機械人偶像）嘅模型同工具�
 | 物理模擬 | three.js 畫面 ＋ MuJoCo 3.17 WASM，3 頭 ＋ 5＋5 手 ＋ 6＋6 腳 ＝ 25 粒位置舵機，有重力、摩擦、扭力上限，失衡會跌 |
 | 動作庫 | 讀取 `pma/` 入面嘅 `.pma`，一撳就播；亦可以自己載入或者拖放 |
 | 音樂同步 | 動作同音樂一齊播、一齊停、一齊跳時間、跟速度；可微調偏移 |
+| 步行 | 正弦表步態（來自 @kazzlog 嘅 pm_sample）：搖桿控制前進、後退、轉向、腰轉、前傾／蹲低，可同時送去真機 |
 | 真機控制 | Web Serial（藍牙 SPP）：同步 slider、串流 PMA、脫力、T 待機、電量、stretch／speed |
 | 手機／平板 | 左右面板變抽屜，觸控友善 |
 | ROS | `robots/`、`urdf/`、`launch/` 保留原有 URDF／xacro，可用 RViz 睇 |
@@ -43,6 +44,7 @@ python -m http.server            # 然後開 http://localhost:8000/web/premaid-s
 | ⚙ 模擬設定 | 重力、顯示重心、**❄ 凍結物理**、摩擦 μ、剛度 kp、播放方式（平滑／逐幀跳）、模擬狀態 |
 | 左欄 · 動作 | 載入 .pma、動作清單、音樂（載入、音量）、進階（音樂偏移、精簡 PMA 匯出、舵機對照表） |
 | 左欄 · 實機 | 連接真機、控制模式、速度、送出姿勢、脫力、進階指令 |
+| 左欄 · 步行 | 開始／收步、兩個搖桿（↑↓ 前後、←→ 轉向；腰轉、前傾／蹲低）、步幅／搖擺／前後擺／步頻、同步送去真機。鍵盤：方向鍵 ＝ 左搖桿，WASD ＝ 右搖桿 |
 | 右欄 | 預設姿勢、25 粒舵機 slider（粗線 ＝ 扭力負載，橙色 ＝ 飽和）、工具（掃描、複製／貼上姿勢 JSON） |
 | 底部 | ▶ 播放／⏸ 暫停、■ 停止、進度條、🎵 音樂開關、🔁 循環、速度 |
 
@@ -66,7 +68,15 @@ pma/
 
 **自己嘅檔案**：📂 載入 .pma，或者將 `.pma`（可連同音檔）拖到畫面；音檔亦可以單獨用「🎵 載入音樂」加。
 
-**關於 `.wsdcf`**：同名嘅 `.wsdcf` 係加密容器（`video/mp4`、AES-128-CBC、要向 `api.webstream.ne.jp` 取版權金鑰），瀏覽器播唔到，本專案亦唔包含解密。需要聲音嘅話請自行提供一般音檔（例如自己合法擁有嘅 mp3／m4a）。`make_index.py` 只會將佢標記做「加密」，介面會顯示提示。
+**關於 `.wsdcf`**：同名嘅 `.wsdcf` 係加密容器（`video/mp4`、AES-128-CBC、要向 `api.webstream.ne.jp` 取版權金鑰），瀏覽器播唔到，本專案亦唔包含解密。需要聲音嘅話請自行提供一般音檔（例如自己合法擁有嘅 mp3／m4a）。`.wsdcf` 唔使放入 repo（已加入 `.gitignore`）；如果仍然放喺 `pma/`，`make_index.py` 會標記做「加密」，介面會顯示提示。
+
+## 步行
+
+左欄「步行」分頁。步態係開環（冇平衡回饋）：10 格正弦表產生 17 粒舵機（腿、肩前後、髖旋轉、頭）嘅 raw 值，每 SPD × 15 ms 一個 pose，pose 之間補間；開始時先設零位 T-pose，停止時會行完呢一步先收步。
+
+* 模擬入面：我用 MuJoCo 喺伺服器跑過，預設參數下前進約 8 cm／秒、唔跌（13.5 秒行咗 110 cm，略向左偏約 34°），後退同原地踏步穩定，轉向搖桿可原地轉彎。
+* 真機：剔「同步送去真機」就會用直接 pose 封包（SPD ＝ 步頻 tick）串流。**請先吊起機身**，手放喺電源附近。
+* 步態同常數來自 [kazzlog/pm_sample](https://github.com/kazzlog/pm_sample)（Apache-2.0），本專案重新實作。
 
 ## 連接真機（實機分頁）
 
@@ -141,7 +151,7 @@ premaidai_description/
 
 ## 已知限制
 
-* 標「推定」嘅舵機（髖旋轉、頭、上臂／手腕旋轉）絕對方向無法由資料確定；動作鏡像咗就喺舵機對照表剔「反向」。
+* 標「推定」嘅舵機（髖旋轉、頭、上臂／手腕旋轉）絕對方向無法由資料確定；25 粒舵機嘅方向同 [chikuta/premaidai_controller](https://github.com/chikuta/premaidai_controller) 嘅 `joint_config.yaml` 完全一致（頭轉向、頭側傾兩粒參考佢反轉咗），但仍然冇真機驗證。動作鏡像咗就喺舵機對照表剔「反向」。
 * 模擬同真機有差異（摩擦、重心、舵機特性），模擬站得穩唔代表真機一定穩。
 * 手機瀏覽器只有部分 Android Chrome 支援 Web Serial；iOS／iPadOS 只可以用模擬同預覽。
 * `.wsdcf` 加密音樂唔支援，見上。
@@ -149,6 +159,6 @@ premaidai_description/
 ## 致謝同授權
 
 * ROS 描述檔源自 [chikuta/premaidai_description](https://github.com/chikuta/premaidai_description)；模型係黑イワシ（[@Schwarz_Sardine](https://twitter.com/Schwarz_Sardine)）[PremaidAI_Model](https://github.com/kuroiwasi/PremaidAI_Model) 嘅分解重組（Apache-2.0，已獲許可）。
-* 通訊協議：[neon-izm/PremaindAI_TechVerification](https://github.com/neon-izm/PremaindAI_TechVerification)；韌體參數：[arthurson/premaiduino2](https://github.com/arthurson/premaiduino2)；其他參考：[プリメイドAIパーツ軽量](https://drive.google.com/file/d/18qxGj2l_tFbyiChA9kbnJ-sgjDKE4dCX/view)。
+* 通訊協議：[neon-izm/PremaindAI_TechVerification](https://github.com/neon-izm/PremaindAI_TechVerification)；步態：[kazzlog/pm_sample](https://github.com/kazzlog/pm_sample)；舵機方向交叉驗證：[chikuta/premaidai_controller](https://github.com/chikuta/premaidai_controller)（MIT）；韌體參數：[arthurson/premaiduino2](https://github.com/arthurson/premaiduino2)；其他參考：[プリメイドAIパーツ軽量](https://drive.google.com/file/d/18qxGj2l_tFbyiChA9kbnJ-sgjDKE4dCX/view)。
 * 物理：[MuJoCo](https://github.com/google-deepmind/mujoco)（Apache-2.0）；畫面：[three.js](https://threejs.org/)（MIT）。
 * 本專案採用 [Apache License 2.0](LICENSE)。`pma/` 入面嘅動作同音樂版權屬原權利人，只作個人驗證用途。

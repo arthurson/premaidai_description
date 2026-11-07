@@ -52,6 +52,8 @@ LABEL = {  # joint suffix -> (zh, en)
 # +1/+1 gives a median survival of >=40 s (5/10 never fall) versus 6.6 s (1/10) for -1/-1, and flipping only hip or only ankle is no better.
 # inferred=True: absolute direction could NOT be derived from the data (mirror pairs are correct, the pair as a
 # whole may be flipped) -> the web UI has a per-servo flip checkbox.
+# head yaw/roll (0x05/0x07): -1, taken from chikuta/premaidai_controller config/joint_config.yaml (an independent ros_control bridge for the real robot);
+# with these two flips all 25 signs agree with that file.  They stay inferred=True: the data alone cannot settle the absolute direction.
 #            joint      pma_id sign  fw_min fw_max  home  baseline inferred
 PMA_CAL = {
     'r_shy_joint': (0x02, +1, 4300, 11500, 10200, 7500, False), 'l_shy_joint': (0x04, -1, 3500, 10700, 4700, 7500, False),
@@ -61,8 +63,8 @@ PMA_CAL = {
     'r_kny_joint': (0x12, -1, 3950, 7600, 7500, 7500, False),   'l_kny_joint': (0x14, +1, 7400, 11050, 7500, 7500, False),
     'r_aky_joint': (0x16, +1, 5700, 8300, 7500, 7500, False),   'l_aky_joint': (0x18, -1, 6750, 9350, 7550, 7500, False),
     'r_akx_joint': (0x1A, +1, 6800, 9150, 7825, 7500, False),    'l_akx_joint': (0x1C, +1, 6200, 8450, 7450, 7500, False),
-    'head_ny_joint': (0x03, +1, 7200, 8400, 7500, 7500, False), 'head_nz_joint': (0x05, +1, 5000, 10000, 7500, 7500, True),
-    'head_nx_joint': (0x07, +1, 6900, 8100, 7500, 7500, True),
+    'head_ny_joint': (0x03, +1, 7200, 8400, 7500, 7500, False), 'head_nz_joint': (0x05, -1, 5000, 10000, 7500, 7500, True),
+    'head_nx_joint': (0x07, -1, 6900, 8100, 7500, 7500, True),
     'r_shx_joint': (0x09, +1, 7450, 10350, 9500, 9500, False),  'l_shx_joint': (0x0B, +1, 4550, 7550, 5500, 5500, False),
     'r_ely_joint': (0x0D, +1, 4000, 11000, 7500, 7500, True),   'l_ely_joint': (0x0F, -1, 4000, 11000, 7500, 7500, True),
     'r_elx_joint': (0x11, +1, 7100, 11000, 7500, 7500, False),  'l_elx_joint': (0x13, +1, 4000, 7900, 7500, 7500, False),

@@ -28,6 +28,10 @@
 * 音檔來源：`index.json` 嘅 `audio`、手動 🎵 載入、或者連同 `.pma` 拖放（用 object URL，唔會上傳）。
 * `drm` 項（`.wsdcf`）只用嚟顯示提示，唔會嘗試解密。
 
+## 步行發生器
+
+`WALK.make().step({go, X1, Y1, X2, Y2, len, roll, pitch})` 每次回傳 17 個 raw 值（`WALK.IDS` 順序，中心 7500）。`cond` 狀態：0 待機、1 起步半步、2 步行、3 收步半步。模擬入面每 `SPD × 15 ms` 生成一個 pose，舵機目標喺兩個 pose 之間線性補間；送去真機時每個 pose 發一個直接 pose 封包，SPD ＝ 步頻 tick。來源：kazzlog/pm_sample（Apache-2.0）。
+
 ## 真機通訊
 
 Web Serial，115200 8N1。直接 pose 封包 `LEN 18 00 SPD {pid lo hi}×25 XOR`；實際 raw 值 ＝ `7500 + sign × θ / (270/8000)`，再 clamp 到「PMA 範圍 ∩ `PreMaidServo.cs` 安全範圍」。其餘封包見根目錄 README。
