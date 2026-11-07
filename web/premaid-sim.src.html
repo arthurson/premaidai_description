@@ -83,6 +83,7 @@
     input[type=number], input[type=text] { font-size: 16px; min-height: 34px; } input[type=range] { min-height: 30px; }
     .servo { grid-template-columns: 80px minmax(0, 1fr) 58px 36px; padding: 5px 0; } .servo button { min-height: 32px; } .plist button { padding: 10px; }
   }
+  .chip:has(input:disabled) { opacity: .45; cursor: default; }
 </style>
 </head>
 <body>
@@ -126,10 +127,16 @@
       <label class="btn primary wide" data-i18n-title="tipLoad"><input type="file" id="fPma" accept=".pma,.txt" hidden><span data-i18n="loadBtn"></span></label>
       <select id="pSec" style="display:none; width:100%; margin-top:8px" data-i18n-title="tipSec"></select>
       <div id="pList" class="plist"></div>
+      <div class="lbl2" data-i18n="audTitle"></div>
+      <div class="status"><span id="audName" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><label class="btn sm" data-i18n-title="audLoadTip"><input type="file" id="fAud" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac" hidden><span data-i18n="audLoad"></span></label></div>
+      <div class="field" style="grid-template-columns:48px minmax(0,1fr) 38px"><span data-i18n="audVol"></span><input type="range" id="aVol" min="0" max="1" step="0.05" value="0.8"><span id="aVolV" class="mono">80</span></div>
+      <div id="audNote" class="warnbox" hidden></div>
       <div id="pInfo" class="info sub"></div>
       <div class="info sub" data-i18n="pmaNote"></div>
       <details class="sec"><summary data-i18n="advanced"></summary>
-        <div class="lbl2" style="margin-top:4px" data-i18n="thinTitle"></div>
+        <div class="lbl2" style="margin-top:4px" data-i18n="audOffL"></div>
+        <div class="field" style="grid-template-columns:0 minmax(0,1fr) 62px"><span></span><input type="range" id="aOff" min="-2000" max="2000" step="50" value="0"><span id="aOffV" class="mono">0 ms</span></div>
+        <div class="lbl2" data-i18n="thinTitle"></div>
         <div class="group" style="align-items:center"><span data-i18n="rbThinA"></span><input type="number" id="rbThin" min="2" value="2" style="width:56px"><span data-i18n="rbThinB"></span><button id="rbExp" data-i18n="rbExp"></button></div>
         <div class="lbl2" data-i18n="mapSummary"></div><p class="sub" data-i18n="mapNote"></p><table class="map"><tbody id="pmaMap"></tbody></table>
       </details>
@@ -167,6 +174,7 @@
     <div class="ctl"><button id="pPlay" class="primary" disabled></button><button id="pStop" data-i18n="stop" disabled></button></div>
     <div id="seekrow"><small id="pmaState"></small><input type="range" id="pSeek" min="0" max="1000" value="0" disabled><span id="pTime" class="mono">—</span></div>
     <div class="ctl2">
+      <label class="chip" data-i18n-title="tipAud"><input type="checkbox" id="aOn" checked disabled><span>🎵</span></label>
       <label class="chip" data-i18n-title="tipLoop"><input type="checkbox" id="pLoop" checked><span>🔁</span></label>
       <select id="sSpeed" data-i18n-title="tipSpeed"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option></select>
     </div>
@@ -275,6 +283,16 @@ Object.assign(I18N.en, {
   rbConn: '🔌 Connect robot', rbDisc: '⏏ Disconnect', rbModeL: 'Control mode', mOff: 'Sim only', mLive: 'Sync sliders', mStream: 'Play PMA', rbSpdL: 'Robot speed', rbSpdTip: 'SPD: smaller = faster',
   rbOnce: 'Send current pose', rbT: 'T standby', rbRel: '⚠ Release all', rbSafe: 'Safe limits (keep on)', rbBat: '🔋 Battery',
   rbWarnS: 'First time: hang the body, use a large SPD (slow) and keep a hand near the power switch. Pair the PreMaid over Bluetooth in your OS first, then pick the COM port.'
+});
+Object.assign(I18N.zh, {
+  drop: '放開 .pma／音樂檔案載入', audTitle: '音樂', audNone: '未有音樂', audLoad: '🎵 載入音樂', audLoadTip: '載入 mp3 / m4a / wav / ogg 等（亦可以連同 .pma 一齊拖放）', audVol: '音量', audOffL: '音樂同步偏移（+ = 音樂提早）', tipAud: '音樂開／關',
+  libErr: '讀唔到 pma/index.json。要用 http(s) 開（例如 python -m http.server），或者直接撳「載入 .pma」。', libEmpty: 'pma/ 入面未有 .pma；放檔案後跑 python pma/make_index.py。',
+  audDrm: '搵到同名 .wsdcf，但佢係加密格式（AES-128 ＋ 版權伺服器），瀏覽器播唔到。請放同名 .mp3／.m4a 入 pma/ 再跑 make_index.py，或者撳「載入音樂」。', audErr: '音樂檔載入失敗（格式唔支援？）'
+});
+Object.assign(I18N.en, {
+  drop: 'Drop a .pma and/or audio file', audTitle: 'Music', audNone: 'no music', audLoad: '🎵 Load music', audLoadTip: 'Load mp3 / m4a / wav / ogg … (or drop it together with the .pma)', audVol: 'Volume', audOffL: 'Music sync offset (+ = music earlier)', tipAud: 'Music on / off',
+  libErr: 'Cannot read pma/index.json. Open the page over http(s) (e.g. python -m http.server) or use "Load .pma".', libEmpty: 'No .pma in pma/ yet; add files and run python pma/make_index.py.',
+  audDrm: 'A same-name .wsdcf exists, but it is an encrypted container (AES-128 + rights server) that a browser cannot play. Put a same-name .mp3/.m4a in pma/ and re-run make_index.py, or use "Load music".', audErr: 'Could not load the audio file (unsupported format?)'
 });
 var LANG = 'zh';
 try { var _l = localStorage.getItem('pmsim.lang'); if (_l === 'zh' || _l === 'en') LANG = _l; } catch (e) {}
@@ -491,7 +509,7 @@ function frame(now) {
     if (SW.on) sweepTick(dt);
     if (P.playing && S.run && P.total > 0) playTick(dt * S.speed);
     if (S.run) advance(dt * S.speed); else setCtrl();
-    updateScene(); status(now); rbTick(now);
+    updateScene(); status(now); rbTick(now); audioSync();
   }
   controls.update(); renderer.render(scene, camera);
 }
@@ -589,21 +607,68 @@ function loadSections(secs, file) {
   secs.forEach(function (c, i) { var o = document.createElement('option'); o.value = i; o.textContent = (i + 1) + '. ' + (c.name || '(no name)'); sel.appendChild(o); });
   sel.style.display = secs.length > 1 ? '' : 'none'; useSection(0);
 }
-function loadFile(f) { if (!f) return; var r = new FileReader(); r.onload = function () { markActive(-1); loadSections(decodePma(r.result), f.name); }; r.readAsArrayBuffer(f); }
+function loadFile(f, af) { if (!f) return; var r = new FileReader(); r.onload = function () { markActive(-1); LIB.cur = -1; audioSet('', '', ''); loadSections(decodePma(r.result), f.name); if (af) audioFile(af); }; r.readAsArrayBuffer(f); }
+function loadFiles(fs) {      // any mix of .pma + audio (+ encrypted .wsdcf, which only triggers the explanation)
+  var pm = null, au = null, dr = '', AUD = /\.(mp3|m4a|aac|ogg|opus|wav|flac)$/i; Array.prototype.forEach.call(fs, function (f) { if (/\.wsdcf$/i.test(f.name)) dr = f.name; else if (AUD.test(f.name) || /^audio\//.test(f.type)) au = au || f; else pm = pm || f; });
+  if (pm) loadFile(pm, au); else if (au) audioFile(au); else if (dr) { audioSet('', '', dr); }
+}
 function b64bytes(b) { var bin = atob(b), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
-$('fPma').addEventListener('change', function () { loadFile(this.files[0]); this.value = ''; });
-function refreshList() { Array.prototype.forEach.call($('pList').children, function (b) { b.lastChild.textContent = t('nFrames', b.getAttribute('data-n')) + ' · ' + b.getAttribute('data-t'); }); }
+$('fPma').addEventListener('change', function () { loadFiles(this.files); this.value = ''; });
+function refreshList() { Array.prototype.forEach.call($('pList').children, function (b) { if (b.getAttribute('data-n')) b.lastChild.textContent = t('nFrames', b.getAttribute('data-n')) + ' · ' + b.getAttribute('data-t'); }); }
 function markActive(i) { Array.prototype.forEach.call($('pList').children, function (b, n) { b.classList.toggle('on', n === i); }); }
-(function () {      // the 10 motions of premaiduino2/files/pma.zip, embedded by make_premaid_mjcf.py: click = load + play
-  var box = $('pList'), list = A.samples || [];
-  if (!list.length) { box.style.display = 'none'; return; }
-  list.forEach(function (sm, i) {
-    var bytes = b64bytes(sm.b64), tl = buildTimeline(bytes), b = document.createElement('button');
-    b.innerHTML = '<span></span><span></span>'; b.setAttribute('data-n', tl.frames.length); b.setAttribute('data-t', fmt(tl.total).replace(/\.\d$/, ''));
-    b.firstChild.textContent = sm.name || sm.file.replace(/\.pma$/i, ''); b.title = sm.file;
-    b.addEventListener('click', function () { loadSections([{ name: sm.name, bytes: bytes }], sm.file); markActive(i); $('pPlay').click(); });
-    box.appendChild(b);
-  });
+var LIB = { base: '../pma/', items: [], cur: -1 };      // pma/index.json (written by pma/make_index.py): { title, pma, audio?, drm? }
+var AU = { el: new Audio(), name: '', drm: '', err: false, obj: '' };
+AU.el.preload = 'auto'; AU.el.volume = 0.8;
+function audioSet(src, name, drm) {
+  var a = AU.el; a.pause(); if (AU.obj && AU.obj !== src) { URL.revokeObjectURL(AU.obj); AU.obj = ''; }
+  AU.name = name || ''; AU.drm = drm || ''; AU.err = false;
+  if (src) { a.src = src; a.load(); } else { a.removeAttribute('src'); a.load(); }
+  renderAudio();
+}
+function audioFile(f) { if (!f) return; var u = URL.createObjectURL(f); audioSet(u, f.name, ''); AU.obj = u; }
+function renderAudio() {
+  var has = !!AU.el.getAttribute('src');
+  $('audName').textContent = has ? '🎵 ' + AU.name : t('audNone');
+  var note = AU.err ? t('audErr') : (!has && AU.drm ? t('audDrm') : ''); $('audNote').textContent = note; $('audNote').hidden = !note;
+  $('aOn').disabled = !has;
+}
+AU.el.addEventListener('error', function () { if (AU.el.getAttribute('src')) { AU.err = true; renderAudio(); } });
+function audioSync() {      // music follows the motion clock: plays only while the motion plays; re-seeks when it drifts (>0.25 s), loops, seeks or changes speed
+  var a = AU.el; if (!a.getAttribute('src') || AU.err) return;
+  if (!(P.playing && S.run && P.frames)) { if (!a.paused) a.pause(); return; }
+  var want = P.t / 1000 + (+$('aOff').value) / 1000;
+  if (want < 0 || (a.duration && want >= a.duration)) { if (!a.paused) a.pause(); return; }
+  if (a.playbackRate !== S.speed) a.playbackRate = S.speed;
+  if (a.paused) { a.currentTime = want; a.play().catch(function () {}); }
+  else if (Math.abs(a.currentTime - want) > 0.25) a.currentTime = want;
+}
+$('fAud').addEventListener('change', function () { audioFile(this.files[0]); this.value = ''; });
+$('aVol').addEventListener('input', function () { AU.el.volume = +this.value; $('aVolV').textContent = Math.round(this.value * 100); });
+$('aOff').addEventListener('input', function () { $('aOffV').textContent = this.value + ' ms'; });
+$('aOn').addEventListener('change', function () { AU.el.muted = !this.checked; });
+function libFetch(it) {
+  if (it.secs) return Promise.resolve(it);
+  return fetch(LIB.base + encodeURIComponent(it.pma)).then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }).then(function (ab) { it.secs = decodePma(ab); if (!it.secs.length) throw new Error('format'); return it; });
+}
+function libLoad(i) {
+  var it = LIB.items[i]; if (!it) return;
+  libFetch(it).then(function () {
+    loadSections(it.secs, it.pma); markActive(i); LIB.cur = i;
+    audioSet(it.audio ? LIB.base + encodeURIComponent(it.audio) : '', it.audio || '', it.drm || '');
+    $('pPlay').click();
+  }, function () { P.state = { k: 'errFmt' }; P.infoD = { k: 'errFmtInfo' }; renderPma(); });
+}
+(function () {
+  var box = $('pList');
+  function msg(key) { box.innerHTML = ''; var d = document.createElement('div'); d.className = 'sub'; d.style.padding = '8px'; d.setAttribute('data-i18n', key); d.textContent = t(key); box.appendChild(d); }
+  fetch(LIB.base + 'index.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (list) {
+    LIB.items = list; if (!list.length) { msg('libEmpty'); return; }
+    list.forEach(function (it, i) {
+      var b = document.createElement('button'); b.innerHTML = '<span></span><span></span>'; b.firstChild.textContent = it.title; b.title = it.pma + (it.audio ? ' + ' + it.audio : '');
+      b.addEventListener('click', function () { libLoad(i); }); box.appendChild(b);
+      libFetch(it).then(function () { var tl = buildTimeline(it.secs[0].bytes); b.setAttribute('data-n', tl.frames.length); b.setAttribute('data-t', fmt(tl.total).replace(/\.\d$/, '')); refreshList(); }, function () { b.disabled = true; });
+    });
+  }).catch(function () { msg('libErr'); });
 })();
 $('pSec').addEventListener('change', function () { useSection(+this.value); });
 $('pPlay').addEventListener('click', function () {
@@ -617,7 +682,7 @@ $('pSeek').addEventListener('input', function () { if (!P.frames) return; P.t = 
 $('pLoop').addEventListener('change', function () { P.loop = this.checked; });
 $('pInterp').addEventListener('change', function () { P.interp = this.value === '1'; if (P.frames) poseAt(P.t); });
 ['dragenter', 'dragover'].forEach(function (ev) { $('stage').addEventListener(ev, function (e) { e.preventDefault(); $('stage').classList.add('drag'); }); });
-['dragleave', 'drop'].forEach(function (ev) { $('stage').addEventListener(ev, function (e) { e.preventDefault(); $('stage').classList.remove('drag'); if (ev === 'drop' && e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]); }); });
+['dragleave', 'drop'].forEach(function (ev) { $('stage').addEventListener(ev, function (e) { e.preventDefault(); $('stage').classList.remove('drag'); if (ev === 'drop' && e.dataTransfer.files.length) loadFiles(e.dataTransfer.files); }); });
 function setFlip(k, on) {      // flip one servo's direction: sign, travel (and the live MuJoCo joint/ctrl range) are mirrored
   var s = A.servos[k]; on = !!on; if (!!s.flip === on) return;
   var lo = s.lo, hi = s.hi; s.lo = -hi; s.hi = -lo; s.flip = on; s.sign = -s.sign;
@@ -772,7 +837,7 @@ function applyLang() {
   $('stage').setAttribute('data-drop', t('drop')); $('bLang').textContent = LANG === 'zh' ? 'EN' : '中文'; $('bLang2').textContent = $('bLang').textContent;
   groupEls.forEach(function (g) { g.h.firstChild.textContent = t('g_' + g.key); g.h.querySelector('small').textContent = t('nServos', g.n); });
   A.servos.forEach(function (s, k) { ui[k].lbl.innerHTML = servoLabel(s, k); });
-  refreshRun(); refreshSweep(); refreshList(); renderPma(); renderRb(); renderInfo(); updatePlayUI(true); S.statT = 0; if (S.ready) status(performance.now());
+  refreshRun(); refreshSweep(); refreshList(); renderPma(); renderRb(); renderAudio(); renderInfo(); updatePlayUI(true); S.statT = 0; if (S.ready) status(performance.now());
 }
 $('bLang').addEventListener('click', function () { LANG = LANG === 'zh' ? 'en' : 'zh'; try { localStorage.setItem('pmsim.lang', LANG); } catch (e) {} applyLang(); });
 applyLang();

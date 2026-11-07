@@ -238,14 +238,7 @@ def main():
     xml = xml.replace('@ZSTART@', '%.5f' % z0)
     open(XML_OUT, 'w', encoding='utf-8').write(xml); print('wrote', XML_OUT, len(xml) // 1024, 'KB, base z %.4f' % z0)
     pma = [dict(joint=j, pid=v[0], sign=v[1], rawLo=v[2] - v[4] + v[5], rawHi=v[3] - v[4] + v[5], inferred=v[6]) for j, v in PMA_CAL.items()]
-    samples = []
-    sdir = os.path.join(PKG, 'web', 'samples')
-    for fn in (sorted(os.listdir(sdir)) if os.path.isdir(sdir) else []):
-        if fn.lower().endswith('.pma'):
-            t = open(os.path.join(sdir, fn), encoding='utf-8-sig', errors='replace').read()
-            m = re.search(r'\[\u30e2\u30fc\u30b7\u30e7\u30f3\(\d+\)\]\s*\u756a\u53f7=\d+\s*\u540d\u524d=([^\r\n]*)\s*\u30c7\u30fc\u30bf=([0-9A-Fa-f ]+)', t)
-            if m: samples.append(dict(file=fn, name=m.group(1).strip(), b64=base64.b64encode(bytes(int(x, 16) for x in m.group(2).split())).decode()))
-    assets = dict(xml=xml, links=visual, servos=servos, pma=pma, samples=samples, z0=z0, params=dict(kp=KP, kv=KV, armature=ARMATURE, damping=DAMPING, mu=MU, dt=TIMESTEP))
+    assets = dict(xml=xml, links=visual, servos=servos, pma=pma, z0=z0, params=dict(kp=KP, kv=KV, armature=ARMATURE, damping=DAMPING, mu=MU, dt=TIMESTEP))
     if os.path.exists(SRC_HTML):
         html = open(SRC_HTML, encoding='utf-8').read(); assert '/*__ASSETS__*/' in html
         js = 'window.PREMAID=' + json.dumps(assets, separators=(',', ':'), ensure_ascii=False).replace('</', '<\\/') + ';'
