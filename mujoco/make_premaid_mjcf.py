@@ -54,6 +54,8 @@ LABEL = {  # joint suffix -> (zh, en)
 # whole may be flipped) -> the web UI has a per-servo flip checkbox.
 # head yaw/roll (0x05/0x07): -1, taken from chikuta/premaidai_controller config/joint_config.yaml (an independent ros_control bridge for the real robot);
 # with these two flips all 25 signs agree with that file.  They stay inferred=True: the data alone cannot settle the absolute direction.
+# elbow roll (0x11/0x13) and r_wry (0x15) limits widened to what the 10 official motions actually use (elbow up to 11122 / down to 3897 raw, r_wry down to 5916):
+# the nominal limits were 3.5-4 deg too tight, so the simulator clamped those motions (found by the motion check in web/premaid-sim.html).
 #            joint      pma_id sign  fw_min fw_max  home  baseline inferred
 PMA_CAL = {
     'r_shy_joint': (0x02, +1, 4300, 11500, 10200, 7500, False), 'l_shy_joint': (0x04, -1, 3500, 10700, 4700, 7500, False),
@@ -67,8 +69,8 @@ PMA_CAL = {
     'head_nx_joint': (0x07, -1, 6900, 8100, 7500, 7500, True),
     'r_shx_joint': (0x09, +1, 7450, 10350, 9500, 9500, False),  'l_shx_joint': (0x0B, +1, 4550, 7550, 5500, 5500, False),
     'r_ely_joint': (0x0D, +1, 4000, 11000, 7500, 7500, True),   'l_ely_joint': (0x0F, -1, 4000, 11000, 7500, 7500, True),
-    'r_elx_joint': (0x11, +1, 7100, 11000, 7500, 7500, False),  'l_elx_joint': (0x13, +1, 4000, 7900, 7500, 7500, False),
-    'r_wry_joint': (0x15, +1, 3500, 11500, 5000, 7500, True),   'l_wry_joint': (0x17, -1, 3500, 11500, 10000, 7500, True),
+    'r_elx_joint': (0x11, +1, 7100, 11130, 7500, 7500, False),  'l_elx_joint': (0x13, +1, 3870, 7900, 7500, 7500, False),
+    'r_wry_joint': (0x15, +1, 3400, 11500, 5000, 7500, True),   'l_wry_joint': (0x17, -1, 3500, 11500, 10000, 7500, True),
 }
 PULSE_DEG = 270.0 / 8000.0
 def pma_range(joint):
@@ -234,13 +236,56 @@ def zstart(xml):
         lo = min(lo, float(np.min(d.geom_xpos[g][2] + v @ d.geom_xmat[g].reshape(3, 3)[2])))
     return 1 - lo
 
+def kin_chains(xml, servos):
+    """forward-kinematics data of the 4 limb chains (relative to base_link) for the in-browser IK: per joint the body offset/rotation and joint axis,
+    plus a tip point in the last body (hand centre / sole centre).  Everything else (angles, limits) the page already has."""
+    import mujoco
+    m = mujoco.MjModel.from_xml_string(xml); idx = {s['joint']: k for k, s in enumerate(servos)}
+    bid = lambda n: mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n); jn = lambda j: mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, j)
+    spec = {'r_leg': ('r_hip_joint', 'r_foot', True), 'l_leg': ('l_hip_joint', 'l_foot', True), 'r_arm': ('r_uarm_joint', 'r_hand', False), 'l_arm': ('l_uarm_joint', 'l_hand', False)}
+    r6 = lambda a: [round(float(x), 6) for x in a]; out = {}
+    for name, (first, last, ori) in spec.items():
+        chain, b = [], bid(last)
+        while b != bid('base_link'): chain.append(b); b = int(m.body_parentid[b])
+        chain.reverse(); assert chain[0] == bid(first), name
+        js = []
+        for b in chain:
+            j = int(m.body_jntadr[b]); assert m.body_jntnum[b] == 1 and not np.any(m.jnt_pos[j])
+            js.append(dict(k=idx[jn(j)], pos=r6(m.body_pos[b]), quat=r6(m.body_quat[b]), axis=r6(m.jnt_axis[j])))
+        pts = []
+        for g in range(m.ngeom):
+            if m.geom_bodyid[g] != chain[-1] or m.geom_type[g] != mujoco.mjtGeom.mjGEOM_MESH: continue
+            mid = m.geom_dataid[g]; v = m.mesh_vert[m.mesh_vertadr[mid]:m.mesh_vertadr[mid] + m.mesh_vertnum[mid]]
+            R = np.zeros(9); mujoco.mju_quat2Mat(R, m.geom_quat[g]); pts.append(v @ R.reshape(3, 3).T + m.geom_pos[g])
+        pts = np.vstack(pts)
+        if ori:   # foot: centre of the sole
+            lo = pts[:, 2].min(); sole = pts[pts[:, 2] < lo + 0.003]; tip = [sole[:, 0].mean(), sole[:, 1].mean(), lo]
+        else:     # hand: centre of the mesh
+            tip = pts.mean(axis=0)
+        out[name] = dict(joints=js, tip=r6(tip), ori=ori)
+    return out
+
+def mirror_table(xml, servos):
+    """left/right mirror of a pose: servo k takes the joint angle of servo p times m.  m follows from the joint axes at the symmetric zero pose
+    (a reflection reverses the sense of rotation: theta_left = -theta_right if axis_left == M axis_right, +theta_right if axis_left == -M axis_right)."""
+    import mujoco
+    m = mujoco.MjModel.from_xml_string(xml); d = mujoco.MjData(m); mujoco.mj_resetData(m, d); mujoco.mj_kinematics(m, d)
+    jid = lambda n: mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, n); M = np.diag([1.0, -1.0, 1.0]); idx = {s['joint']: k for k, s in enumerate(servos)}
+    Rb = d.xmat[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, 'base_link')].reshape(3, 3); out = []
+    for s in servos:
+        n = s['joint']; pn = 'l_' + n[2:] if n.startswith('r_') else 'r_' + n[2:] if n.startswith('l_') else n
+        a, ap = Rb.T @ d.xaxis[jid(n)], Rb.T @ d.xaxis[jid(pn)]; dp = float(ap @ (M @ a))
+        assert abs(dp) > 0.9, (n, pn, dp)
+        out.append(dict(k=idx[n], p=idx[pn], m=-1 if dp > 0 else 1))
+    return out
+
 def main():
     xml, visual, servos = build()
     z0 = zstart(xml) + 0.04
     xml = xml.replace('@ZSTART@', '%.5f' % z0)
     open(XML_OUT, 'w', encoding='utf-8').write(xml); print('wrote', XML_OUT, len(xml) // 1024, 'KB, base z %.4f' % z0)
     pma = [dict(joint=j, pid=v[0], sign=v[1], rawLo=v[2] - v[4] + v[5], rawHi=v[3] - v[4] + v[5], inferred=v[6]) for j, v in PMA_CAL.items()]
-    assets = dict(xml=xml, links=visual, servos=servos, pma=pma, z0=z0, params=dict(kp=KP, kv=KV, armature=ARMATURE, damping=DAMPING, mu=MU, dt=TIMESTEP))
+    assets = dict(xml=xml, links=visual, servos=servos, pma=pma, chains=kin_chains(xml, servos), mirror=mirror_table(xml, servos), z0=z0, params=dict(kp=KP, kv=KV, armature=ARMATURE, damping=DAMPING, mu=MU, dt=TIMESTEP))
     if os.path.exists(SRC_HTML):
         html = open(SRC_HTML, encoding='utf-8').read(); assert '/*__ASSETS__*/' in html
         js = 'window.PREMAID=' + json.dumps(assets, separators=(',', ':'), ensure_ascii=False).replace('</', '<\\/') + ';'

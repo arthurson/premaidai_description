@@ -88,6 +88,11 @@
   .pad { position: relative; width: 118px; height: 118px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); touch-action: none; margin-bottom: 3px; }
   .pad::before, .pad::after { content: ""; position: absolute; background: var(--line); } .pad::before { left: 50%; top: 8%; bottom: 8%; width: 1px; } .pad::after { top: 50%; left: 8%; right: 8%; height: 1px; }
   .pad i { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 1px 6px rgba(0,0,0,.3); }
+  .rcrow { display: grid; grid-template-columns: 44px 62px repeat(4, minmax(0, 1fr)); gap: 4px; align-items: center; margin: 3px 0; } .rcrow input { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 4px; font: inherit; }
+  #rcList { max-height: 36vh; overflow-y: auto; margin: 8px 0; } #rcName { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font: inherit; }
+  .chkrow { display: grid; grid-template-columns: 74px minmax(0, 1fr) 84px; gap: 6px; align-items: center; font-size: 11px; margin: 2px 0; } .chkrow .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cbar { position: relative; height: 8px; border-radius: 4px; background: var(--line); } .cbar .sf { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 22%, var(--line)); } .cbar .us { position: absolute; top: 1px; bottom: 1px; background: var(--accent); border-radius: 3px; }
+  .cbar.bad .us { background: var(--danger); } .chkrow .tx { text-align: right; color: var(--mute); white-space: nowrap; } .chkrow .tx.bad { color: var(--danger); font-weight: 600; } .chk-sum { color: var(--mute); font-weight: normal; } .chk-sum.bad { color: var(--danger); }
 </style>
 </head>
 <body>
@@ -107,26 +112,13 @@
       <div class="seg"><button data-view="front" data-i18n="vFront"></button><button data-view="back" data-i18n="vBack"></button><button data-view="left" data-i18n="vLeft"></button><button data-view="right" data-i18n="vRight"></button><button data-view="top" data-i18n="vTop"></button><button data-view="iso" data-i18n="vIso"></button></div>
       <button id="bReset" data-i18n="reset" data-i18n-title="tipReset"></button>
       <label class="chip" data-i18n-title="tipPin"><input type="checkbox" id="cPin"><span data-i18n="pin"></span></label>
+      <label class="chip" data-i18n-title="tipIK"><input type="checkbox" id="cIK"><span data-i18n="ikChip"></span></label>
       <button id="bSet" data-i18n-title="setTip">⚙</button>
-    </div>
-    <div id="setcard" hidden>
-      <div class="lbl2" style="margin-top:0" data-i18n="setPhys"></div>
-      <div class="group">
-        <label class="chip"><input type="checkbox" id="cGrav" checked><span data-i18n="grav"></span></label>
-        <label class="chip"><input type="checkbox" id="cCom" checked><span data-i18n="com"></span></label>
-        <button id="bRun" data-i18n-title="tipRun"></button>
-      </div>
-      <div class="field" data-i18n-title="tipMu"><span data-i18n="muL"></span><input type="range" id="rMu" min="0.05" max="1.5" step="0.05"><span id="vMu" class="mono"></span></div>
-      <div class="field" data-i18n-title="tipKp"><span data-i18n="kpL"></span><input type="range" id="rKp" min="2" max="60" step="1"><span id="vKp" class="mono"></span></div>
-      <div class="lbl2" data-i18n="setPlay"></div>
-      <div class="field" data-i18n-title="tipInterp" style="grid-template-columns:70px 1fr"><span data-i18n="interpL"></span><select id="pInterp"><option value="1" data-i18n="smooth"></option><option value="0" data-i18n="stepMode"></option></select></div>
-      <div id="stat" class="mono">…</div>
-      <details><summary data-i18n="modelSummary"></summary><p id="info"></p><p data-i18n="model1" data-i18n-html></p><p data-i18n="model2" data-i18n-html></p><p data-i18n="model3" data-i18n-html></p></details>
     </div>
   </div>
 
   <div id="leftcol" class="panel">
-    <div class="tabs"><button class="on" data-tab="motion" data-i18n="tabMotion"></button><button data-tab="robot" data-i18n="tabRobot"></button><button data-tab="walk" data-i18n="tabWalk"></button></div>
+    <div class="tabs"><button class="on" data-tab="motion" data-i18n="tabMotion"></button><button data-tab="robot" data-i18n="tabRobot"></button><button data-tab="walk" data-i18n="tabWalk"></button><button data-tab="rec" data-i18n="tabRec"></button></div>
     <div id="pane_motion">
       <label class="btn primary wide" data-i18n-title="tipLoad"><input type="file" id="fPma" accept=".pma,.txt" hidden><span data-i18n="loadBtn"></span></label>
       <select id="pSec" style="display:none; width:100%; margin-top:8px" data-i18n-title="tipSec"></select>
@@ -137,6 +129,9 @@
       <div id="audNote" class="warnbox" hidden></div>
       <div id="pInfo" class="info sub"></div>
       <div class="info sub" data-i18n="pmaNote"></div>
+      <details class="sec"><summary><span data-i18n="chkTitle"></span> <small id="chkSum" class="chk-sum"></small></summary>
+        <div id="chkTab"></div><p class="sub" data-i18n="chkNote"></p>
+      </details>
       <details class="sec"><summary data-i18n="advanced"></summary>
         <div class="lbl2" style="margin-top:4px" data-i18n="audOffL"></div>
         <div class="field" style="grid-template-columns:0 minmax(0,1fr) 62px"><span></span><input type="range" id="aOff" min="-2000" max="2000" step="50" value="0"><span id="aOffV" class="mono">0 ms</span></div>
@@ -161,6 +156,27 @@
       <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px" data-i18n-title="wSpdTip"><span data-i18n="wSpd"></span><input type="range" id="wSpd" min="6" max="14" step="1" value="9"><span id="wSpdV" class="mono">135 ms</span></div>
       <label class="chip" style="margin-top:6px"><input type="checkbox" id="wRobot" class="rbc"><span data-i18n="walkRobot"></span></label>
       <p class="sub" style="margin-top:8px" data-i18n="walkNote"></p>
+      <p class="sub" id="wGp" style="margin-top:6px"></p>
+    </div>
+    <div id="pane_rec" hidden>
+      <input type="text" id="rcName" value="My Motion">
+      <button id="rcAdd" class="primary wide" style="margin-top:8px" data-i18n="recAdd"></button>
+      <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px;margin-top:8px" data-i18n-title="recSpdTip"><span data-i18n="recSpd"></span><input type="range" id="rcSpd" min="2" max="60" value="10"><span id="rcSpdV" class="mono">150 ms</span></div>
+      <div id="rcList"></div>
+      <div id="rcInfo" class="info sub"></div>
+      <details class="sec"><summary><span data-i18n="chkTitle"></span> <small id="chkRSum" class="chk-sum"></small></summary>
+        <div id="chkRTab"></div><p class="sub" data-i18n="chkNote"></p>
+      </details>
+      <div class="group"><button id="rcPlay" data-i18n="recPlay"></button><button id="rcExp" data-i18n="recExp"></button><button id="rcClr" class="danger" data-i18n="recClr"></button></div>
+      <div class="lbl2" data-i18n="recTools"></div>
+      <div class="group">
+        <button id="rcMir" data-i18n="recMirror" data-i18n-title="recMirrorTip"></button>
+        <button id="rcImp" data-i18n="recImport" data-i18n-title="recImportTip"></button>
+      </div>
+      <div class="group" style="align-items:center"><span data-i18n="recEveryA"></span><input type="number" id="rcEvery" min="1" value="1" style="width:54px"><span data-i18n="recEveryB"></span>
+        <label class="chip"><input type="checkbox" id="rcComp" checked><span data-i18n="recComp"></span></label></div>
+      <div class="group" style="align-items:center"><span data-i18n="recScaleL"></span><input type="number" id="rcScale" min="0.1" max="10" step="0.25" value="2" style="width:62px"><button id="rcScaleB" data-i18n="recApply"></button></div>
+      <p class="sub" data-i18n="recNote"></p>
     </div>
     <div id="pane_robot" hidden>
       <div class="status"><span id="rbState"></span><span id="rbVolt" class="mono"></span></div>
@@ -173,6 +189,7 @@
       <div class="group"><button id="rbOnce" class="rbc" data-i18n="rbOnce"></button><button id="rbT" class="rbc" data-i18n="rbT"></button></div>
       <button id="rbRel" class="rbc danger wide" data-i18n="rbRel"></button>
       <label class="chip" style="margin-top:10px"><input type="checkbox" id="rbSafe" checked><span data-i18n="rbSafe"></span></label>
+      <label class="chip" style="margin-top:6px"><input type="checkbox" id="rbSafeStream"><span data-i18n="rbSafeStream"></span></label>
       <details class="sec"><summary data-i18n="advanced"></summary>
         <div class="group"><button id="rbBat" class="rbc" data-i18n="rbBat"></button><button id="rbDz" class="rbc" data-i18n="rbDz"></button><button id="rbDance" class="rbc" data-i18n="rbDance"></button></div>
         <div class="field" style="grid-template-columns:62px minmax(0,1fr) auto"><span>stretch</span><input type="number" id="rbStr" min="1" max="127" value="60"><button id="rbStrB" class="rbc" data-i18n="rbApply"></button></div>
@@ -184,11 +201,32 @@
 
   <aside id="rightpanel" class="panel">
     <h1><span data-i18n="title"></span><button id="bLang" class="sm" title="Language / 語言">EN</button></h1>
+    <div class="tabs" id="rtabs"><button class="on" data-rtab="servo" data-i18n="tabServos"></button><button data-rtab="set" data-i18n="tabSet"></button></div>
+    <div id="rpane_servo">
     <p class="sub" data-i18n="intro"></p>
     <div class="lbl2" style="margin-top:2px" data-i18n="presetL"></div>
     <div class="group" style="margin-top:4px"><button data-pose="zero" data-i18n="pZero"></button><button data-pose="armsdown" data-i18n="pDown"></button><button data-pose="armsfwd" data-i18n="pFwd"></button><button data-pose="squat" data-i18n="pSquat"></button></div>
     <details style="margin-top:0"><summary data-i18n="toolsSum"></summary><div class="group"><button id="bSweep" data-i18n-title="tipSweep"></button><button id="bCopy" data-i18n="copy"></button><button id="bPaste" data-i18n="paste"></button></div></details>
     <div id="servos"></div>
+    </div>
+    <div id="rpane_set" hidden>
+      <div class="lbl2" style="margin-top:0" data-i18n="setPhys"></div>
+      <div class="group">
+        <label class="chip"><input type="checkbox" id="cGrav" checked><span data-i18n="grav"></span></label>
+        <label class="chip"><input type="checkbox" id="cCom" checked><span data-i18n="com"></span></label>
+        <button id="bRun" data-i18n-title="tipRun"></button>
+      </div>
+      <div class="field" data-i18n-title="tipMu"><span data-i18n="muL"></span><input type="range" id="rMu" min="0.05" max="1.5" step="0.05"><span id="vMu" class="mono"></span></div>
+      <div class="field" data-i18n-title="tipKp"><span data-i18n="kpL"></span><input type="range" id="rKp" min="2" max="60" step="1"><span id="vKp" class="mono"></span></div>
+      <div class="lbl2" data-i18n="setPlay"></div>
+      <div class="field" data-i18n-title="tipInterp" style="grid-template-columns:70px 1fr"><span data-i18n="interpL"></span><select id="pInterp"><option value="1" data-i18n="smooth"></option><option value="0" data-i18n="stepMode"></option></select></div>
+      <div class="lbl2" data-i18n="pushTitle"></div>
+      <div class="group" style="margin-top:4px"><button data-push="fwd" data-i18n="pushFwd"></button><button data-push="back" data-i18n="pushBack"></button><button data-push="left" data-i18n="pushLeft"></button><button data-push="right" data-i18n="pushRight"></button></div>
+      <div class="field" style="grid-template-columns:70px minmax(0,1fr) 44px"><span data-i18n="pushForce"></span><input type="range" id="pushF" min="1" max="20" step="1" value="5"><span id="pushFV" class="mono">5 N</span></div>
+      <p class="sub" data-i18n="pushNote"></p>
+      <div id="stat" class="mono">…</div>
+      <details><summary data-i18n="modelSummary"></summary><p id="info"></p><p data-i18n="model1" data-i18n-html></p><p data-i18n="model2" data-i18n-html></p><p data-i18n="model3" data-i18n-html></p></details>
+    </div>
   </aside>
 
   <div id="playbar" class="panel">
@@ -205,6 +243,7 @@
 <script>/*__ASSETS__*/</script>
 <script src="vendor/three.min.js"></script>
 <script src="vendor/OrbitControls.js"></script>
+<script src="../pma/library.js"></script>
 <script>
 (function () {
 'use strict';
@@ -285,6 +324,7 @@ Object.assign(I18N.en, {
   rbOff: 'disconnected', rbOn: 'connected', rbNoSerial: 'No Web Serial here (use Chrome/Edge over https or localhost)', rbErr: 'Connect failed: ', rbVolt: function (v) { return v.toFixed(2) + ' V'; }, rbLow: '⚠ below 9 V', rbPoseErr: '⚠ robot reported a pose error',
   rbWarn: 'Pair over Bluetooth first, then pick the PreMaid COM port (115200 8N1). Servos marked "Inferred" have unverified direction: hang the body, use a large SPD (slow) and keep a hand near the power switch. Safe limits = PMA range ∩ the PreMaidServo limits of TechVerification. Be careful sending poses right after Release all. Thinned .pma keeps every Nth 0x18 frame (first and last always kept), so timing gets shorter.'
 });
+Object.assign(I18N.zh, { tabSet: '設定' }); Object.assign(I18N.en, { tabSet: 'Settings' });
 Object.assign(I18N.zh, { physSum: '物理參數（μ / kp）', mobL: '動作 / 實機', mobR: '舵機' });
 Object.assign(I18N.en, { physSum: 'Physics (μ / kp)', mobL: 'Motion / Robot', mobR: 'Servos' });
 Object.assign(I18N.zh, {
@@ -307,12 +347,12 @@ Object.assign(I18N.en, {
 });
 Object.assign(I18N.zh, {
   drop: '放開 .pma／音樂檔案載入', audTitle: '音樂', audNone: '未有音樂', audLoad: '🎵 載入音樂', audLoadTip: '載入 mp3 / m4a / wav / ogg 等（亦可以連同 .pma 一齊拖放）', audVol: '音量', audOffL: '音樂同步偏移（+ = 音樂提早）', tipAud: '音樂開／關',
-  libErr: '讀唔到 pma/index.json。要用 http(s) 開（例如 python -m http.server），或者直接撳「載入 .pma」。', libEmpty: 'pma/ 入面未有 .pma；放檔案後跑 python pma/make_index.py。',
+  libErr: '搵唔到 pma/library.js。請跑 python pma/make_index.py 生成，或者直接撳「載入 .pma」。', libEmpty: 'pma/ 入面未有 .pma；放檔案後跑 python pma/make_index.py。',
   audDrm: '搵到同名 .wsdcf，但佢係加密格式（AES-128 ＋ 版權伺服器），瀏覽器播唔到。請放同名 .mp3／.m4a 入 pma/ 再跑 make_index.py，或者撳「載入音樂」。', audErr: '音樂檔載入失敗（格式唔支援？）'
 });
 Object.assign(I18N.en, {
   drop: 'Drop a .pma and/or audio file', audTitle: 'Music', audNone: 'no music', audLoad: '🎵 Load music', audLoadTip: 'Load mp3 / m4a / wav / ogg … (or drop it together with the .pma)', audVol: 'Volume', audOffL: 'Music sync offset (+ = music earlier)', tipAud: 'Music on / off',
-  libErr: 'Cannot read pma/index.json. Open the page over http(s) (e.g. python -m http.server) or use "Load .pma".', libEmpty: 'No .pma in pma/ yet; add files and run python pma/make_index.py.',
+  libErr: 'pma/library.js not found. Run python pma/make_index.py to create it, or use "Load .pma".', libEmpty: 'No .pma in pma/ yet; add files and run python pma/make_index.py.',
   audDrm: 'A same-name .wsdcf exists, but it is an encrypted container (AES-128 + rights server) that a browser cannot play. Put a same-name .mp3/.m4a in pma/ and re-run make_index.py, or use "Load music".', audErr: 'Could not load the audio file (unsupported format?)'
 });
 Object.assign(I18N.zh, {
@@ -326,6 +366,50 @@ Object.assign(I18N.en, {
   padA: 'Walk: ↑ forward, ↓ back, ← → turn', padB: 'Waist yaw / lean (↑ lean, ↓ crouch)', padHold: 'Latch stick position', walkParams: 'Gait parameters', wLen: 'Stride', wRoll: 'Sway', wPit: 'Swing', wSpd: 'Cadence', wSpdTip: 'SPD (ticks, 1 tick = 15 ms): time per pose, smaller = faster', walkRobot: 'Also send to the robot (connect first)',
   walkWarn: 'Open-loop gait (sine tables) without balance feedback: it may fall in the simulator; on the real robot hang the body first and keep a hand near the power switch. Keys: arrows = left stick, WASD = right stick.',
   walkNote: 'Gait by @kazzlog (pm_sample, Apache-2.0): a 10-step sine table, poses interpolated by SPD; 17 servos are driven (legs, shoulder pitch, hip yaw, head), the rest keep their position. Starting sets the zero T-pose first.'
+});
+Object.assign(I18N.zh, { ikChip: '🎯 IK', tipIK: 'IK 拖曳：開啟後拖動手／腳上面嘅圓點，關節自動求解（建議同「吊起機身」一齊用）；腳會保持原本朝向' });
+Object.assign(I18N.en, { ikChip: '🎯 IK', tipIK: 'IK drag: drag the dots on the hands/feet and the joints are solved automatically (best with "Hang body"); feet keep their orientation' });
+Object.assign(I18N.zh, {
+  tabRec: '錄製', recName: '動作名稱', recAdd: '● 加入關鍵幀（目前姿勢）', recSpd: '預設 SPD', recSpdTip: 'SPD（1 ＝ 15 ms）：到達該姿勢嘅時間，數字越細越快', recPlay: '▶ 預覽', recExp: '⬇ 匯出 .pma', recClr: '清空',
+  recEmpty: '未有關鍵幀。擺好姿勢（slider、預設姿勢、IK、步行都得）再撳「加入關鍵幀」。', recGo: '套用呢個姿勢', recSet: '用目前姿勢覆蓋', recUp: '上移', recDn: '下移', recDel: '刪除', recSpdRow: '到達呢一幀嘅 SPD',
+  recInfo: function (n, s) { return n + ' 個關鍵幀 · 約 ' + s.toFixed(1) + ' 秒'; },
+  recNote: '預覽會載入左邊播放器（可以加音樂、串流去真機）。匯出檔跟內置動作嘅 .pma 格式（開頭／結尾封包同 stretch 設定抄自 Embrace Blade）；模擬器回放已驗證，真機／官方 App 是否接受未驗證。資料保存喺瀏覽器本機。'
+});
+Object.assign(I18N.en, {
+  tabRec: 'Record', recName: 'Motion name', recAdd: '● Add keyframe (current pose)', recSpd: 'Default SPD', recSpdTip: 'SPD (1 = 15 ms): time to reach the pose, smaller = faster', recPlay: '▶ Preview', recExp: '⬇ Export .pma', recClr: 'Clear',
+  recEmpty: 'No keyframes yet. Set a pose (sliders, presets, IK or walking all work) and press "Add keyframe".', recGo: 'Apply this pose', recSet: 'Overwrite with current pose', recUp: 'Move up', recDn: 'Move down', recDel: 'Delete', recSpdRow: 'SPD to reach this frame',
+  recInfo: function (n, s) { return n + ' keyframes · about ' + s.toFixed(1) + ' s'; },
+  recNote: 'Preview loads the player on the left (add music, stream to the robot). The exported file follows the .pma layout of the built-in motions (header/footer packets and the stretch setting copied from Embrace Blade); simulator playback is verified, acceptance by the robot / official app is not. Data is kept in this browser.'
+});
+Object.assign(I18N.zh, {
+  recTools: '編輯工具', recMirror: '↔ 左右鏡像', recMirrorTip: '將所有關鍵幀嘅左右手腳對調（頭轉向／側傾反號）', recImport: '⤓ 匯入播放器動作', recImportTip: '將左邊播放器載入咗嘅動作變成關鍵幀，可以逐幀編輯、鏡像、變速、重新匯出',
+  recEveryA: '每', recEveryB: '幀留 1', recComp: 'SPD 補時間', recScaleL: '變速 ×', recApply: '套用', recScaleTip: '2 ＝ 快一倍（SPD 減半）', recNoMotion: '播放器未載入動作', recSure: '會取代目前所有關鍵幀，確定？'
+});
+Object.assign(I18N.en, {
+  recTools: 'Edit tools', recMirror: '↔ Mirror left/right', recMirrorTip: 'Swap left and right limbs in every keyframe (head yaw/roll change sign)', recImport: '⤓ Import loaded motion', recImportTip: 'Turn the motion loaded in the player into keyframes you can edit, mirror, re-time and export again',
+  recEveryA: 'keep 1 of', recEveryB: 'frames', recComp: 'Scale SPD to keep timing', recScaleL: 'Speed ×', recApply: 'Apply', recScaleTip: '2 = twice as fast (SPD halved)', recNoMotion: 'No motion loaded in the player', recSure: 'This replaces all current keyframes. Continue?'
+});
+Object.assign(I18N.zh, {
+  chkTitle: '動作檢查', chkNone: '未有動作',
+  chkSum: function (n, s, a, b, v) { return n + ' 幀 · ' + s.toFixed(1) + ' 秒 · ' + (a ? '⚠ ' + a + ' 粒超出機械範圍' : '機械範圍 OK') + ' · ' + b + ' 粒超出遙控安全範圍 · 最快 ' + Math.round(v) + '°/秒'; },
+  chkNote: '條柱：灰 ＝ 舵機機械行程（PMA 範圍），淺紫 ＝ 遙控安全範圍（PreMaidServo.cs 嘅保守限位），深色 ＝ 呢套動作實際用到嘅範圍（紅 ＝ 超出機械行程）。官方動作普遍超出遙控安全範圍，所以「串流 PMA」預設唔夾限位；想夾就喺實機分頁剔「串流 PMA 都套用安全限位」。',
+  rbSafe: '安全限位（slider／IK／步行／送出姿勢）', rbSafeStream: '串流 PMA 都套用安全限位（官方動作會被扭曲）'
+});
+Object.assign(I18N.en, {
+  chkTitle: 'Motion check', chkNone: 'no motion',
+  chkSum: function (n, s, a, b, v) { return n + ' frames · ' + s.toFixed(1) + ' s · ' + (a ? '⚠ ' + a + ' servos beyond mechanical range' : 'mechanical range OK') + ' · ' + b + ' servos beyond remote-control safe range · fastest ' + Math.round(v) + '°/s'; },
+  chkNote: 'Bar: grey = servo mechanical travel (PMA range), light purple = remote-control safe range (conservative limits from PreMaidServo.cs), dark = range this motion actually uses (red = beyond mechanical travel). Official motions usually exceed the remote-control safe range, so "Stream PMA" does not clamp by default; tick "Also apply safe limits when streaming PMA" on the Robot tab to clamp.',
+  rbSafe: 'Safe limits (sliders / IK / walk / send pose)', rbSafeStream: 'Also clamp streamed PMA (distorts official motions)'
+});
+Object.assign(I18N.zh, {
+  pushTitle: '推擊測試（0.1 秒外力）', pushFwd: '↑ 前', pushBack: '↓ 後', pushLeft: '← 左', pushRight: '→ 右', pushForce: '力度',
+  pushNote: '力施喺機身中心，方向跟機身朝向（模擬測試：站立時約 8–10 N ≈ 半個體重就會推跌）。可以喺播放動作或者步行時推，睇穩唔穩。',
+  padGpOff: '🎮 接駁手制（Xbox／PS 等）後撳任何掣：左搖桿 ＝ 步行，右搖桿 ＝ 腰轉／前傾，A 鍵 ＝ 開始／停止。', padGpOn: function (id) { return '🎮 ' + id; }
+});
+Object.assign(I18N.en, {
+  pushTitle: 'Push test (0.1 s force)', pushFwd: '↑ Front', pushBack: '↓ Back', pushLeft: '← Left', pushRight: '→ Right', pushForce: 'Force',
+  pushNote: 'The force acts on the torso, direction relative to the body (simulated: about 8–10 N ≈ half the body weight topples a standing robot). Push while a motion plays or while walking to see how stable it is.',
+  padGpOff: '🎮 Connect a gamepad (Xbox/PS…) and press any button: left stick = walk, right stick = waist yaw / lean, A = start / stop.', padGpOn: function (id) { return '🎮 ' + id; }
 });
 var LANG = 'zh';
 try { var _l = localStorage.getItem('pmsim.lang'); if (_l === 'zh' || _l === 'en') LANG = _l; } catch (e) {}
@@ -541,9 +625,10 @@ function frame(now) {
   if (S.ready) {
     if (SW.on) sweepTick(dt);
     if (P.playing && S.run && P.total > 0) playTick(dt * S.speed);
-    if (WK.on && S.run) walkTick(dt * S.speed);
+    gpPoll(); if (WK.on && S.run) walkTick(dt * S.speed);
+    if (S.run) pushTick(dt * S.speed);
     if (S.run) advance(dt * S.speed); else setCtrl();
-    updateScene(); status(now); rbTick(now); audioSync();
+    updateScene(); status(now); rbTick(now); audioSync(); ikTick();
   }
   controls.update(); renderer.render(scene, camera);
 }
@@ -609,7 +694,7 @@ function poseAt(t) {
   if (P.dirty) { P.dirty = false; applyGains(); }
 }
 function renderPma() {
-  var st = P.state, d = P.infoD;
+  var st = P.state, d = P.infoD; renderCheck('chk', P.frames && P.frames.length ? P : null);
   $('pmaState').textContent = !st ? t('notLoaded') : st.k ? t(st.k) : st.raw;
   $('pInfo').textContent = !d ? '' : d.k ? t(d.k) : t('nFrames', d.n) + ' · ' + d.sec.toFixed(1) + ' s · ' + d.bytes + ' bytes' + (d.bad ? ' · ' + t('csBad', d.bad) : ' · checksum OK') + (d.other ? ' · ' + t('skipped', d.other) : '');
 }
@@ -650,7 +735,7 @@ function b64bytes(b) { var bin = atob(b), u = new Uint8Array(bin.length); for (v
 $('fPma').addEventListener('change', function () { loadFiles(this.files); this.value = ''; });
 function refreshList() { Array.prototype.forEach.call($('pList').children, function (b) { if (b.getAttribute('data-n')) b.lastChild.textContent = t('nFrames', b.getAttribute('data-n')) + ' · ' + b.getAttribute('data-t'); }); }
 function markActive(i) { Array.prototype.forEach.call($('pList').children, function (b, n) { b.classList.toggle('on', n === i); }); }
-var LIB = { base: '../pma/', items: [], cur: -1 };      // pma/index.json (written by pma/make_index.py): { title, pma, audio?, drm? }
+var LIB = { base: '../pma/', items: [], cur: -1 };      // window.PMA_LIBRARY from pma/library.js (written by pma/make_index.py, a plain <script>, so it also works from file://): { title, pma, audio?, drm?, data (base64 .pma) }
 var AU = { el: new Audio(), name: '', drm: '', err: false, obj: '' };
 AU.el.preload = 'auto'; AU.el.volume = 0.8;
 function audioSet(src, name, drm) {
@@ -680,9 +765,10 @@ $('fAud').addEventListener('change', function () { audioFile(this.files[0]); thi
 $('aVol').addEventListener('input', function () { AU.el.volume = +this.value; $('aVolV').textContent = Math.round(this.value * 100); });
 $('aOff').addEventListener('input', function () { $('aOffV').textContent = this.value + ' ms'; });
 $('aOn').addEventListener('change', function () { AU.el.muted = !this.checked; });
-function libFetch(it) {
+function libFetch(it) {      // the .pma comes base64-encoded inside pma/library.js, so no fetch() (blocked on file://) is needed
   if (it.secs) return Promise.resolve(it);
-  return fetch(LIB.base + encodeURIComponent(it.pma)).then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }).then(function (ab) { it.secs = decodePma(ab); if (!it.secs.length) throw new Error('format'); return it; });
+  try { var bin = atob(it.data), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); it.secs = decodePma(u.buffer); } catch (e) { return Promise.reject(e); }
+  return it.secs.length ? Promise.resolve(it) : Promise.reject(new Error('format'));
 }
 function libLoad(i) {
   var it = LIB.items[i]; if (!it) return;
@@ -695,14 +781,13 @@ function libLoad(i) {
 (function () {
   var box = $('pList');
   function msg(key) { box.innerHTML = ''; var d = document.createElement('div'); d.className = 'sub'; d.style.padding = '8px'; d.setAttribute('data-i18n', key); d.textContent = t(key); box.appendChild(d); }
-  fetch(LIB.base + 'index.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (list) {
-    LIB.items = list; if (!list.length) { msg('libEmpty'); return; }
-    list.forEach(function (it, i) {
-      var b = document.createElement('button'); b.innerHTML = '<span></span><span></span>'; b.firstChild.textContent = it.title; b.title = it.pma + (it.audio ? ' + ' + it.audio : '');
-      b.addEventListener('click', function () { libLoad(i); }); box.appendChild(b);
-      libFetch(it).then(function () { var tl = buildTimeline(it.secs[0].bytes); b.setAttribute('data-n', tl.frames.length); b.setAttribute('data-t', fmt(tl.total).replace(/\.\d$/, '')); refreshList(); }, function () { b.disabled = true; });
-    });
-  }).catch(function () { msg('libErr'); });
+  var list = window.PMA_LIBRARY; if (!list) { msg('libErr'); return; } if (!list.length) { msg('libEmpty'); return; }
+  LIB.items = list;
+  list.forEach(function (it, i) {
+    var b = document.createElement('button'); b.innerHTML = '<span></span><span></span>'; b.firstChild.textContent = it.title; b.title = it.pma + (it.audio ? ' + ' + it.audio : '');
+    b.addEventListener('click', function () { libLoad(i); }); box.appendChild(b);
+    libFetch(it).then(function () { var tl = buildTimeline(it.secs[0].bytes); b.setAttribute('data-n', tl.frames.length); b.setAttribute('data-t', fmt(tl.total).replace(/\.\d$/, '')); refreshList(); }, function () { b.disabled = true; });
+  });
 })();
 $('pSec').addEventListener('change', function () { useSection(+this.value); });
 $('pPlay').addEventListener('click', function () {
@@ -813,7 +898,7 @@ function rbStream() {        // send each PMA frame to the robot when it starts;
   if (!RB.writer || !$('rbStream').checked || !P.frames) return;
   if (RB.lastF !== P.frames) { RB.lastF = P.frames; RB.lastK = -1; }
   var k = findK(P.t); if (k === RB.lastK) return; RB.lastK = k;
-  var f = P.frames[k], raw = []; for (var s = 0; s < N; s++) raw[s] = f.free[s] ? 0 : f.raw[s];
+  var f = P.frames[k], raw = []; for (var s = 0; s < N; s++) raw[s] = f.free[s] ? 0 : ($('rbSafeStream').checked ? rawClampSafe(s, f.raw[s]) : f.raw[s]);
   RB.retry = 0; rbSend(poseBytes(raw, f.spd || 1), true);
 }
 function rbExport() {
@@ -840,15 +925,16 @@ $('rbExp').addEventListener('click', rbExport);
 
 (function () {      // panels, tabs, settings card, robot control mode
   var h = document.documentElement;
-  function tab(n) { ['motion', 'robot', 'walk'].forEach(function (x) { $('pane_' + x).hidden = x !== n; }); Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === n); }); h.setAttribute('data-tab', n); }
+  function tab(n) { ['motion', 'robot', 'walk', 'rec'].forEach(function (x) { $('pane_' + x).hidden = x !== n; }); Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === n); }); h.setAttribute('data-tab', n); }
   Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (b) { b.addEventListener('click', function () { tab(b.getAttribute('data-tab')); }); });
   function drawer(side, n) { var cls = side === 'l' ? 'mobL' : 'mobR', open = h.classList.contains(cls) && (side === 'r' || h.getAttribute('data-tab') === n); h.classList.remove('mobL', 'mobR'); if (!open) { h.classList.add(cls); if (n) tab(n); } }
   $('mobL').addEventListener('click', function () { drawer('l', 'motion'); });
   $('mobRb').addEventListener('click', function () { drawer('l', 'robot'); });
   $('mobR').addEventListener('click', function () { drawer('r'); });
   $('bLang2').addEventListener('click', function () { $('bLang').click(); });
-  $('bSet').addEventListener('click', function (e) { e.stopPropagation(); var c = $('setcard'); c.hidden = !c.hidden; this.classList.toggle('on', !c.hidden); });
-  document.addEventListener('click', function (e) { var c = $('setcard'); if (!c.hidden && !c.contains(e.target)) { c.hidden = true; $('bSet').classList.remove('on'); } });
+  function rtab(n) { ['servo', 'set'].forEach(function (x) { $('rpane_' + x).hidden = x !== n; }); Array.prototype.forEach.call(document.querySelectorAll('[data-rtab]'), function (b) { b.classList.toggle('on', b.getAttribute('data-rtab') === n); }); $('bSet').classList.toggle('on', n === 'set'); }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-rtab]'), function (b) { b.addEventListener('click', function () { rtab(b.getAttribute('data-rtab')); }); });
+  $('bSet').addEventListener('click', function () { var toSet = $('rpane_set').hidden; rtab(toSet ? 'set' : 'servo'); if (window.matchMedia('(max-width: 1100px)').matches) { h.classList.remove('mobL'); h.classList.add('mobR'); } });
   Array.prototype.forEach.call(document.querySelectorAll('[data-rbmode]'), function (b) { b.addEventListener('click', function () { var m = b.getAttribute('data-rbmode'); $('rbLive').checked = m === 'live'; $('rbStream').checked = m === 'stream'; renderRb(); }); });
   ['rbRel', 'rbT'].forEach(function (id) { $(id).addEventListener('click', renderRb); });
   $('rbSp').addEventListener('input', function () { $('rbSpV').textContent = this.value; });
@@ -908,7 +994,7 @@ function wAxis(neg, pos) { return (WK.keys[pos] ? 1 : 0) - (WK.keys[neg] ? 1 : 0
 function walkPose() {      // next gait pose (one every SPD x 15 ms)
   var cl = function (v) { return Math.max(-1, Math.min(1, v)); };
   WK.prev = WK.cur;
-  WK.cur = wDeg(WK.gen.step({ go: WK.go, X1: cl(WK.A.x + wAxis('ArrowLeft', 'ArrowRight')), Y1: cl(WK.A.y + wAxis('ArrowDown', 'ArrowUp')), X2: cl(WK.B.x + wAxis('a', 'd')), Y2: cl(WK.B.y + wAxis('s', 'w')), len: wVal('wLen'), roll: wVal('wRoll'), pitch: wVal('wPit') }));
+  WK.cur = wDeg(WK.gen.step({ go: WK.go, X1: cl(WK.A.x + wAxis('ArrowLeft', 'ArrowRight') + WK.gp.x1), Y1: cl(WK.A.y + wAxis('ArrowDown', 'ArrowUp') + WK.gp.y1), X2: cl(WK.B.x + wAxis('a', 'd') + WK.gp.x2), Y2: cl(WK.B.y + wAxis('s', 'w') + WK.gp.y2), len: wVal('wLen'), roll: wVal('wRoll'), pitch: wVal('wPit') }));
   if ($('wRobot').checked && RB.writer) {      // the robot interpolates between poses itself (SPD ticks), like the sample program
     var r = targetsRaw(); WK.ids.forEach(function (k, i) { r[k] = rawOf(k, WK.cur[i]); });
     RB.retry = 0; rbSend(poseBytes(r, Math.round(WK.T / 0.015)), true);
@@ -951,6 +1037,198 @@ function makePad(el, v) {
   wRender();
 })();
 
+// ------------------------------------------------------------------ IK drag (hands / feet), damped least squares on the 4 limb chains
+// Forward-kinematics data (A.chains) is exported by mujoco/make_premaid_mjcf.py; the chains hang from base_link, so the target follows the body.
+var IK = { on: false, h: {}, drag: null, ray: null, plane: null };
+function qmat(q) { var w = q[0], x = q[1], y = q[2], z = q[3]; return [1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y), 2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x), 2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)]; }
+function mmul(a, b) { var r = [], i, j; for (i = 0; i < 3; i++) for (j = 0; j < 3; j++) r.push(a[3 * i] * b[j] + a[3 * i + 1] * b[3 + j] + a[3 * i + 2] * b[6 + j]); return r; }
+function mvec(a, v) { return [a[0] * v[0] + a[1] * v[1] + a[2] * v[2], a[3] * v[0] + a[4] * v[1] + a[5] * v[2], a[6] * v[0] + a[7] * v[1] + a[8] * v[2]]; }
+function mtvec(a, v) { return [a[0] * v[0] + a[3] * v[1] + a[6] * v[2], a[1] * v[0] + a[4] * v[1] + a[7] * v[2], a[2] * v[0] + a[5] * v[1] + a[8] * v[2]]; }
+function mT(a) { return [a[0], a[3], a[6], a[1], a[4], a[7], a[2], a[5], a[8]]; }
+function axisRot(ax, th) { var c = Math.cos(th), s = Math.sin(th), n = Math.sqrt(ax[0] * ax[0] + ax[1] * ax[1] + ax[2] * ax[2]), x = ax[0] / n, y = ax[1] / n, z = ax[2] / n, u = 1 - c;
+  return [c + x * x * u, x * y * u - z * s, x * z * u + y * s, y * x * u + z * s, c + y * y * u, y * z * u - x * s, z * x * u - y * s, z * y * u + x * s, c + z * z * u]; }
+function ikFK(ch, q) {      // joint angles (rad, one per chain joint) -> tip position and orientation in the base_link frame
+  var R = [1, 0, 0, 0, 1, 0, 0, 0, 1], p = [0, 0, 0], i, j, o;
+  for (i = 0; i < ch.joints.length; i++) { j = ch.joints[i]; o = mvec(R, j.pos); p = [p[0] + o[0], p[1] + o[1], p[2] + o[2]]; R = mmul(mmul(R, j.R0 || (j.R0 = qmat(j.quat))), axisRot(j.axis, q[i])); }
+  o = mvec(R, ch.tip); return { p: [p[0] + o[0], p[1] + o[1], p[2] + o[2]], R: R };
+}
+function rotVec(Ra, Rb) { var E = mmul(Ra, mT(Rb)); return [(E[7] - E[5]) / 2, (E[2] - E[6]) / 2, (E[3] - E[1]) / 2]; }      // small rotation taking Rb to Ra
+function solveLin(M, b) {      // Gaussian elimination, M is n x n (array of rows)
+  var n = b.length, i, j, k, p, t, f, x = [];
+  for (i = 0; i < n; i++) { p = i; for (j = i + 1; j < n; j++) if (Math.abs(M[j][i]) > Math.abs(M[p][i])) p = j; t = M[i]; M[i] = M[p]; M[p] = t; t = b[i]; b[i] = b[p]; b[p] = t;
+    for (j = i + 1; j < n; j++) { f = M[j][i] / M[i][i]; for (k = i; k < n; k++) M[j][k] -= f * M[i][k]; b[j] -= f * b[i]; } }
+  for (i = n - 1; i >= 0; i--) { t = b[i]; for (j = i + 1; j < n; j++) t -= M[i][j] * x[j]; x[i] = t / M[i][i]; }
+  return x;
+}
+function ikSolve(ch, q0, pt, Rt) {      // returns {q, err(m)}; Rt (optional) keeps the end orientation
+  var n = ch.joints.length, q = q0.slice(), m = Rt ? 6 : 3, lam2 = 0.0009, it, i, r, c, f, f2, e, J, JJt, y, dq, step, pe = 0;
+  for (it = 0; it < 40; it++) {
+    f = ikFK(ch, q); e = [pt[0] - f.p[0], pt[1] - f.p[1], pt[2] - f.p[2]]; pe = Math.sqrt(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
+    if (Rt) { r = rotVec(Rt, f.R); e.push(0.4 * r[0], 0.4 * r[1], 0.4 * r[2]); }
+    if (pe < 3e-4 && (!Rt || Math.abs(e[3]) + Math.abs(e[4]) + Math.abs(e[5]) < 2e-3)) break;
+    step = Math.min(1, 0.02 / Math.max(pe, 1e-9)); for (r = 0; r < m; r++) e[r] *= step;
+    J = []; for (r = 0; r < m; r++) J.push([]);
+    for (c = 0; c < n; c++) {
+      q[c] += 1e-4; f2 = ikFK(ch, q); q[c] -= 1e-4;
+      for (r = 0; r < 3; r++) J[r].push((f2.p[r] - f.p[r]) / 1e-4);
+      if (Rt) { y = rotVec(f2.R, f.R); for (r = 0; r < 3; r++) J[3 + r].push(0.4 * y[r] / 1e-4); }
+    }
+    JJt = []; for (r = 0; r < m; r++) { JJt.push([]); for (c = 0; c < m; c++) { y = r === c ? lam2 : 0; for (i = 0; i < n; i++) y += J[r][i] * J[c][i]; JJt[r].push(y); } }
+    y = solveLin(JJt, e.slice(0, m));
+    for (i = 0; i < n; i++) { dq = 0; for (r = 0; r < m; r++) dq += J[r][i] * y[r]; q[i] = Math.min(A.servos[ch.joints[i].k].hi, Math.max(A.servos[ch.joints[i].k].lo, q[i] + dq)); }
+  }
+  f = ikFK(ch, q); return { q: q, err: Math.sqrt(Math.pow(pt[0] - f.p[0], 2) + Math.pow(pt[1] - f.p[1], 2) + Math.pow(pt[2] - f.p[2], 2)) };
+}
+function ikChainQ(ch) { return ch.joints.map(function (j) { return target[j.k] * D2R; }); }
+function ikBase() { var b = S.base, p = S.d.xpos, q = S.d.xquat; return { p: [p[3 * b], p[3 * b + 1], p[3 * b + 2]], R: qmat([q[4 * b], q[4 * b + 1], q[4 * b + 2], q[4 * b + 3]]) }; }
+function ikWorld(B, pb) { var o = mvec(B.R, pb); return [B.p[0] + o[0], B.p[1] + o[1], B.p[2] + o[2]]; }      // base frame -> MuJoCo world
+function ikEnsure() {
+  if (IK.ray || !S.ready || !A.chains) return IK.ray !== null; IK.ray = new THREE.Raycaster(); IK.plane = new THREE.Plane();
+  Object.keys(A.chains).forEach(function (n) {
+    var m = new THREE.Mesh(new THREE.SphereGeometry(0.011, 20, 14), new THREE.MeshBasicMaterial({ color: /leg/.test(n) ? 0x22c55e : 0x06b6d4, transparent: true, opacity: 0.85, depthTest: false })); m.renderOrder = 10; m.visible = false; m.userData.chain = n; world.add(m); IK.h[n] = m;
+  }); return true;
+}
+function ikTick() {      // keep the dots on the commanded tip positions
+  if (!IK.on || !ikEnsure()) return; var B = ikBase();
+  Object.keys(A.chains).forEach(function (n) { var m = IK.h[n], w = ikWorld(B, ikFK(A.chains[n], ikChainQ(A.chains[n])).p); m.visible = true; m.position.set(w[0], w[1], w[2]); m.scale.setScalar(IK.drag && IK.drag.n === n ? 1.35 : 1); });
+}
+function ikHit(e) {
+  var r = canvas.getBoundingClientRect(); IK.ray.setFromCamera({ x: ((e.clientX - r.left) / r.width) * 2 - 1, y: -((e.clientY - r.top) / r.height) * 2 + 1 }, camera);
+  var hs = Object.keys(IK.h).map(function (n) { return IK.h[n]; }).filter(function (m) { return m.visible; }), hit = IK.ray.intersectObjects(hs);
+  return hit.length ? hit[0] : null;
+}
+function ikMove(e) {
+  var d = IK.drag, r = canvas.getBoundingClientRect(), hit = new THREE.Vector3();
+  IK.ray.setFromCamera({ x: ((e.clientX - r.left) / r.width) * 2 - 1, y: -((e.clientY - r.top) / r.height) * 2 + 1 }, camera);
+  if (!IK.ray.ray.intersectPlane(IK.plane, hit)) return;
+  var w = world.worldToLocal(hit).add(d.off), B = ikBase(), pb = mtvec(B.R, [w.x - B.p[0], w.y - B.p[1], w.z - B.p[2]]), ch = A.chains[d.n];
+  var res = ikSolve(ch, ikChainQ(ch), pb, d.Rt); ch.joints.forEach(function (j, i) { setTarget(j.k, res.q[i] / D2R); });
+}
+canvas.addEventListener('pointerdown', function (e) {
+  if (!IK.on || !ikEnsure()) return; var h = ikHit(e); if (!h) return;
+  e.stopImmediatePropagation(); e.preventDefault(); canvas.setPointerCapture(e.pointerId); touch(); if (typeof WK !== 'undefined') WK.on = false;
+  var n = h.object.userData.chain, ch = A.chains[n], nrm = new THREE.Vector3(); camera.getWorldDirection(nrm); IK.plane.setFromNormalAndCoplanarPoint(nrm, h.object.getWorldPosition(new THREE.Vector3()));
+  IK.drag = { n: n, Rt: ch.ori ? ikFK(ch, ikChainQ(ch)).R : null, off: h.object.position.clone().sub(world.worldToLocal(h.point.clone())) }; canvas.style.cursor = 'grabbing';
+}, true);
+canvas.addEventListener('pointermove', function (e) {
+  if (!IK.on || !IK.ray) return; if (IK.drag) { e.stopImmediatePropagation(); ikMove(e); return; } canvas.style.cursor = ikHit(e) ? 'grab' : '';
+}, true);
+['pointerup', 'pointercancel'].forEach(function (ev) { canvas.addEventListener(ev, function (e) { if (IK.drag) { IK.drag = null; canvas.style.cursor = ''; } }, true); });
+$('cIK').addEventListener('change', function () { IK.on = this.checked; if (!IK.on) { Object.keys(IK.h).forEach(function (n) { IK.h[n].visible = false; }); IK.drag = null; } });
+
+// ------------------------------------------------------------------ keyframe recorder -> .pma
+// File layout copied from the reference motions: [07 02 00 41 00 01 45] [36 19 10 .. stretch] {0x18 pose frames} [07 02 00 41 00 0A 4E] [04 17 00 13] FF FF
+var RC = { kf: [] }, RC_PRE = '07 02 00 41 00 01 45', RC_STRETCH = '36 19 10 10 3C 18 3C 1C 3C 14 3C 0C 3C 08 28 0E 3C 15 1E 13 1E 16 3C 1A 3C 12 3C 0A 3C 06 28 03 14 11 1E 17 1E 0D 1E 0F 1E 09 1E 0B 1E 04 1E 02 1E 05 14 07 14 34', RC_POST = '07 02 00 41 00 0A 4E 04 17 00 13 FF FF';
+function rcRaw() { var r = []; for (var k = 0; k < N; k++) { var s = A.servos[k], e = PM.byJoint[s.joint]; r[k] = Math.max(e.rawLo, Math.min(e.rawHi, Math.round(7500 + s.sign * target[k] / K_DEG))); } return r; }
+function rcBytes() {
+  var parts = [hexPkt(RC_PRE), hexPkt(RC_STRETCH)].concat(RC.kf.map(function (f) { return poseBytes(f.raw, f.spd); }), [hexPkt(RC_POST)]), n = 0, o, i = 0;
+  parts.forEach(function (p) { n += p.length; }); o = new Uint8Array(n); parts.forEach(function (p) { o.set(p, i); i += p.length; }); return o;
+}
+function rcText(name, b) {
+  return '\uFEFF[モーション(1)]\n番号=1\n名前=' + name.replace(/[\r\n]+/g, ' ') + '\nデータ=' + Array.prototype.map.call(b, function (x) { return ('0' + x.toString(16).toUpperCase()).slice(-2); }).join(' ') + '\n';
+}
+function rcName() { return ($('rcName').value || 'My Motion').trim() || 'My Motion'; }
+function rcSave() { try { localStorage.setItem('premaid-rc', JSON.stringify({ name: $('rcName').value, kf: RC.kf })); } catch (e) {} }
+function rcRender() {
+  var box = $('rcList'); box.innerHTML = ''; $('rcName').placeholder = t('recName');
+  if (!RC.kf.length) { var d = document.createElement('div'); d.className = 'sub'; d.textContent = t('recEmpty'); box.appendChild(d); }
+  RC.kf.forEach(function (f, i) {
+    var row = document.createElement('div'); row.className = 'rcrow';
+    function btn(txt, tip, fn) { var b = document.createElement('button'); b.className = 'sm'; b.textContent = txt; b.title = tip; b.addEventListener('click', fn); row.appendChild(b); return b; }
+    btn('#' + (i + 1), t('recGo'), function () { rcGo(i); });
+    var sp = document.createElement('input'); sp.type = 'number'; sp.min = 1; sp.max = 255; sp.value = f.spd; sp.title = t('recSpdRow') + ' (× 15 ms)';
+    sp.addEventListener('change', function () { f.spd = Math.max(1, Math.min(255, parseInt(sp.value, 10) || 10)); sp.value = f.spd; rcSave(); rcInfo(); }); row.appendChild(sp);
+    btn('⟳', t('recSet'), function () { f.raw = rcRaw(); rcSave(); });
+    btn('▲', t('recUp'), function () { if (i > 0) { RC.kf.splice(i - 1, 0, RC.kf.splice(i, 1)[0]); rcSave(); rcRender(); } });
+    btn('▼', t('recDn'), function () { if (i < RC.kf.length - 1) { RC.kf.splice(i + 1, 0, RC.kf.splice(i, 1)[0]); rcSave(); rcRender(); } });
+    btn('✕', t('recDel'), function () { RC.kf.splice(i, 1); rcSave(); rcRender(); });
+    box.appendChild(row);
+  });
+  rcInfo(); $('rcPlay').disabled = $('rcExp').disabled = $('rcClr').disabled = !RC.kf.length;
+}
+function rcInfo() { var tl = RC.kf.length ? buildTimeline(rcBytes()) : null; $('rcInfo').textContent = tl ? t('recInfo', RC.kf.length, tl.total / 1000) : ''; renderCheck('chkR', tl); }
+function rcGo(i) { touch(); if (typeof WK !== 'undefined') WK.on = false; var f = RC.kf[i]; for (var k = 0; k < N; k++) if (f.raw[k]) setTarget(k, A.servos[k].sign * (f.raw[k] - 7500) * K_DEG); }
+function rcPreview() {
+  if (!RC.kf.length) return; var nm = rcName(); markActive(-1); LIB.cur = -1; audioSet('', '', '');
+  loadSections([{ name: nm, bytes: rcBytes() }], nm + '.pma'); $('pPlay').click();
+}
+function rcExport() {
+  if (!RC.kf.length) return; var nm = rcName(), a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([rcText(nm, rcBytes())], { type: 'text/plain' })); a.download = nm.replace(/[\\/:*?"<>|]+/g, '_') + '.pma'; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+}
+$('rcAdd').addEventListener('click', function () { RC.kf.push({ raw: rcRaw(), spd: +$('rcSpd').value }); rcSave(); rcRender(); $('rcList').scrollTop = 1e6; });
+$('rcSpd').addEventListener('input', function () { $('rcSpdV').textContent = this.value * 15 + ' ms'; });
+$('rcPlay').addEventListener('click', rcPreview); $('rcExp').addEventListener('click', rcExport);
+$('rcClr').addEventListener('click', function () { if (confirm(t('recClr') + '?')) { RC.kf = []; rcSave(); rcRender(); } });
+$('rcName').addEventListener('input', rcSave);
+function rcClampRaw(k, v) { var e = PM.byJoint[A.servos[k].joint]; return Math.max(e.rawLo, Math.min(e.rawHi, v)); }
+function mirrorRaw(raw) {      // A.mirror: {k, p, m}: servo k takes the joint angle of servo p times m (0 = servo released stays released)
+  var o = []; A.mirror.forEach(function (e) { var v = raw[e.p]; o[e.k] = v === 0 ? 0 : rcClampRaw(e.k, Math.round(7500 + A.servos[e.k].sign * A.servos[e.p].sign * e.m * (v - 7500))); }); return o;
+}
+$('rcMir').addEventListener('click', function () { RC.kf.forEach(function (f) { f.raw = mirrorRaw(f.raw); }); rcSave(); rcRender(); });
+$('rcImp').addEventListener('click', function () {
+  if (!P.frames || !P.frames.length) { alert(t('recNoMotion')); return; } if (RC.kf.length && !confirm(t('recSure'))) return;
+  var n = Math.max(1, parseInt($('rcEvery').value, 10) || 1), comp = $('rcComp').checked, last = P.frames.length - 1; RC.kf = [];
+  P.frames.forEach(function (f, i) { if (i % n && i !== last) return; var raw = []; for (var k = 0; k < N; k++) raw[k] = f.free[k] ? 0 : f.raw[k]; RC.kf.push({ raw: raw, spd: Math.max(1, Math.min(255, comp ? (f.spd || 1) * n : (f.spd || 1))) }); });
+  $('rcName').value = (P.name || P.file || 'My Motion').replace(/\.pma$/i, ''); rcSave(); rcRender(); document.querySelector('[data-tab="rec"]').click();
+});
+$('rcScaleB').addEventListener('click', function () { var s = Math.max(0.1, +$('rcScale').value || 1); RC.kf.forEach(function (f) { f.spd = Math.max(1, Math.min(255, Math.round(f.spd / s))); }); rcSave(); rcRender(); });
+try { var rcS = JSON.parse(localStorage.getItem('premaid-rc') || 'null'); if (rcS && rcS.kf) { RC.kf = rcS.kf.filter(function (f) { return f.raw && f.raw.length === N; }); if (rcS.name) $('rcName').value = rcS.name; } } catch (e) {}
+rcRender();
+
+// ------------------------------------------------------------------ motion check: used range / limits / speed per servo
+function rawClampSafe(k, v) {      // PMA range ∩ remote-control safe range; 0 (released) stays 0
+  if (!v) return v; var e = PM.byJoint[A.servos[k].joint], sf = SAFE[e.pid], lo = e.rawLo, hi = e.rawHi; if (sf) { lo = Math.max(lo, sf[0]); hi = Math.min(hi, sf[1]); } return Math.max(lo, Math.min(hi, v));
+}
+function chkStats(tl) {
+  var fr = tl.frames, S = A.servos.map(function (s, k) { var e = PM.byJoint[s.joint]; return { k: k, e: e, sf: SAFE[e.pid], min: 1e9, max: -1e9, pma: 0, safe: 0, sp: 0, n: 0 }; });
+  fr.forEach(function (f, n) { S.forEach(function (o) {
+    var k = o.k; if (f.free[k]) return; var v = f.raw[k]; o.n++; if (v < o.min) o.min = v; if (v > o.max) o.max = v;
+    if (v < o.e.rawLo || v > o.e.rawHi) o.pma++; if (o.sf && (v < o.sf[0] || v > o.sf[1])) o.safe++;
+    if (n && !fr[n - 1].free[k] && tl.D[n] > 0) { var sp = Math.abs(v - fr[n - 1].raw[k]) * K_DEG / (tl.D[n] / 1000); if (sp > o.sp) o.sp = sp; }
+  }); });
+  return S;
+}
+function renderCheck(p, tl) {
+  var sum = $(p + 'Sum'), tab = $(p + 'Tab'); tab.innerHTML = ''; sum.classList.remove('bad');
+  if (!tl || !tl.frames.length) { sum.textContent = t('chkNone'); return; }
+  var S = chkStats(tl), a = 0, b = 0, v = 0; S.forEach(function (o) { if (o.pma) a++; if (o.safe) b++; if (o.sp > v) v = o.sp; });
+  sum.textContent = t('chkSum', tl.frames.length, tl.total / 1000, a, b, v); if (a) sum.classList.add('bad');
+  S.forEach(function (o) {
+    var s = A.servos[o.k], e = o.e, span = e.rawHi - e.rawLo, pc = function (x) { return Math.max(0, Math.min(100, (x - e.rawLo) / span * 100)); }, row = document.createElement('div'); row.className = 'chkrow';
+    var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = LANG === 'zh' ? s.zh : s.en; nm.title = s.joint; row.appendChild(nm);
+    var bar = document.createElement('div'); bar.className = 'cbar' + (o.pma ? ' bad' : '');
+    if (o.sf) { var f = document.createElement('i'); f.className = 'sf'; f.style.left = pc(o.sf[0]) + '%'; f.style.width = Math.max(0, pc(o.sf[1]) - pc(o.sf[0])) + '%'; bar.appendChild(f); }
+    var tx = document.createElement('span'); tx.className = 'tx';
+    if (o.n) { var u = document.createElement('i'); u.className = 'us'; u.style.left = pc(o.min) + '%'; u.style.width = Math.max(1.5, pc(o.max) - pc(o.min)) + '%'; bar.appendChild(u);
+      var d1 = s.sign * (o.min - 7500) * K_DEG, d2 = s.sign * (o.max - 7500) * K_DEG; tx.textContent = Math.round(Math.min(d1, d2)) + '…' + Math.round(Math.max(d1, d2)) + '°'; if (o.pma) { tx.classList.add('bad'); tx.textContent = '⚠ ' + tx.textContent; } }
+    else tx.textContent = '–';
+    row.appendChild(bar); row.appendChild(tx); tab.appendChild(row);
+  });
+}
+// ------------------------------------------------------------------ push test (external force on the torso) and gamepad
+var PUSH = { left: 0, f: [0, 0, 0] };
+function pushFire(dir) {
+  if (!S.ready || !S.d.xfrc_applied) return;
+  var B = ikBase(), v = mvec(B.R, { fwd: [1, 0, 0], back: [-1, 0, 0], left: [0, 1, 0], right: [0, -1, 0] }[dir]), F = +$('pushF').value;
+  PUSH.f = [F * v[0], F * v[1], F * v[2]]; PUSH.left = 0.1; pushApply(true);
+}
+function pushApply(on) { var x = S.d.xfrc_applied, o = 6 * S.base; for (var i = 0; i < 3; i++) x[o + i] = on ? PUSH.f[i] : 0; }
+function pushTick(dt) { if (PUSH.left <= 0) return; PUSH.left -= dt; pushApply(PUSH.left > 0); }
+Array.prototype.forEach.call(document.querySelectorAll('[data-push]'), function (b) { b.addEventListener('click', function () { pushFire(b.getAttribute('data-push')); }); });
+$('pushF').addEventListener('input', function () { $('pushFV').textContent = this.value + ' N'; });
+WK.gp = { x1: 0, y1: 0, x2: 0, y2: 0, a: false, name: '' };
+function gpLabel() { $('wGp').textContent = WK.gp.name ? t('padGpOn', WK.gp.name) : t('padGpOff'); }
+function gpPoll() {
+  var gps = navigator.getGamepads ? navigator.getGamepads() : [], g = null, i, G = WK.gp, dz = function (v) { v = v || 0; return Math.abs(v) < 0.15 ? 0 : v; };
+  for (i = 0; i < gps.length; i++) if (gps[i] && gps[i].connected) { g = gps[i]; break; }
+  if (!g) { G.x1 = G.y1 = G.x2 = G.y2 = 0; G.a = false; if (G.name) { G.name = ''; gpLabel(); } return; }
+  if (G.name !== g.id) { G.name = g.id; gpLabel(); }
+  G.x1 = dz(g.axes[0]); G.y1 = -dz(g.axes[1]); G.x2 = dz(g.axes[2]); G.y2 = -dz(g.axes[3]);
+  var a = !!(g.buttons[0] && g.buttons[0].pressed); if (a && !G.a) { if (!WK.on) walkStart(); else if (WK.go) { WK.go = false; wRender(); } } G.a = a;
+}
+gpLabel();
+
 // ------------------------------------------------------------------ HUD wiring
 function refreshRun() { $('bRun').classList.toggle('on', !S.run); $('bRun').textContent = t('freeze'); }
 $('bRun').addEventListener('click', function () { S.run = !S.run; refreshRun(); });
@@ -968,7 +1246,7 @@ function applyLang() {
   $('stage').setAttribute('data-drop', t('drop')); $('bLang').textContent = LANG === 'zh' ? 'EN' : '中文'; $('bLang2').textContent = $('bLang').textContent;
   groupEls.forEach(function (g) { g.h.firstChild.textContent = t('g_' + g.key); g.h.querySelector('small').textContent = t('nServos', g.n); });
   A.servos.forEach(function (s, k) { ui[k].lbl.innerHTML = servoLabel(s, k); });
-  refreshRun(); refreshSweep(); refreshList(); renderPma(); renderRb(); renderAudio(); wRender(); renderInfo(); updatePlayUI(true); S.statT = 0; if (S.ready) status(performance.now());
+  refreshRun(); refreshSweep(); refreshList(); renderPma(); renderRb(); renderAudio(); wRender(); rcRender(); gpLabel(); renderInfo(); updatePlayUI(true); S.statT = 0; if (S.ready) status(performance.now());
 }
 $('bLang').addEventListener('click', function () { LANG = LANG === 'zh' ? 'en' : 'zh'; try { localStorage.setItem('pmsim.lang', LANG); } catch (e) {} applyLang(); });
 applyLang();

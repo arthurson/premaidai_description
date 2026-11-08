@@ -112,11 +112,11 @@
             <inertial pos="-0.008596 -0.015762 0.00215" mass="0.0124" fullinertia="7.0485497e-06 1.88648819e-05 2.36494141e-05 -1.04342163e-05 -5e-13 3.8465e-07"/>
             <geom type="mesh" mesh="hull_r_larm_joint"/>
             <body name="r_larm" pos="0 -0.024054 0">
-              <joint name="r_elx_joint" type="hinge" axis="1 0 0" range="-0.2356194 2.06167" limited="true"/>
+              <joint name="r_elx_joint" type="hinge" axis="1 0 0" range="-0.2356194 2.138246" limited="true"/>
               <inertial pos="-0.008596 -0.027572 0.00042" mass="0.0812" fullinertia="3.42361237e-05 1.41587677e-05 4.14116486e-05 3.6e-12 1.2e-12 -3.82193e-08"/>
               <geom type="mesh" mesh="hull_r_larm"/>
               <body name="r_hand" pos="0 -0.061348 0">
-                <joint name="r_wry_joint" type="hinge" axis="0 1 0" range="-0.8835729 3.828816" limited="true"/>
+                <joint name="r_wry_joint" type="hinge" axis="0 1 0" range="-0.9424778 3.828816" limited="true"/>
                 <inertial pos="0.001817 -0.018911 0.002717" mass="0.0046" fullinertia="8.19397e-07 3.111708e-07 9.081884e-07 1.78483e-08 1.94812e-08 2.003531e-07"/>
                 <geom type="mesh" mesh="hull_r_hand"/>
               </body>
@@ -137,7 +137,7 @@
             <inertial pos="-0.008596 0.015762 0.00215" mass="0.0124" fullinertia="7.0485497e-06 1.88648819e-05 2.36494141e-05 1.04342163e-05 -5e-13 -3.8465e-07"/>
             <geom type="mesh" mesh="hull_l_larm_joint"/>
             <body name="l_larm" pos="0 0.024054 0">
-              <joint name="l_elx_joint" type="hinge" axis="1 0 0" range="-2.06167 0.2356194" limited="true"/>
+              <joint name="l_elx_joint" type="hinge" axis="1 0 0" range="-2.138246 0.2356194" limited="true"/>
               <inertial pos="-0.008596 0.027572 0.00042" mass="0.0812" fullinertia="3.42361237e-05 1.41587677e-05 4.14116486e-05 -3.6e-12 1.2e-12 3.82193e-08"/>
               <geom type="mesh" mesh="hull_l_larm"/>
               <body name="l_hand" pos="0 0.061348 0">
@@ -176,12 +176,12 @@
     <position name="act_r_shy_joint" joint="r_shy_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-3.475387 0.7657632" forcelimited="true" forcerange="-1.3712 1.3712"/>
     <position name="act_r_shx_joint" joint="r_shx_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-0.02945243 1.678789" forcelimited="true" forcerange="-0.9114 0.9114"/>
     <position name="act_r_ely_joint" joint="r_ely_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-2.06167 2.06167" forcelimited="true" forcerange="-0.9114 0.9114"/>
-    <position name="act_r_elx_joint" joint="r_elx_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-0.2356194 2.06167" forcelimited="true" forcerange="-0.9114 0.9114"/>
-    <position name="act_r_wry_joint" joint="r_wry_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-0.8835729 3.828816" forcelimited="true" forcerange="-0.9114 0.9114"/>
+    <position name="act_r_elx_joint" joint="r_elx_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-0.2356194 2.138246" forcelimited="true" forcerange="-0.9114 0.9114"/>
+    <position name="act_r_wry_joint" joint="r_wry_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-0.9424778 3.828816" forcelimited="true" forcerange="-0.9114 0.9114"/>
     <position name="act_l_shy_joint" joint="l_shy_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-3.534292 0.7068583" forcelimited="true" forcerange="-1.3712 1.3712"/>
     <position name="act_l_shx_joint" joint="l_shx_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-1.737693 0.02945243" forcelimited="true" forcerange="-0.9114 0.9114"/>
     <position name="act_l_ely_joint" joint="l_ely_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-2.06167 2.06167" forcelimited="true" forcerange="-0.9114 0.9114"/>
-    <position name="act_l_elx_joint" joint="l_elx_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-2.06167 0.2356194" forcelimited="true" forcerange="-0.9114 0.9114"/>
+    <position name="act_l_elx_joint" joint="l_elx_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-2.138246 0.2356194" forcelimited="true" forcerange="-0.9114 0.9114"/>
     <position name="act_l_wry_joint" joint="l_wry_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-0.8835729 3.828816" forcelimited="true" forcerange="-0.9114 0.9114"/>
     <position name="act_r_hpz_joint" joint="r_hpz_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-0.7363108 0.7363108" forcelimited="true" forcerange="-1.3712 1.3712"/>
     <position name="act_r_hpx_joint" joint="r_hpx_joint" kp="20" kv="0.5" ctrllimited="true" ctrlrange="-0.412334 0.5301438" forcelimited="true" forcerange="-1.3712 1.3712"/>
