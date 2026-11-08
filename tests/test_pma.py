@@ -13,8 +13,8 @@ import make_index as mi       # noqa: E402
 
 
 def packet(cmd, payload):
-    """[LEN][CMD][payload...][XOR] with LEN including the LEN and XOR bytes."""
-    body = [2 + len(payload), cmd] + list(payload)
+    """[LEN][CMD][payload...][XOR]; LEN counts all of them (LEN, CMD, payload and XOR)."""
+    body = [3 + len(payload), cmd] + list(payload)
     x = 0
     for b in body:
         x ^= b
@@ -84,8 +84,8 @@ class PmaTests(unittest.TestCase):
         )
         self.assertEqual([f['speed'][IDX] for f in p['frames']], [0, 30, 30])
         self.assertEqual([f['stretch'][IDX] for f in p['frames']], [60, 60, 15])
-        self.assertIsNone(mi.range_of(p['sourceFrames'], 'speed', ignore_zero=True))
-        self.assertEqual(mi.range_of(p['sourceFrames'], 'stretch'), (15, 60))
+        self.assertEqual(mi.range_of(p['sourceFrames'], 'speed', ignore_zero=True), [30, 30])
+        self.assertEqual(mi.range_of(p['sourceFrames'], 'stretch'), [15, 60])
 
     def test_duration_is_max_spd_and_travel(self):
         p = parse(frame(PID, 7500), frame(PID, 7501))
@@ -98,7 +98,7 @@ class PmaTests(unittest.TestCase):
         p = parse(frame(PID, 7500), frame(PID, 7700, spd=1))
         _, durations, total = mi.timeline(p['frames'])
         self.assertAlmostEqual(durations[1], 200 / mi.PULSE_PER_MS)   # travel dominates
-        self.assertAlmostEqual(total, 15 + 200 / mi.PULSE_PER_MS)
+        self.assertAlmostEqual(total, 150.0 + 200 / mi.PULSE_PER_MS)   # first frame: default spd 10 -> 150 ms
 
     def test_bad_checksum_is_counted_but_still_parsed(self):
         bad = frame(PID, 8000)
