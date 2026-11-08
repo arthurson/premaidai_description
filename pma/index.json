@@ -1,42 +1,402 @@
 [
  {
   "title": "Embrace Blade",
-  "pma": "Embrace Blade.pma"
+  "pma": "Embrace Blade.pma",
+  "frames": 374,
+  "rawFrames": 235,
+  "seconds": 121.21,
+  "sections": 1,
+  "loops": 5,
+  "loopRepeats": 34,
+  "maxLoopDepth": 1,
+  "bpm": 133,
+  "stretch": [
+   20,
+   60
+  ],
+  "speed": null,
+  "sectionInfo": [
+   {
+    "frames": 374,
+    "rawFrames": 235,
+    "milliseconds": 121207.37999999979,
+    "seconds": 121.21,
+    "loops": 5,
+    "loopRepeats": 34,
+    "maxLoopDepth": 1,
+    "bpm": 133,
+    "badChecksums": 0,
+    "otherPackets": 13,
+    "stretch": [
+     20,
+     60
+    ],
+    "speed": null,
+    "index": "1",
+    "num": "1",
+    "name": "Embrace Blade0.92"
+   }
+  ],
+  "drm": "Embrace Blade.wsdcf"
  },
  {
   "title": "Eternal Blue～キミと僕と空と海の物語～",
-  "pma": "Eternal Blue～キミと僕と空と海の物語～.pma"
+  "pma": "Eternal Blue～キミと僕と空と海の物語～.pma",
+  "frames": 516,
+  "rawFrames": 496,
+  "seconds": 132.86,
+  "sections": 1,
+  "loops": 2,
+  "loopRepeats": 4,
+  "maxLoopDepth": 1,
+  "bpm": 125,
+  "stretch": [
+   15,
+   60
+  ],
+  "speed": null,
+  "sectionInfo": [
+   {
+    "frames": 516,
+    "rawFrames": 496,
+    "milliseconds": 132859.25999999995,
+    "seconds": 132.86,
+    "loops": 2,
+    "loopRepeats": 4,
+    "maxLoopDepth": 1,
+    "bpm": 125,
+    "badChecksums": 0,
+    "otherPackets": 7,
+    "stretch": [
+     15,
+     60
+    ],
+    "speed": null,
+    "index": "1",
+    "num": "1",
+    "name": "エターナルブルー1.00"
+   }
+  ],
+  "drm": "Eternal Blue～キミと僕と空と海の物語～.wsdcf"
  },
  {
   "title": "Lost In The Sky",
-  "pma": "Lost In The Sky.pma"
+  "pma": "Lost In The Sky.pma",
+  "frames": 401,
+  "rawFrames": 375,
+  "seconds": 113.44,
+  "sections": 1,
+  "loops": 3,
+  "loopRepeats": 4,
+  "maxLoopDepth": 1,
+  "bpm": 143,
+  "stretch": [
+   15,
+   60
+  ],
+  "speed": null,
+  "sectionInfo": [
+   {
+    "frames": 401,
+    "rawFrames": 375,
+    "milliseconds": 113437.68000000002,
+    "seconds": 113.44,
+    "loops": 3,
+    "loopRepeats": 4,
+    "maxLoopDepth": 1,
+    "bpm": 143,
+    "badChecksums": 0,
+    "otherPackets": 9,
+    "stretch": [
+     15,
+     60
+    ],
+    "speed": null,
+    "index": "1",
+    "num": "1",
+    "name": "lost in the sky"
+   }
+  ],
+  "drm": "Lost In The Sky.wsdcf"
  },
  {
   "title": "New World",
-  "pma": "New World.pma"
+  "pma": "New World.pma",
+  "frames": 358,
+  "rawFrames": 351,
+  "seconds": 106.65,
+  "sections": 1,
+  "loops": 1,
+  "loopRepeats": 1,
+  "maxLoopDepth": 1,
+  "bpm": 125,
+  "stretch": [
+   60,
+   60
+  ],
+  "speed": null,
+  "sectionInfo": [
+   {
+    "frames": 358,
+    "rawFrames": 351,
+    "milliseconds": 106646.04750000013,
+    "seconds": 106.65,
+    "loops": 1,
+    "loopRepeats": 1,
+    "maxLoopDepth": 1,
+    "bpm": 125,
+    "badChecksums": 0,
+    "otherPackets": 5,
+    "stretch": [
+     60,
+     60
+    ],
+    "speed": null,
+    "index": "1",
+    "num": "1",
+    "name": "NEW World"
+   }
+  ],
+  "drm": "New World.wsdcf"
  },
  {
   "title": "つくば音頭",
-  "pma": "つくば音頭.pma"
+  "pma": "つくば音頭.pma",
+  "frames": 1388,
+  "rawFrames": 156,
+  "seconds": 337.62,
+  "sections": 1,
+  "loops": 2,
+  "loopRepeats": 12,
+  "maxLoopDepth": 2,
+  "bpm": 143,
+  "stretch": [
+   15,
+   60
+  ],
+  "speed": null,
+  "sectionInfo": [
+   {
+    "frames": 1388,
+    "rawFrames": 156,
+    "milliseconds": 337617.7050000003,
+    "seconds": 337.62,
+    "loops": 2,
+    "loopRepeats": 12,
+    "maxLoopDepth": 2,
+    "bpm": 143,
+    "badChecksums": 0,
+    "otherPackets": 7,
+    "stretch": [
+     15,
+     60
+    ],
+    "speed": null,
+    "index": "1",
+    "num": "1",
+    "name": "つくば音頭"
+   }
+  ],
+  "drm": "つくば音頭.wsdcf"
  },
  {
   "title": "アキシブウェイ",
-  "pma": "アキシブウェイ.pma"
+  "pma": "アキシブウェイ.pma",
+  "frames": 581,
+  "rawFrames": 275,
+  "seconds": 158.8,
+  "sections": 1,
+  "loops": 4,
+  "loopRepeats": 9,
+  "maxLoopDepth": 3,
+  "bpm": 125,
+  "stretch": [
+   15,
+   60
+  ],
+  "speed": null,
+  "sectionInfo": [
+   {
+    "frames": 581,
+    "rawFrames": 275,
+    "milliseconds": 158799.07499999998,
+    "seconds": 158.8,
+    "loops": 4,
+    "loopRepeats": 9,
+    "maxLoopDepth": 3,
+    "bpm": 125,
+    "badChecksums": 0,
+    "otherPackets": 11,
+    "stretch": [
+     15,
+     60
+    ],
+    "speed": null,
+    "index": "1",
+    "num": "1",
+    "name": "akishibu-way0.90"
+   }
+  ],
+  "drm": "アキシブウェイ.wsdcf"
  },
  {
   "title": "サマーライオン",
-  "pma": "サマーライオン.pma"
+  "pma": "サマーライオン.pma",
+  "frames": 344,
+  "rawFrames": 263,
+  "seconds": 92.71,
+  "sections": 1,
+  "loops": 3,
+  "loopRepeats": 4,
+  "maxLoopDepth": 2,
+  "bpm": 125,
+  "stretch": [
+   15,
+   60
+  ],
+  "speed": null,
+  "sectionInfo": [
+   {
+    "frames": 344,
+    "rawFrames": 263,
+    "milliseconds": 92713.70624999994,
+    "seconds": 92.71,
+    "loops": 3,
+    "loopRepeats": 4,
+    "maxLoopDepth": 2,
+    "bpm": 125,
+    "badChecksums": 0,
+    "otherPackets": 9,
+    "stretch": [
+     15,
+     60
+    ],
+    "speed": null,
+    "index": "1",
+    "num": "1",
+    "name": "サマーライオン"
+   }
+  ],
+  "drm": "サマーライオン.wsdcf"
  },
  {
   "title": "マジカル☆エクスプレス☆ジャーニー",
-  "pma": "マジカル☆エクスプレス☆ジャーニー.pma"
+  "pma": "マジカル☆エクスプレス☆ジャーニー.pma",
+  "frames": 454,
+  "rawFrames": 371,
+  "seconds": 123.84,
+  "sections": 1,
+  "loops": 8,
+  "loopRepeats": 16,
+  "maxLoopDepth": 1,
+  "bpm": 167,
+  "stretch": [
+   20,
+   60
+  ],
+  "speed": null,
+  "sectionInfo": [
+   {
+    "frames": 454,
+    "rawFrames": 371,
+    "milliseconds": 123839.53874999996,
+    "seconds": 123.84,
+    "loops": 8,
+    "loopRepeats": 16,
+    "maxLoopDepth": 1,
+    "bpm": 167,
+    "badChecksums": 0,
+    "otherPackets": 19,
+    "stretch": [
+     20,
+     60
+    ],
+    "speed": null,
+    "index": "1",
+    "num": "1",
+    "name": "マジカルエクスプレスジャーニー0.95"
+   }
+  ],
+  "drm": "マジカル☆エクスプレス☆ジャーニー.wsdcf"
  },
  {
   "title": "ロボットボーイロボットガール",
-  "pma": "ロボットボーイロボットガール.pma"
+  "pma": "ロボットボーイロボットガール.pma",
+  "frames": 597,
+  "rawFrames": 438,
+  "seconds": 169.03,
+  "sections": 1,
+  "loops": 2,
+  "loopRepeats": 2,
+  "maxLoopDepth": 1,
+  "bpm": 143,
+  "stretch": [
+   15,
+   60
+  ],
+  "speed": null,
+  "sectionInfo": [
+   {
+    "frames": 597,
+    "rawFrames": 438,
+    "milliseconds": 169030.98,
+    "seconds": 169.03,
+    "loops": 2,
+    "loopRepeats": 2,
+    "maxLoopDepth": 1,
+    "bpm": 143,
+    "badChecksums": 0,
+    "otherPackets": 7,
+    "stretch": [
+     15,
+     60
+    ],
+    "speed": null,
+    "index": "1",
+    "num": "1",
+    "name": "RobotBooyRobotGirl"
+   }
+  ],
+  "drm": "ロボットボーイロボットガール.wsdcf"
  },
  {
   "title": "夢の扉～welcome HUIS TEN BOSCH～",
-  "pma": "夢の扉～welcome HUIS TEN BOSCH～.pma"
+  "pma": "夢の扉～welcome HUIS TEN BOSCH～.pma",
+  "frames": 330,
+  "rawFrames": 129,
+  "seconds": 150.53,
+  "sections": 1,
+  "loops": 5,
+  "loopRepeats": 23,
+  "maxLoopDepth": 2,
+  "bpm": 133,
+  "stretch": [
+   45,
+   60
+  ],
+  "speed": null,
+  "sectionInfo": [
+   {
+    "frames": 330,
+    "rawFrames": 129,
+    "milliseconds": 150529.62750000003,
+    "seconds": 150.53,
+    "loops": 5,
+    "loopRepeats": 23,
+    "maxLoopDepth": 2,
+    "bpm": 133,
+    "badChecksums": 0,
+    "otherPackets": 13,
+    "stretch": [
+     45,
+     60
+    ],
+    "speed": null,
+    "index": "1",
+    "num": "1",
+    "name": "夢の扉シャイン"
+   }
+  ],
+  "drm": "夢の扉～welcome HUIS TEN BOSCH～.wsdcf"
  }
 ]

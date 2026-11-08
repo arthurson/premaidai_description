@@ -122,6 +122,10 @@
     <div id="pane_motion">
       <label class="btn primary wide" data-i18n-title="tipLoad"><input type="file" id="fPma" accept=".pma,.txt" hidden><span data-i18n="loadBtn"></span></label>
       <select id="pSec" style="display:none; width:100%; margin-top:8px" data-i18n-title="tipSec"></select>
+      <div class="field" id="pLoopRow" style="grid-template-columns:72px minmax(0,1fr); display:none">
+        <span data-i18n="loopModeL"></span>
+        <select id="pLoopMode" data-i18n-title="tipLoopMode"><option value="orig" data-i18n="loopOrig"></option><option value="once" data-i18n="loopOnce"></option></select>
+      </div>
       <div id="pList" class="plist"></div>
       <div class="lbl2" data-i18n="audTitle"></div>
       <div class="status"><span id="audName" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><label class="btn sm" data-i18n-title="audLoadTip"><input type="file" id="fAud" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac" hidden><span data-i18n="audLoad"></span></label></div>
@@ -182,6 +186,10 @@
       <div class="status"><span id="rbState"></span><span id="rbVolt" class="mono"></span></div>
       <button id="rbConn" class="primary wide"></button>
       <div class="warnbox" data-i18n="rbWarnS"></div>
+      <div class="lbl2" data-i18n="rbBuiltinL"></div>
+      <select id="rbBuiltin" style="width:100%" data-i18n-title="rbBuiltinTip"></select>
+      <div class="group"><button id="rbPlayBuiltin" class="primary rbc" data-i18n="rbPlayBuiltin"></button><button id="rbStopMotion" class="danger rbc" data-i18n="rbStopMotion"></button></div>
+      <div id="rbMotion" class="sub" style="min-height:1.3em"></div>
       <div class="lbl2" data-i18n="rbModeL"></div>
       <div class="seg full"><button class="rbc" data-rbmode="off" data-i18n="mOff"></button><button class="rbc" data-rbmode="live" data-i18n="mLive"></button><button class="rbc" data-rbmode="stream" data-i18n="mStream"></button></div>
       <input type="checkbox" id="rbLive" hidden><input type="checkbox" id="rbStream" hidden>
@@ -191,7 +199,7 @@
       <label class="chip" style="margin-top:10px"><input type="checkbox" id="rbSafe" checked><span data-i18n="rbSafe"></span></label>
       <label class="chip" style="margin-top:6px"><input type="checkbox" id="rbSafeStream"><span data-i18n="rbSafeStream"></span></label>
       <details class="sec"><summary data-i18n="advanced"></summary>
-        <div class="group"><button id="rbBat" class="rbc" data-i18n="rbBat"></button><button id="rbDz" class="rbc" data-i18n="rbDz"></button><button id="rbDance" class="rbc" data-i18n="rbDance"></button></div>
+        <div class="group"><button id="rbBat" class="rbc" data-i18n="rbBat"></button></div>
         <div class="field" style="grid-template-columns:62px minmax(0,1fr) auto"><span>stretch</span><input type="number" id="rbStr" min="1" max="127" value="60"><button id="rbStrB" class="rbc" data-i18n="rbApply"></button></div>
         <div class="field" style="grid-template-columns:62px minmax(0,1fr) auto"><span>speed</span><input type="number" id="rbSpd" min="1" max="127" value="60"><button id="rbSpdB" class="rbc" data-i18n="rbApply"></button></div>
         <p class="sub" data-i18n="rbWarn"></p>
@@ -264,12 +272,12 @@ var I18N = {
     pmaTitle: 'PMA 動作回放', notLoaded: '未載入', loadBtn: '📂 載入 .pma', tipLoad: '載入自己嘅 .pma 動作檔（亦可以拖放到畫面）', tipSec: '檔內有多個動作',
     play: '▶ 播放', stop: '■ 停止', loop: '循環', smooth: '平滑', stepMode: '逐幀跳',
     tipInterp: '平滑：由上一幀線性過渡到呢一幀（SPD×15 ms，唔快過舵機全速）；逐幀跳：直接送目標，由舵機自己追',
-    pmaNote: '動作係開環播放（冇平衡控制），跳舞類建議勾選上面「吊起機身」；撳 slider／預設姿勢會暫停回放。',
+    pmaNote: '動作係開環播放（冇平衡控制），跳舞類建議勾選上面「吊起機身」；撳 slider／預設姿勢會暫停回放。原檔 0x02/0x07 loop 會用 stack 展開，0x19 嘅 speed／stretch 會套用到模擬（stretch → 剛度，speed → 最大角速度）。',
     mapSummary: 'PMA 對照表（25 舵機，可逐個反向）',
     mapNote: 'θ = ± × (raw − 7500) × 270/8000°。標「推定」嘅舵機，絕對方向未能由資料確定（左右對稱關係係啱嘅，但成對可能反咗）；睇到動作方向反，就剔「反向」。',
     flip: '反向', inferred: '推定', verified: '已驗證', tipInferred: '絕對方向未能由資料確定', tipVerified: '由 firmware 約定、10 個 .pma 資料同開環站立測試驗證',
     drop: '放開 .pma 檔案載入', frame: '幀',
-    nFrames: function (n) { return n + ' 幀'; }, csBad: function (n) { return '⚠ checksum 錯 ' + n + ' 個封包'; }, skipped: function (n) { return '略過 ' + n + ' 個非 0x18 封包（速度/硬度設定等）'; },
+    nFrames: function (n) { return n + ' 幀'; }, csBad: function (n) { return '⚠ checksum 錯 ' + n + ' 個封包'; }, skipped: function (n) { return '略過 ' + n + ' 個未識別封包'; },
     errNo18: '無 0x18 封包', errFmt: '格式唔啱', errFmtInfo: '搵唔到 [モーション(N)] 段落／データ=',
     sTilt: '傾', sSat: '扭力飽和', sSweep: '掃描', sFell: '⚠ 跌低', sPaused: '暫停',
     loading: '載入 MuJoCo WASM（約 11 MB，首次載入）…', loading2: '載入 MuJoCo WASM …', waitVendor: '等緊 vendor/mujoco/mujoco.js + mujoco.wasm …', failed: 'MuJoCo 載入失敗',
@@ -294,12 +302,12 @@ var I18N = {
     pmaTitle: 'PMA motion replay', notLoaded: 'not loaded', loadBtn: '📂 Load .pma', tipLoad: 'Load your own .pma motion file (or drop it onto the view)', tipSec: 'This file holds several motions',
     play: '▶ Play', stop: '■ Stop', loop: 'Loop', smooth: 'Smooth', stepMode: 'Step',
     tipInterp: 'Smooth: interpolate linearly from the previous frame to this one (SPD×15 ms, never faster than servo full speed); Step: send the target at frame start and let the servo chase it',
-    pmaNote: 'Playback is open loop (no balance control); for dances tick "Hang body" above. Touching a slider or a preset pauses the replay.',
+    pmaNote: 'Playback is open loop (no balance control); for dances tick "Hang body" above. Touching a slider or a preset pauses the replay. The file\'s 0x02/0x07 loops are expanded with a stack, and 0x19 speed/stretch values are applied to the simulation (stretch → stiffness, speed → max angular velocity).',
     mapSummary: 'PMA mapping table (25 servos, flip individually)',
     mapNote: 'θ = ± × (raw − 7500) × 270/8000°. For servos marked "Inferred" the absolute direction could not be derived from the data (the left/right mirror relation is right, but the pair as a whole may be flipped); if a motion looks mirrored, tick "Flip".',
     flip: 'Flip', inferred: 'Inferred', verified: 'Verified', tipInferred: 'Absolute direction could not be derived from the data', tipVerified: 'Verified by the firmware convention, the data of the 10 .pma files and an open-loop standing test',
     drop: 'Drop a .pma file to load', frame: 'frame',
-    nFrames: function (n) { return n + ' frames'; }, csBad: function (n) { return '⚠ ' + n + ' packet(s) with bad checksum'; }, skipped: function (n) { return 'skipped ' + n + ' non-0x18 packet(s) (speed / stiffness settings etc.)'; },
+    nFrames: function (n) { return n + ' frames'; }, csBad: function (n) { return '⚠ ' + n + ' packet(s) with bad checksum'; }, skipped: function (n) { return 'skipped ' + n + ' unrecognised packet(s)'; },
     errNo18: 'No 0x18 packets', errFmt: 'Unrecognised format', errFmtInfo: 'No [モーション(N)] section / データ= found',
     sTilt: 'tilt', sSat: 'torque-sat', sSweep: 'sweep', sFell: '⚠ fallen', sPaused: 'paused',
     loading: 'Loading MuJoCo WASM (about 11 MB, first load)…', loading2: 'Loading MuJoCo WASM …', waitVendor: 'Waiting for vendor/mujoco/mujoco.js + mujoco.wasm …', failed: 'MuJoCo failed to load',
@@ -329,7 +337,7 @@ Object.assign(I18N.zh, { physSum: '物理參數（μ / kp）', mobL: '動作 / �
 Object.assign(I18N.en, { physSum: 'Physics (μ / kp)', mobL: 'Motion / Robot', mobR: 'Servos' });
 Object.assign(I18N.zh, {
   title: 'PreMaid AI', intro: '拉 slider 改舵機目標角（度）。機身受重力同摩擦影響，失衡就會跌。', reset: '↺ 重置機身', com: '顯示重心',
-  freeze: '❄ 凍結物理', tipRun: '凍結模擬：機身同動作播放全部停住，只用嚟靜態檢視；再撳一次就繼續', tipLoop: '循環播放', tipSpeed: '播放速度', setTip: '模擬設定',
+  freeze: '❄ 凍結物理', tipRun: '凍結模擬：機身同動作播放全部停住，只用嚟靜態檢視；再撳一次就繼續', tipLoop: '循環播放整段（原檔 0x02/0x07 loop 會先展開）', tipSpeed: '播放速度', setTip: '模擬設定',
   tabMotion: '動作', tabRobot: '實機', tabServos: '舵機', setPhys: '物理', setPlay: '播放', muL: '摩擦 μ', kpL: '剛度 kp', interpL: '播放方式',
   presetL: '預設姿勢', toolsSum: '工具：掃描 · 複製 · 貼上', advanced: '進階', thinTitle: '精簡 PMA',
   rbConn: '🔌 連接實機', rbDisc: '⏏ 斷開連線', rbModeL: '控制模式', mOff: '只睇模擬', mLive: '同步 slider', mStream: '播放 PMA', rbSpdL: '實機速度', rbSpdTip: 'SPD：數字越細越快',
@@ -338,7 +346,7 @@ Object.assign(I18N.zh, {
 });
 Object.assign(I18N.en, {
   title: 'PreMaid AI', intro: 'Drag a slider to set a servo target angle (deg). The body feels gravity and friction and falls if it loses balance.', reset: '↺ Reset body', com: 'Show CoM',
-  freeze: '❄ Freeze physics', tipRun: 'Freeze the simulation: body and motion playback both stop, for static inspection. Press again to resume', tipLoop: 'Loop playback', tipSpeed: 'Playback speed', setTip: 'Simulation settings',
+  freeze: '❄ Freeze physics', tipRun: 'Freeze the simulation: body and motion playback both stop, for static inspection. Press again to resume', tipLoop: 'Repeat the whole motion (the file\'s own 0x02/0x07 loops are expanded first)', tipSpeed: 'Playback speed', setTip: 'Simulation settings',
   tabMotion: 'Motion', tabRobot: 'Robot', tabServos: 'Servos', setPhys: 'Physics', setPlay: 'Playback', muL: 'Friction μ', kpL: 'Stiffness kp', interpL: 'Play mode',
   presetL: 'Preset poses', toolsSum: 'Tools: sweep · copy · paste', advanced: 'Advanced', thinTitle: 'Thin PMA',
   rbConn: '🔌 Connect robot', rbDisc: '⏏ Disconnect', rbModeL: 'Control mode', mOff: 'Sim only', mLive: 'Sync sliders', mStream: 'Play PMA', rbSpdL: 'Robot speed', rbSpdTip: 'SPD: smaller = faster',
@@ -354,6 +362,34 @@ Object.assign(I18N.en, {
   drop: 'Drop a .pma and/or audio file', audTitle: 'Music', audNone: 'no music', audLoad: '🎵 Load music', audLoadTip: 'Load mp3 / m4a / wav / ogg … (or drop it together with the .pma)', audVol: 'Volume', audOffL: 'Music sync offset (+ = music earlier)', tipAud: 'Music on / off',
   libErr: 'pma/library.js not found. Run python pma/make_index.py to create it, or use "Load .pma".', libEmpty: 'No .pma in pma/ yet; add files and run python pma/make_index.py.',
   audDrm: 'A same-name .wsdcf exists, but it is an encrypted container (AES-128 + rights server) that a browser cannot play. Put a same-name .mp3/.m4a in pma/ and re-run make_index.py, or use "Load music".', audErr: 'Could not load the audio file (unsupported format?)'
+});
+Object.assign(I18N.zh, {
+  loopModeL: '原檔 loop', loopOrig: '跟原檔 loop', loopOnce: '播一次（忽略 loop）', tipLoopMode: '跟原檔 loop：用 stack 展開 0x08 02／0x08 07 loop；播一次：忽略 loop 封包，只播原始幀',
+  pmaInfo: function (n, raw, sec, loops, loopsRaw, bpm) {
+    return n + ' 幀' + (loops ? '（原檔 ' + raw + ' 幀，' + loops + ' 個 loop' + (loopsRaw ? '／共 ' + loopsRaw + ' 次' : '') + '）' : '') + ' · ' + sec.toFixed(1) + ' 秒' + (bpm ? ' · ~' + bpm + ' BPM' : '');
+  },
+  pmaParams: function (stretch, speed) {
+    var a = stretch ? ('stretch ' + stretch[0] + '–' + stretch[1]) : 'stretch —';
+    return '0x19：' + a + (speed ? ' · speed ' + speed[0] + '–' + speed[1] : ' · speed —');
+  },
+  rbBuiltinL: '內建動作（0x1F）', rbBuiltinTip: '內建動作由機身韌體播放；播完會自動停。若機身正在播放其他動作，先按 STOP。', rbPlayBuiltin: '▶ 播放內建', rbStopMotion: '■ STOP（0x05）',
+  rbMotionSent: '已送出內建動作…', rbMotionOk: '✓ 機身已開始播放', rbMotionErr: '⚠ 機身回報播放失敗（可能正在播放其他動作，先按 STOP）', rbMotionStopped: '■ 已送出停止指令',
+  rbBuiltinNames: ['首頁', '請', '興奮', '手放腰', '歡迎', '拜託', '再見', '右飛吻', '左飛吻', '手槍', '敬禮', '哭哭', '愛心', '閃亮', '給你', '猴子', 'GO×2', '空氣吉他', '右轉', '左轉'],
+  rbBuiltinTransferred: '已傳送動作 1（App 轉送）'
+});
+Object.assign(I18N.en, {
+  loopModeL: 'File loops', loopOrig: 'Follow file loops', loopOnce: 'Play once (ignore loops)', tipLoopMode: 'Follow file loops: expand 0x08 02 / 0x08 07 blocks with a stack; Play once: ignore loop packets and play the source frames only',
+  pmaInfo: function (n, raw, sec, loops, loopsRaw, bpm) {
+    return n + ' frames' + (loops ? ' (source ' + raw + ', ' + loops + ' loop block' + (loops === 1 ? '' : 's') + (loopsRaw ? ', ' + loopsRaw + ' repeats' : '') + ')' : '') + ' · ' + sec.toFixed(1) + ' s' + (bpm ? ' · ~' + bpm + ' BPM' : '');
+  },
+  pmaParams: function (stretch, speed) {
+    var a = stretch ? ('stretch ' + stretch[0] + '–' + stretch[1]) : 'stretch —';
+    return '0x19: ' + a + (speed ? ' · speed ' + speed[0] + '–' + speed[1] : ' · speed —');
+  },
+  rbBuiltinL: 'Built-in motions (0x1F)', rbBuiltinTip: 'Built-in motions are played by the robot firmware. If another motion is playing, press STOP first.', rbPlayBuiltin: '▶ Play built-in', rbStopMotion: '■ STOP (0x05)',
+  rbMotionSent: 'Built-in motion sent…', rbMotionOk: '✓ Robot started playing', rbMotionErr: '⚠ Robot reported playback failure (another motion may be playing; press STOP first)', rbMotionStopped: '■ Stop command sent',
+  rbBuiltinNames: ['Home', 'Dozo (please)', 'Wakuwaku (excited)', 'Hands on hips', 'Welcome', 'Onegai (please)', 'Bye-bye', 'Kiss right', 'Kiss left', 'Pistol', 'Salute', 'Cry', 'Heart', 'Kira (sparkle)', 'For you', 'Monkey', 'GO×2', 'Air guitar', 'Turn right', 'Turn left'],
+  rbBuiltinTransferred: 'Transferred motion 1 (app upload)'
 });
 Object.assign(I18N.zh, {
   tabWalk: '步行', walkStart: '▶ 開始步行', walkStop: '■ 收步停止', walkIdle: '待機', walkStarting: '起步', walkWalking: '步行中', walkStopping: '收步',
@@ -426,9 +462,15 @@ var PRESETS = {
   squat: Object.assign({ r_hpy_joint: -20, l_hpy_joint: -20, r_kny_joint: 40, l_kny_joint: 40, r_aky_joint: -20, l_aky_joint: -20 }, ARMS_DOWN)
 };
 var N = A.servos.length;                                   // 25
-var S = { mj: null, m: null, d: null, ready: false, run: true, pin: false, mu: A.params.mu, kp: A.params.kp, speed: 1, acc: 0, simT: 0, last: 0, statT: 0, tqT: 0 };
+var S = { mj: null, m: null, d: null, ready: false, run: true, pin: false, mu: A.params.mu, kp: A.params.kp, speed: 1, acc: 0, simT: 0, last: 0, statT: 0, tqT: 0, svSpeed: [], svStretch: [], cmd: [] };
 var target = A.servos.map(function () { return 0; });      // degrees, one per servo (UI order)
-function touch() { if (SW.on) stopSweep(); pausePlay(); }
+for (var _k0 = 0; _k0 < N; _k0++) { S.svSpeed[_k0] = 0; S.svStretch[_k0] = 60; S.cmd[_k0] = 0; }   // 0x19 defaults: speed unlimited, stretch neutral
+var SV_SPEED_LO = 30, SV_SPEED_HI = 600;                   // deg/s at speed 1 and 127 (ICS: larger = faster)
+function stretchFactor(v) {                                // 1..127 (harder); 60 = neutral, same as the sample motions
+  v = +v; if (!(v >= 1 && v <= 127)) v = 60;
+  return v <= 60 ? 0.55 + 0.45 * (v / 60) : 1 + 0.5 * ((v - 60) / 67);
+}
+function touch() { if (SW.on) stopSweep(); pausePlay(); clearServoParams(); }
 var jid = [], ui = [], SW = { on: false, k: 0, t: 0, base: 0 }, bodyMesh = {}, bid = {}, act = [], qadr = [], world, com;
 
 // ------------------------------------------------------------------ servo UI
@@ -572,12 +614,29 @@ function build(mj) {
 function renderInfo() { if (S.infoData) $('info').textContent = t('infoLine', S.infoData); }
 function setMu(v) { S.mu = +v; $('rMu').value = v; $('vMu').textContent = (+v).toFixed(2); if (!S.m) return; var f = S.m.geom_friction; for (var g = 0; g < S.m.ngeom; g++) f[3 * g] = S.mu; }
 function setKp(v) { S.kp = +v; $('rKp').value = v; $('vKp').textContent = String(Math.round(v)); applyGains(); }
-function applyGains() {   // position servo: gain = kp, bias = [0, -kp, -kv]; a released (free, raw 0) servo gets all three = 0
+function applyGains() {   // position servo: gain = kp * stretch factor, bias = [0, -kp, -kv]; a released (free, raw 0) servo gets all three = 0
   if (!S.m) return; var gp = S.m.actuator_gainprm, bp = S.m.actuator_biasprm, kv = A.params.kv;
-  for (var k = 0; k < N; k++) { var a = act[k], on = !P.freeNow[k]; gp[10 * a] = on ? S.kp : 0; bp[10 * a + 1] = on ? -S.kp : 0; bp[10 * a + 2] = on ? -kv : 0; }
+  for (var k = 0; k < N; k++) { var a = act[k], on = !P.freeNow[k], kp = S.kp * stretchFactor(S.svStretch[k]); gp[10 * a] = on ? kp : 0; bp[10 * a + 1] = on ? -kp : 0; bp[10 * a + 2] = on ? -kv : 0; }
+}
+function clearServoParams() {   // back to the normal servo settings when the user takes over from a PMA
+  var dirty = false;
+  for (var k = 0; k < N; k++) {
+    if (S.svSpeed[k] || S.svStretch[k] !== 60) { S.svSpeed[k] = 0; S.svStretch[k] = 60; dirty = true; }
+  }
+  if (dirty) applyGains();
 }
 function ctrlOf(k) { return clampDeg(k, target[k]) * D2R; }
-function setCtrl() { var ct = S.d.ctrl; for (var k = 0; k < N; k++) ct[act[k]] = ctrlOf(k); }
+function setCtrl() {   // 0x19 speed -> maximum angular velocity of the position command (0 = unlimited)
+  var ct = S.d.ctrl, ts = S.ts;
+  for (var k = 0; k < N; k++) {
+    var want = ctrlOf(k), sp = S.svSpeed[k] | 0;
+    if (sp >= 1) {
+      var maxStep = (SV_SPEED_LO + (Math.min(127, sp) / 127) * (SV_SPEED_HI - SV_SPEED_LO)) * D2R * ts, d = want - S.cmd[k];
+      if (d > maxStep) want = S.cmd[k] + maxStep; else if (d < -maxStep) want = S.cmd[k] - maxStep;
+    }
+    S.cmd[k] = want; ct[act[k]] = want;
+  }
+}
 function lowestZ() {   // lowest collision-hull vertex in the world (m.mesh_vert is in each mesh's own frame)
   var m = S.m, d = S.d, gt = m.geom_type, gi = m.geom_dataid, gp = d.geom_xpos, gm = d.geom_xmat, mv = m.mesh_vert, va = m.mesh_vertadr, vn = m.mesh_vertnum, lo = 1e9;
   for (var g = 0; g < m.ngeom; g++) {
@@ -591,7 +650,7 @@ function reset() {   // upright, joints at the commanded pose, lowest point 1 mm
   var mj = S.mj, m = S.m, d = S.d, qp;
   mj.mj_resetData(m, d); qp = d.qpos;
   qp[0] = 0; qp[1] = 0; qp[2] = S.pin ? A.z0 : 1; qp[3] = 1; qp[4] = 0; qp[5] = 0; qp[6] = 0;
-  for (var k = 0; k < N; k++) qp[qadr[k]] = ctrlOf(k);
+  for (var k = 0; k < N; k++) { qp[qadr[k]] = ctrlOf(k); S.cmd[k] = qp[qadr[k]]; }
   setCtrl(); mj.mj_forward(m, d);
   if (!S.pin) { d.qpos[2] = 1 - lowestZ() + 0.001; mj.mj_forward(m, d); }
   d.eq_active[0] = S.pin ? 1 : 0; S.acc = 0; S.simT = 0;
@@ -599,7 +658,7 @@ function reset() {   // upright, joints at the commanded pose, lowest point 1 mm
 function advance(dt) {
   var mj = S.mj, m = S.m, d = S.d, n = 0;
   setCtrl(); S.acc += dt;
-  while (S.acc >= S.ts && n < 120) { mj.mj_step(m, d); S.acc -= S.ts; n++; }
+  while (S.acc >= S.ts && n < 120) { setCtrl(); mj.mj_step(m, d); S.acc -= S.ts; n++; }
   if (S.acc > S.ts) S.acc = 0;      // device too slow: drop the backlog instead of spiralling
   S.simT += n * S.ts;
 }
@@ -640,8 +699,6 @@ var K_DEG = 270 / 8000, PULSE_PER_MS = (60 / 140) * (8000 / 270);
 var PM = { byJoint: {}, pid2k: {} };
 A.pma.forEach(function (e) { PM.byJoint[e.joint] = e; });
 A.servos.forEach(function (s, k) { var e = PM.byJoint[s.joint]; s.pid = e.pid; s.sign = e.sign; s.flip = false; PM.pid2k[e.pid] = k; });
-var P = { name: '', frames: null, T: [], D: [], total: 0, t: 0, playing: false, loop: true, interp: true, freeNow: new Uint8Array(N), dirty: false, uiT: 0, secs: [], state: null, infoD: null };
-
 function parsePmaText(text) {
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
   var re = /\[モーション\((\d+)\)\][\r\n]+番号=(\d+)[\r\n]+名前=([^\r\n]*)[\r\n]+データ=([0-9A-Fa-f ]+)/g, out = [], m;
@@ -657,8 +714,11 @@ function decodePma(buf) {     // UTF-8 (with BOM) first, Shift-JIS as fallback f
   if (!r.length) { try { r = parsePmaText(new TextDecoder('shift_jis').decode(buf)); } catch (e) {} }
   return r;
 }
-function buildTimeline(bytes) {
-  var cur = new Int32Array(N).fill(7500), free = new Uint8Array(N), frames = [], bad = 0, other = 0, i = 0;
+var P = { name: '', frames: null, T: [], D: [], total: 0, t: 0, playing: false, loop: true, loopMode: 'orig', interp: true, freeNow: new Uint8Array(N), dirty: false, uiT: 0, secs: [], secIdx: 0, state: null, infoD: null, bpm: 0 };
+
+function cloneFrame(f) { return { raw: f.raw.slice(), free: f.free.slice(), spd: f.spd, speed: f.speed.slice(), stretch: f.stretch.slice() }; }
+function buildTimeline(bytes, once) {
+  var cur = new Int32Array(N).fill(7500), free = new Uint8Array(N), speed = new Uint8Array(N), stretch = new Uint8Array(N).fill(60), frames = [], loops = [], stack = [], bad = 0, other = 0, rawN = 0, i = 0;
   while (i < bytes.length) {
     var L = bytes[i]; if (L === 0 || L === 0xFF || i + L > bytes.length) break;
     var x = 0; for (var j = 0; j < L - 1; j++) x ^= bytes[i + j];
@@ -669,34 +729,67 @@ function buildTimeline(bytes) {
         var v = bytes[i + q + 1] | (bytes[i + q + 2] << 8);
         if (v === 0) free[k] = 1; else { free[k] = 0; cur[k] = v; }
       }
-      frames.push({ raw: cur.slice(), free: free.slice(), spd: bytes[i + 3] });
+      frames.push({ raw: Array.prototype.slice.call(cur), free: free.slice(), spd: bytes[i + 3], speed: speed.slice(), stretch: stretch.slice() });
+      rawN++;
+    } else if (bytes[i + 1] === 0x19 && L >= 6) {
+      // [LEN][19][00 speed | 10 stretch][pid, value]...  (smaller = slower/softer, larger = faster/harder)
+      var typ = bytes[i + 2];
+      for (var p = 3; p + 1 < L - 1; p += 2) {
+        var pk = PM.pid2k[bytes[i + p]]; if (pk === undefined) continue;
+        if (typ === 0x00) speed[pk] = bytes[i + p + 1];
+        else if (typ === 0x10) stretch[pk] = bytes[i + p + 1];
+      }
+    } else if (bytes[i + 1] === 0x02 && L === 8) {
+      // loop start: start = previous keyframe (TechVerification MotionDataLoader.cs), iterations = payload[5]
+      stack.push({ start: Math.max(0, frames.length - 1), iterations: Math.max(1, bytes[i + 5] || 1), depth: stack.length + 1 });
+    } else if (bytes[i + 1] === 0x07 && L === 8) {
+      // loop end: duplicate the frames from start..end (iterations - 1) times, nested loops included
+      if (stack.length) {
+        var lp = stack.pop(); lp.end = frames.length - 1; loops.push(lp);
+        if (!once && lp.iterations > 1 && lp.end >= lp.start) {
+          var base = frames.slice(lp.start, lp.end + 1);
+          for (var r = 1; r < lp.iterations; r++) for (var b = 0; b < base.length; b++) frames.push(cloneFrame(base[b]));
+        }
+      }
     } else other++;
     i += L;
   }
-  var T = [], D = [], t = 0;
+  var T = [], D = [], t = 0, repeats = 0, maxDepth = 0;
+  loops.forEach(function (lp) { repeats += Math.max(0, lp.iterations - 1); maxDepth = Math.max(maxDepth, lp.depth); });
   frames.forEach(function (f, n) {
     var pf = n ? frames[n - 1] : f, md = 0;
     for (var s = 0; s < N; s++) if (!f.free[s]) md = Math.max(md, Math.abs(f.raw[s] - pf.raw[s]));
     var d = Math.max(Math.max(f.spd, 1) * 15, md / PULSE_PER_MS);     // same rule as motionPlaybackUpdate()
     T.push(t); D.push(d); t += d;
   });
-  return { frames: frames, T: T, D: D, total: t, bad: bad, other: other };
+  return { frames: frames, T: T, D: D, total: t, bad: bad, other: other, rawN: rawN, loops: loops, loopRepeats: repeats, maxLoopDepth: maxDepth };
 }
 function findK(t) { var lo = 0, hi = P.frames.length - 1; while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (P.T[mid] <= t) lo = mid; else hi = mid - 1; } return lo; }
 function poseAt(t) {
-  var fs = P.frames, k = findK(t), f = fs[k], pf = k ? fs[k - 1] : f, a = 1;
+  var fs = P.frames, k = findK(t), f = fs[k], pf = k ? fs[k - 1] : f, a = 1, pd = false;
   if (P.interp && P.D[k] > 0) a = Math.min(1, Math.max(0, (t - P.T[k]) / P.D[k]));
   for (var s = 0; s < N; s++) {
     var raw = pf.raw[s] + (f.raw[s] - pf.raw[s]) * a, fr = f.free[s];
-    if (P.freeNow[s] !== fr) { P.freeNow[s] = fr; P.dirty = true; }
+    if (P.freeNow[s] !== fr) { P.freeNow[s] = fr; pd = true; }
+    if (S.svSpeed[s] !== f.speed[s]) { S.svSpeed[s] = f.speed[s]; }
+    if (S.svStretch[s] !== f.stretch[s]) { S.svStretch[s] = f.stretch[s]; pd = true; }
     setTarget(s, A.servos[s].sign * (raw - 7500) * K_DEG);          // clamped to the servo's travel
   }
-  if (P.dirty) { P.dirty = false; applyGains(); }
+  if (pd) applyGains();
+}
+function rangeOfFrames(frames, field, ignoreZero) {
+  var lo = 0, hi = 0, any = false;
+  frames.forEach(function (f) { for (var s = 0; s < N; s++) { var v = f[field][s]; if (ignoreZero && !v) continue; if (!any) { lo = hi = v; any = true; } else { if (v < lo) lo = v; if (v > hi) hi = v; } } });
+  return any ? [lo, hi] : null;
 }
 function renderPma() {
   var st = P.state, d = P.infoD; renderCheck('chk', P.frames && P.frames.length ? P : null);
   $('pmaState').textContent = !st ? t('notLoaded') : st.k ? t(st.k) : st.raw;
-  $('pInfo').textContent = !d ? '' : d.k ? t(d.k) : t('nFrames', d.n) + ' · ' + d.sec.toFixed(1) + ' s · ' + d.bytes + ' bytes' + (d.bad ? ' · ' + t('csBad', d.bad) : ' · checksum OK') + (d.other ? ' · ' + t('skipped', d.other) : '');
+  if (!d) { $('pInfo').textContent = ''; return; }
+  if (d.k) { $('pInfo').textContent = t(d.k); return; }
+  var txt = t('pmaInfo', d.n, d.rawN, d.sec, d.loops, d.loopRepeats, d.bpm) + ' · ' + d.bytes + ' bytes' + (d.bad ? ' · ' + t('csBad', d.bad) : ' · checksum OK') + (d.other ? ' · ' + t('skipped', d.other) : '');
+  if (d.stretch || d.speed) txt += ' · ' + t('pmaParams', d.stretch, d.speed);
+  $('pInfo').textContent = txt;
 }
 function fmt(t) { t /= 1000; var m = Math.floor(t / 60); return m + ':' + (t - m * 60).toFixed(1).padStart(4, '0'); }
 function updatePlayUI(force) {
@@ -712,28 +805,36 @@ function playTick(dt) {          // dt in seconds (sim time); the timeline is in
   if (P.t >= P.total) { if (P.loop) P.t -= P.total; else { P.t = P.total; P.playing = false; } }
   poseAt(P.t); updatePlayUI(!P.playing); rbStream();
 }
-function useSection(i) {
-  var sec = P.secs[i], tl = buildTimeline(sec.bytes);
+function useSection(i, keepT) {
+  var sec = P.secs[i]; if (!sec) return;
+  var oldT = P.t, tl = buildTimeline(sec.bytes, P.loopMode === 'once');
   if (!tl.frames.length) { P.state = { k: 'errNo18' }; P.infoD = null; renderPma(); return; }
-  P.frames = tl.frames; P.T = tl.T; P.D = tl.D; P.total = tl.total; P.t = 0; P.playing = false; P.name = sec.name || P.file || '';
-  P.state = { raw: P.name }; P.infoD = { n: tl.frames.length, sec: tl.total / 1000, bytes: sec.bytes.length, bad: tl.bad, other: tl.other }; renderPma();
+  P.secIdx = i; P.frames = tl.frames; P.T = tl.T; P.D = tl.D; P.total = tl.total; P.t = keepT ? Math.min(oldT, tl.total) : 0; P.name = sec.name || P.file || '';
+  P.state = { raw: P.name };
+  P.infoD = {
+    n: tl.frames.length, rawN: tl.rawN, sec: tl.total / 1000, bytes: sec.bytes.length, bad: tl.bad, other: tl.other,
+    loops: tl.loops.length, loopRepeats: tl.loopRepeats, maxLoopDepth: tl.maxLoopDepth, bpm: P.bpm,
+    stretch: rangeOfFrames(tl.frames, 'stretch'), speed: rangeOfFrames(tl.frames, 'speed', true)
+  };
+  renderPma();
   ['pPlay', 'pStop', 'pSeek'].forEach(function (id) { $(id).disabled = false; });
-  poseAt(0); updatePlayUI(true);
+  $('pLoopRow').style.display = ''; $('pLoopMode').value = P.loopMode;
+  poseAt(P.t); updatePlayUI(true);
 }
-function loadSections(secs, file) {
+function loadSections(secs, file, bpm) {
   if (!secs.length) { P.state = { k: 'errFmt' }; P.infoD = { k: 'errFmtInfo' }; renderPma(); return; }
-  P.secs = secs; P.file = file || ''; var sel = $('pSec'); sel.innerHTML = '';
+  P.playing = false; P.secs = secs; P.file = file || ''; P.bpm = +bpm || 0; var sel = $('pSec'); sel.innerHTML = '';
   secs.forEach(function (c, i) { var o = document.createElement('option'); o.value = i; o.textContent = (i + 1) + '. ' + (c.name || '(no name)'); sel.appendChild(o); });
   sel.style.display = secs.length > 1 ? '' : 'none'; useSection(0);
 }
-function loadFile(f, af) { if (!f) return; var r = new FileReader(); r.onload = function () { markActive(-1); LIB.cur = -1; audioSet('', '', ''); loadSections(decodePma(r.result), f.name); if (af) audioFile(af); }; r.readAsArrayBuffer(f); }
+function loadFile(f, af) { if (!f) return; var r = new FileReader(); r.onload = function () { markActive(-1); LIB.cur = -1; audioSet('', '', ''); loadSections(decodePma(r.result), f.name, 0); if (af) audioFile(af); }; r.readAsArrayBuffer(f); }
 function loadFiles(fs) {      // any mix of .pma + audio (+ encrypted .wsdcf, which only triggers the explanation)
   var pm = null, au = null, dr = '', AUD = /\.(mp3|m4a|aac|ogg|opus|wav|flac)$/i; Array.prototype.forEach.call(fs, function (f) { if (/\.wsdcf$/i.test(f.name)) dr = f.name; else if (AUD.test(f.name) || /^audio\//.test(f.type)) au = au || f; else pm = pm || f; });
   if (pm) loadFile(pm, au); else if (au) audioFile(au); else if (dr) { audioSet('', '', dr); }
 }
 function b64bytes(b) { var bin = atob(b), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
 $('fPma').addEventListener('change', function () { loadFiles(this.files); this.value = ''; });
-function refreshList() { Array.prototype.forEach.call($('pList').children, function (b) { if (b.getAttribute('data-n')) b.lastChild.textContent = t('nFrames', b.getAttribute('data-n')) + ' · ' + b.getAttribute('data-t'); }); }
+function refreshList() { Array.prototype.forEach.call($('pList').children, function (b) { if (b.getAttribute('data-n')) { var txt = t('nFrames', b.getAttribute('data-n')) + ' · ' + b.getAttribute('data-t'); if (b.getAttribute('data-bpm')) txt += ' · ~' + b.getAttribute('data-bpm') + ' BPM'; b.lastChild.textContent = txt; } }); }
 function markActive(i) { Array.prototype.forEach.call($('pList').children, function (b, n) { b.classList.toggle('on', n === i); }); }
 var LIB = { base: '../pma/', items: [], cur: -1 };      // window.PMA_LIBRARY from pma/library.js (written by pma/make_index.py, a plain <script>, so it also works from file://): { title, pma, audio?, drm?, data (base64 .pma) }
 var AU = { el: new Audio(), name: '', drm: '', err: false, obj: '' };
@@ -773,7 +874,7 @@ function libFetch(it) {      // the .pma comes base64-encoded inside pma/library
 function libLoad(i) {
   var it = LIB.items[i]; if (!it) return;
   libFetch(it).then(function () {
-    loadSections(it.secs, it.pma); markActive(i); LIB.cur = i;
+    loadSections(it.secs, it.pma, it.bpm); markActive(i); LIB.cur = i;
     audioSet(it.audio ? LIB.base + encodeURIComponent(it.audio) : '', it.audio || '', it.drm || '');
     $('pPlay').click();
   }, function () { P.state = { k: 'errFmt' }; P.infoD = { k: 'errFmtInfo' }; renderPma(); });
@@ -784,12 +885,16 @@ function libLoad(i) {
   var list = window.PMA_LIBRARY; if (!list) { msg('libErr'); return; } if (!list.length) { msg('libEmpty'); return; }
   LIB.items = list;
   list.forEach(function (it, i) {
-    var b = document.createElement('button'); b.innerHTML = '<span></span><span></span>'; b.firstChild.textContent = it.title; b.title = it.pma + (it.audio ? ' + ' + it.audio : '');
+    var b = document.createElement('button'); b.innerHTML = '<span></span><span></span>'; b.firstChild.textContent = it.title; b.title = it.pma + (it.audio ? ' + ' + it.audio : '') + (it.bpm ? ' · ~' + it.bpm + ' BPM' : '');
     b.addEventListener('click', function () { libLoad(i); }); box.appendChild(b);
-    libFetch(it).then(function () { var tl = buildTimeline(it.secs[0].bytes); b.setAttribute('data-n', tl.frames.length); b.setAttribute('data-t', fmt(tl.total).replace(/\.\d$/, '')); refreshList(); }, function () { b.disabled = true; });
+    if (it.frames) { b.setAttribute('data-n', it.frames); b.setAttribute('data-t', fmt((it.seconds || 0) * 1000).replace(/\.\d$/, '')); b.setAttribute('data-bpm', it.bpm || 0); }
+    libFetch(it).then(function () {
+      if (!it.frames) { var tl = buildTimeline(it.secs[0].bytes); b.setAttribute('data-n', tl.frames.length); b.setAttribute('data-t', fmt(tl.total).replace(/\.\d$/, '')); }
+      refreshList();
+    }, function () { b.disabled = true; });
   });
 })();
-$('pSec').addEventListener('change', function () { useSection(+this.value); });
+$('pSec').addEventListener('change', function () { P.playing = false; useSection(+this.value); });
 $('pPlay').addEventListener('click', function () {
   if (!P.frames) return;
   if (P.playing) P.playing = false;
@@ -798,7 +903,16 @@ $('pPlay').addEventListener('click', function () {
 });
 $('pStop').addEventListener('click', function () { if (!P.frames) return; P.playing = false; P.t = 0; poseAt(0); updatePlayUI(true); });
 $('pSeek').addEventListener('input', function () { if (!P.frames) return; P.t = this.value / 1000 * P.total; poseAt(P.t); updatePlayUI(true); });
-$('pLoop').addEventListener('change', function () { P.loop = this.checked; });
+$('pLoop').addEventListener('change', function () {
+  P.loop = this.checked;
+  if (P.loop && P.loopMode === 'once') { P.loopMode = 'orig'; $('pLoopMode').value = 'orig'; if (P.frames && P.secs.length) useSection(P.secIdx, true); }
+});
+$('pLoopMode').addEventListener('change', function () {
+  P.loopMode = this.value;
+  if (P.loopMode === 'once') { P.loop = false; $('pLoop').checked = false; }
+  if (P.frames && P.secs.length) useSection(P.secIdx, true);
+  updatePlayUI(true);
+});
 $('pInterp').addEventListener('change', function () { P.interp = this.value === '1'; if (P.frames) poseAt(P.t); });
 ['dragenter', 'dragover'].forEach(function (ev) { $('stage').addEventListener(ev, function (e) { e.preventDefault(); $('stage').classList.add('drag'); }); });
 ['dragleave', 'drop'].forEach(function (ev) { $('stage').addEventListener(ev, function (e) { e.preventDefault(); $('stage').classList.remove('drag'); if (ev === 'drop' && e.dataTransfer.files.length) loadFiles(e.dataTransfer.files); }); });
@@ -823,7 +937,7 @@ function setFlip(k, on) {      // flip one servo's direction: sign, travel (and 
 // ------------------------------------------------------------------ real robot over Web Serial (packets: neon-izm/PremaindAI_TechVerification)
 // packet = [LEN][CMD]...[XOR of all previous bytes]; 0x18 pose = [LEN][18][00][SPD]{pid, lo, hi}*n ; 0x01 = battery (V = u16/216)
 var SAFE = {2:[2500,7500],3:[7300,8000],4:[7500,12500],5:[6600,8400],6:[7000,7900],7:[7200,7800],8:[7000,8000],9:[7500,9700],10:[7000,7700],11:[5200,7300],12:[7300,8000],13:[5000,8000],14:[5000,9000],15:[7000,10000],16:[6000,10000],17:[7400,11000],18:[5000,7550],19:[4000,7600],20:[7450,9000],21:[6000,12000],22:[5800,8200],23:[3000,9000],24:[6800,9200],26:[6700,8700],28:[6300,8300]};
-var RB = { port: null, writer: null, reader: null, rp: null, bt: 0, buf: [], volt: null, last: 0, sig: '', lastPkt: null, retry: 0, lastK: -1, lastF: null, msg: 'rbOff', err: '', perr: false };
+var RB = { port: null, writer: null, reader: null, rp: null, bt: 0, buf: [], volt: null, last: 0, sig: '', lastPkt: null, retry: 0, lastK: -1, lastF: null, paramKey: '', motion: '', msg: 'rbOff', err: '', perr: false };
 var PIDK = A.servos.map(function (s, k) { return k; }).sort(function (a, b) { return A.servos[a].pid - A.servos[b].pid; });
 function xr(a) { var x = 0; for (var i = 0; i < a.length; i++) x ^= a[i]; return x & 255; }
 function mk(body) { var b = body.slice(); b.push(xr(b)); return Uint8Array.from(b); }
@@ -842,11 +956,53 @@ function poseBytes(raw, spd) {
 function targetsRaw() { var r = []; for (var k = 0; k < N; k++) r[k] = rawOf(k, target[k]); return r; }
 function rbSpd() { return parseInt($('rbSp').value, 10) || 10; }
 function rbPose() { var r = targetsRaw(); RB.sig = r.join(','); RB.retry = 0; rbSend(poseBytes(r, rbSpd()), true); }
+function rbParamPacket(type, values) {   // [LEN][19][00 speed | 10 stretch]{pid, value}...; only 1..127 are valid
+  var pairs = [];
+  for (var k = 0; k < N; k++) {
+    var v = values[k] | 0;
+    if (v >= 1 && v <= 127) pairs.push(A.servos[k].pid, v);
+  }
+  if (!pairs.length) return false;
+  return rbSend(mk([4 + pairs.length, 0x19, type].concat(pairs)));
+}
 function rbParam(stretch) {
-  var v = Math.max(1, Math.min(127, parseInt($(stretch ? 'rbStr' : 'rbSpd').value, 10) || 60)), b = [0x36, 0x19, stretch ? 0x10 : 0x00];
-  PIDK.forEach(function (k) { b.push(A.servos[k].pid, v); }); rbSend(mk(b));
+  var v = Math.max(1, Math.min(127, parseInt($(stretch ? 'rbStr' : 'rbSpd').value, 10) || 60)), vals = [];
+  for (var k = 0; k < N; k++) vals[k] = v;
+  rbParamPacket(stretch ? 0x10 : 0x00, vals);
 }
 function rbBattery() { rbSend(hexPkt('07 01 00 02 00 02 06')); }
+var BUILTIN = [
+  { id: 0x3D, jp: 'ホーム' }, { id: 0x3E, jp: 'どうぞ' }, { id: 0x3F, jp: 'ワクワク' }, { id: 0x40, jp: 'コシニテ' },
+  { id: 0x41, jp: 'ようこそ' }, { id: 0x42, jp: 'おねがい' }, { id: 0x43, jp: 'バイバイ' }, { id: 0x44, jp: '右にキス' },
+  { id: 0x45, jp: '左にキス' }, { id: 0x46, jp: 'ピストル' }, { id: 0x47, jp: '敬礼' }, { id: 0x48, jp: 'えーん' },
+  { id: 0x49, jp: 'ハート' }, { id: 0x4A, jp: 'キラッ' }, { id: 0x4B, jp: 'あなたへ' }, { id: 0x4C, jp: 'もんきー' },
+  { id: 0x4D, jp: 'GO×2' }, { id: 0x4E, jp: 'エアギター' }, { id: 0x4F, jp: '右ターン' }, { id: 0x50, jp: '左ターン' }
+];
+function builtinLabel(it, i) {
+  var names = t('rbBuiltinNames');
+  return (i + 1) + '. ' + (names[i] || it.jp) + '（' + it.jp + '）';
+}
+function renderBuiltin() {
+  var sel = $('rbBuiltin'); if (!sel) return;
+  var cur = sel.value; sel.innerHTML = '';
+  BUILTIN.forEach(function (it, i) { var o = document.createElement('option'); o.value = it.id; o.textContent = builtinLabel(it, i); sel.appendChild(o); });
+  var o = document.createElement('option'); o.value = 0x01; o.textContent = t('rbBuiltinTransferred'); sel.appendChild(o);
+  if (cur && sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
+}
+function rbMotionSend(id) {
+  $('rbLive').checked = false; $('rbStream').checked = false;
+  P.playing = false; updatePlayUI(true);
+  RB.lastF = RB.lastK = null;
+  RB.motion = 'rbMotionSent'; renderRb();
+  rbSend(mk([0x05, 0x1F, 0x00, id & 0xFF]));
+}
+function rbStopMotion() {
+  $('rbLive').checked = false; $('rbStream').checked = false;
+  P.playing = false; updatePlayUI(true);
+  RB.lastF = RB.lastK = null;
+  RB.motion = 'rbMotionStopped'; renderRb();
+  rbSend(hexPkt('04 05 00 01'));
+}
 function rbRx(u8) {
   for (var i = 0; i < u8.length; i++) RB.buf.push(u8[i]);
   while (RB.buf.length) {
@@ -854,6 +1010,7 @@ function rbRx(u8) {
     if (RB.buf.length < L) { if (RB.buf.length > 200) RB.buf.length = 0; break; }
     var p = RB.buf.splice(0, L);
     if (p[1] === 0x01 && L >= 5) { RB.volt = (p[3] | (p[4] << 8)) / 216; }
+    else if (p[1] === 0x1F && L >= 4) { RB.motion = (p[2] & 0x80) ? 'rbMotionErr' : 'rbMotionOk'; }
     else if (p[1] === 0x18) {
       if (p[2] === 0x08 && RB.lastPkt && RB.retry < 20) { RB.retry++; RB.perr = true; setTimeout(function () { rbSend(RB.lastPkt); }, 5); }   // reference code re-sends the last pose on "04 18 08 14"
       else if (p[2] === 0) { RB.retry = 0; RB.perr = false; }
@@ -870,7 +1027,7 @@ async function rbConnect() {
   if (!navigator.serial) { RB.msg = 'rbNoSerial'; renderRb(); return; }
   try {
     RB.port = await navigator.serial.requestPort(); await RB.port.open({ baudRate: 115200, dataBits: 8, stopBits: 1, parity: 'none' });
-    RB.writer = RB.port.writable.getWriter(); RB.msg = 'rbOn'; RB.err = ''; RB.buf = []; RB.volt = null; RB.rp = rbLoop();
+    RB.writer = RB.port.writable.getWriter(); RB.msg = 'rbOn'; RB.err = ''; RB.buf = []; RB.volt = null; RB.motion = ''; RB.rp = rbLoop();
     RB.bt = setInterval(rbBattery, 10000); setTimeout(rbBattery, 1500);
   } catch (e) { RB.port = null; RB.writer = null; RB.msg = 'rbErr'; RB.err = e && e.message || String(e); }
   renderRb();
@@ -880,12 +1037,14 @@ async function rbDisconnect() {
   try { if (RB.reader) await RB.reader.cancel(); if (RB.rp) await RB.rp; } catch (e) {}
   try { if (RB.writer) RB.writer.releaseLock(); } catch (e) {}
   try { if (RB.port) await RB.port.close(); } catch (e) {}
-  RB.port = RB.writer = RB.reader = RB.rp = null; RB.msg = 'rbOff'; renderRb();
+  RB.port = RB.writer = RB.reader = RB.rp = null; RB.msg = 'rbOff'; RB.motion = ''; renderRb();
 }
 function renderRb() {
   var on = !!RB.writer;
   Array.prototype.forEach.call(document.querySelectorAll('[data-rbmode]'), function (b) { var m = b.getAttribute('data-rbmode'); b.classList.toggle('on', m === 'live' ? $('rbLive').checked : m === 'stream' ? $('rbStream').checked : !$('rbLive').checked && !$('rbStream').checked); });
   $('rbState').textContent = RB.msg === 'rbErr' ? t('rbErr') + RB.err : t(RB.msg) + (RB.perr ? ' · ' + t('rbPoseErr') : '');
+  $('rbMotion').textContent = RB.motion ? t(RB.motion) : '';
+  $('rbMotion').classList.toggle('warn', RB.motion === 'rbMotionErr');
   $('rbConn').textContent = t(on ? 'rbDisc' : 'rbConn');
   $('rbVolt').textContent = RB.volt == null ? '' : t('rbVolt', RB.volt) + (RB.volt < 9 ? ' ' + t('rbLow') : '');
   Array.prototype.forEach.call(document.querySelectorAll('.rbc'), function (el) { el.disabled = !on; });
@@ -896,9 +1055,15 @@ function rbTick(now) {       // live mirror of the slider targets (not while a P
 }
 function rbStream() {        // send each PMA frame to the robot when it starts; the robot interpolates with the frame's own SPD
   if (!RB.writer || !$('rbStream').checked || !P.frames) return;
-  if (RB.lastF !== P.frames) { RB.lastF = P.frames; RB.lastK = -1; }
+  if (RB.lastF !== P.frames) { RB.lastF = P.frames; RB.lastK = -1; RB.paramKey = ''; }
   var k = findK(P.t); if (k === RB.lastK) return; RB.lastK = k;
   var f = P.frames[k], raw = []; for (var s = 0; s < N; s++) raw[s] = f.free[s] ? 0 : ($('rbSafeStream').checked ? rawClampSafe(s, f.raw[s]) : f.raw[s]);
+  var key = f.speed.join(',') + '|' + f.stretch.join(',');
+  if (key !== RB.paramKey) {           // 0x19 parameters changed at this keyframe: send them before the pose
+    RB.paramKey = key;
+    rbParamPacket(0x10, f.stretch);
+    rbParamPacket(0x00, f.speed);
+  }
   RB.retry = 0; rbSend(poseBytes(raw, f.spd || 1), true);
 }
 function rbExport() {
@@ -914,10 +1079,10 @@ function rbExport() {
 }
 $('rbConn').addEventListener('click', function () { RB.writer ? rbDisconnect() : rbConnect(); });
 $('rbOnce').addEventListener('click', rbPose);
-$('rbRel').addEventListener('click', function () { $('rbLive').checked = false; $('rbStream').checked = false; var z = []; for (var k = 0; k < N; k++) z[k] = 0; RB.retry = 0; rbSend(poseBytes(z, 2), true); });
-$('rbT').addEventListener('click', function () { $('rbLive').checked = false; rbSend(hexPkt('04 05 00 01')); });
-$('rbDz').addEventListener('click', function () { rbSend(hexPkt('05 1F 00 3E 24')); });
-$('rbDance').addEventListener('click', function () { rbSend(hexPkt('05 1F 00 01 1B')); });
+$('rbRel').addEventListener('click', function () { $('rbLive').checked = false; $('rbStream').checked = false; RB.motion = ''; var z = []; for (var k = 0; k < N; k++) z[k] = 0; RB.retry = 0; rbSend(poseBytes(z, 2), true); });
+$('rbT').addEventListener('click', rbStopMotion);
+$('rbPlayBuiltin').addEventListener('click', function () { if (!RB.writer) { renderRb(); return; } rbMotionSend(parseInt($('rbBuiltin').value, 10)); });
+$('rbStopMotion').addEventListener('click', function () { if (!RB.writer) { renderRb(); return; } rbStopMotion(); });
 $('rbStrB').addEventListener('click', function () { rbParam(true); });
 $('rbSpdB').addEventListener('click', function () { rbParam(false); });
 $('rbBat').addEventListener('click', rbBattery);
@@ -1246,14 +1411,14 @@ function applyLang() {
   $('stage').setAttribute('data-drop', t('drop')); $('bLang').textContent = LANG === 'zh' ? 'EN' : '中文'; $('bLang2').textContent = $('bLang').textContent;
   groupEls.forEach(function (g) { g.h.firstChild.textContent = t('g_' + g.key); g.h.querySelector('small').textContent = t('nServos', g.n); });
   A.servos.forEach(function (s, k) { ui[k].lbl.innerHTML = servoLabel(s, k); });
-  refreshRun(); refreshSweep(); refreshList(); renderPma(); renderRb(); renderAudio(); wRender(); rcRender(); gpLabel(); renderInfo(); updatePlayUI(true); S.statT = 0; if (S.ready) status(performance.now());
+  refreshRun(); refreshSweep(); refreshList(); renderPma(); renderRb(); renderAudio(); renderBuiltin(); wRender(); rcRender(); gpLabel(); renderInfo(); updatePlayUI(true); S.statT = 0; if (S.ready) status(performance.now());
 }
 $('bLang').addEventListener('click', function () { LANG = LANG === 'zh' ? 'en' : 'zh'; try { localStorage.setItem('pmsim.lang', LANG); } catch (e) {} applyLang(); });
 applyLang();
 
 loadMujoco().then(function (mj) {
   build(mj); buildMeshes(); reset(); S.ready = true; $('loader').style.display = 'none';
-  window.PMSIM = { S: S, target: target, setTarget: setTarget, reset: reset, advance: advance, applyPose: applyPose, PRESETS: PRESETS, view: view, camera: camera, pma: { P: P, decode: decodePma, timeline: buildTimeline, load: loadSections, poseAt: poseAt, setFlip: setFlip } };   // for tests / scripting
+  window.PMSIM = { S: S, target: target, setTarget: setTarget, reset: reset, advance: advance, applyPose: applyPose, PRESETS: PRESETS, view: view, camera: camera, pma: { P: P, decode: decodePma, timeline: buildTimeline, load: loadSections, poseAt: poseAt, setFlip: setFlip }, rb: { send: rbMotionSend, stop: rbStopMotion, rx: rbRx, state: RB } };   // for tests / scripting
 }).catch(function (e) { console.error(e); $('loadMsg').textContent = t('failed'); $('loadErr').textContent = String(e && e.message || e) + (location.protocol === 'file:' ? '' : t('httpHint')); });
 requestAnimationFrame(frame);
 })();
