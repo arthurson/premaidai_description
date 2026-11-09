@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="icon" href="data:,">
+<link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#6d28d9"><link rel="apple-touch-icon" href="icon-192.png">
 <title>PreMaid AI · MuJoCo WASM · 25 servos</title>
 <!-- Apache-2.0 (as this package). Generated file: edit web/premaid-sim.src.html and run `python mujoco/make_premaid_mjcf.py`.
      Engine: vendor/mujoco/mujoco.{js,wasm} = official @mujoco/mujoco 3.17.0 (Apache-2.0). three.js r147 + OrbitControls in vendor/. -->
@@ -38,10 +38,10 @@
   .field { display: grid; grid-template-columns: 70px minmax(0, 1fr) 44px; align-items: center; gap: 8px; margin: 6px 0; } .field > span:last-child { text-align: right; color: var(--mute); }
   .group { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
   .lbl2 { font-size: 11px; font-weight: 600; color: var(--mute); margin: 12px 0 4px; letter-spacing: .3px; }
-  #stat { font-size: 12px; color: var(--mute); margin-top: 8px; } #stat.warn { color: var(--warn); }
+  #stat { font-size: 12px; color: var(--mute); margin-top: 8px; } #stat.warn { color: var(--mute); }
   #loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--bg) 92%, transparent); z-index: 5; }
   #loader .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; max-width: 420px; text-align: center; }
-  #loader .err { color: var(--warn); white-space: pre-wrap; margin-top: 8px; }
+  #loader .err { color: var(--mute); white-space: pre-wrap; margin-top: 8px; }
   h1 { font-size: 16px; margin: 0 0 4px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   h2 { font-size: 13px; margin: 14px 0 4px; padding-bottom: 3px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; } h2 small { font-weight: normal; color: var(--mute); }
   .sub { color: var(--mute); margin: 0 0 8px; font-size: 12px; }
@@ -76,6 +76,7 @@
     #leftcol, #rightpanel { top: auto; bottom: 112px; width: min(94vw, 350px); max-width: none; height: min(60vh, calc(100dvh - 200px)); display: none; z-index: 35; }
     #leftcol { left: 6px; } #rightpanel { left: auto; right: 6px; } html.mobL #leftcol, html.mobR #rightpanel { display: block; }
     #playbar { left: 6px; right: 6px; bottom: 6px; transform: none; width: auto; grid-template-columns: auto 1fr; gap: 6px 8px; padding: 6px 8px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+    #estop { left: 8px; padding: 8px 12px; font-size: 13px; }
     #playbar .ctl2 { justify-self: end; } #seekrow { grid-column: 1 / -1; grid-row: 2; } #pmaState { display: none; }
   }
   @media (pointer: coarse) {
@@ -92,7 +93,24 @@
   #rcList { max-height: 36vh; overflow-y: auto; margin: 8px 0; } #rcName { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font: inherit; }
   .chkrow { display: grid; grid-template-columns: 74px minmax(0, 1fr) 84px; gap: 6px; align-items: center; font-size: 11px; margin: 2px 0; } .chkrow .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cbar { position: relative; height: 8px; border-radius: 4px; background: var(--line); } .cbar .sf { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 22%, var(--line)); } .cbar .us { position: absolute; top: 1px; bottom: 1px; background: var(--accent); border-radius: 3px; }
-  .cbar.bad .us { background: var(--danger); } .chkrow .tx { text-align: right; color: var(--mute); white-space: nowrap; } .chkrow .tx.bad { color: var(--danger); font-weight: 600; } .chk-sum { color: var(--mute); font-weight: normal; } .chk-sum.bad { color: var(--danger); }
+  .cbar.bad .us { background: var(--danger); } .chkrow .tx { text-align: right; color: var(--mute); white-space: nowrap; } .chkrow .tx.bad { color: var(--fg); font-weight: 600; } .chk-sum { color: var(--mute); font-weight: normal; } .chk-sum.bad { color: var(--fg); }
+  #estop { position: fixed; z-index: 40; left: 334px; top: 50%; transform: translateY(-50%); background: var(--danger); color: #fff; border: 2px solid #fff; border-radius: 999px; padding: 10px 16px; font-size: 15px; font-weight: 700; letter-spacing: .5px; box-shadow: 0 4px 18px rgba(0,0,0,.45); cursor: pointer; }
+  #estop:hover { filter: brightness(1.12); } #estop.hit { animation: eflash .3s 3; } @keyframes eflash { 50% { background: #fff; color: var(--danger); } }
+  .stt { max-height: 280px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; margin: 6px 0; } .stt table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+  .stt th { position: sticky; top: 0; background: var(--panel); text-align: left; color: var(--mute); font-weight: 600; padding: 3px 4px; } .stt td { padding: 2px 4px; border-top: 1px solid var(--line); white-space: nowrap; }
+  .stt tr.na td { color: var(--mute); opacity: .55; } .stt tr.stale td { color: var(--mute); }
+  #mnLog { height: 170px; overflow: auto; margin: 6px 0; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font: 10.5px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre; }
+  #bvG { width: 100%; height: 56px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); display: block; margin-top: 6px; }
+  .field input[type=text], .group input[type=text] { min-width: 0; width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font: inherit; font-size: 12px; }
+  .bgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; } .bgrid button { padding: 7px 2px; font-size: 11.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #senHud { position: fixed; z-index: 12; left: 334px; top: 72px; display: none; margin: 0; padding: 8px 10px; font: 11px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--line); border-radius: 10px; white-space: pre; pointer-events: none; }
+  #kbHelp { position: fixed; z-index: 60; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: min(560px, 92vw); max-height: 86vh; overflow: auto; cursor: pointer; }
+  #kbHelp table { border-collapse: collapse; } #kbHelp td { padding: 2px 10px 2px 0; vertical-align: top; } #kbHelp kbd { font: 12px ui-monospace, Menlo, Consolas, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--bg); }
+  .rcrow.sel { outline: 1.5px solid var(--accent); outline-offset: 1px; border-radius: 8px; }
+  #abTxt { font-size: 11px; color: var(--mute); }
+  body.kiosk #leftcol, body.kiosk #rightpanel, body.kiosk #hud, body.kiosk #estop, body.kiosk #mtop, body.kiosk #senHud { display: none !important; }
+  body.kiosk.nobar #playbar { display: none !important; }
+  @media (max-width: 1100px) { #senHud { left: 8px; top: 108px; } }
 </style>
 </head>
 <body>
@@ -117,6 +135,10 @@
     </div>
   </div>
 
+  <button id="estop" data-i18n="estop" data-i18n-title="estopTip"></button>
+  <pre id="senHud"></pre>
+  <div id="kbHelp" class="panel" hidden><div data-i18n="kbHelp" data-i18n-html></div></div>
+
   <div id="leftcol" class="panel">
     <div class="tabs"><button class="on" data-tab="motion" data-i18n="tabMotion"></button><button data-tab="robot" data-i18n="tabRobot"></button><button data-tab="walk" data-i18n="tabWalk"></button><button data-tab="rec" data-i18n="tabRec"></button></div>
     <div id="pane_motion">
@@ -127,10 +149,10 @@
         <select id="pLoopMode" data-i18n-title="tipLoopMode"><option value="orig" data-i18n="loopOrig"></option><option value="once" data-i18n="loopOnce"></option></select>
       </div>
       <div id="pList" class="plist"></div>
+      <div class="group" style="align-items:center;margin-top:6px"><button id="plPrev" class="sm" data-i18n-title="plPrev">⏮</button><button id="plNext" class="sm" data-i18n-title="plNext">⏭</button><label class="chip"><input type="checkbox" id="plAuto"><span data-i18n="plAutoL"></span></label><label class="chip"><input type="checkbox" id="plShuf"><span data-i18n="plShufL"></span></label><label class="chip"><input type="checkbox" id="plWake" checked><span data-i18n="plWakeL"></span></label></div>
       <div class="lbl2" data-i18n="audTitle"></div>
       <div class="status"><span id="audName" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><label class="btn sm" data-i18n-title="audLoadTip"><input type="file" id="fAud" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac" hidden><span data-i18n="audLoad"></span></label></div>
       <div class="field" style="grid-template-columns:48px minmax(0,1fr) 38px"><span data-i18n="audVol"></span><input type="range" id="aVol" min="0" max="1" step="0.05" value="0.8"><span id="aVolV" class="mono">80</span></div>
-      <div id="audNote" class="warnbox" hidden></div>
       <div id="pInfo" class="info sub"></div>
       <div class="info sub" data-i18n="pmaNote"></div>
       <details class="sec"><summary><span data-i18n="chkTitle"></span> <small id="chkSum" class="chk-sum"></small></summary>
@@ -141,11 +163,9 @@
         <div class="field" style="grid-template-columns:0 minmax(0,1fr) 62px"><span></span><input type="range" id="aOff" min="-2000" max="2000" step="50" value="0"><span id="aOffV" class="mono">0 ms</span></div>
         <div class="lbl2" data-i18n="thinTitle"></div>
         <div class="group" style="align-items:center"><span data-i18n="rbThinA"></span><input type="number" id="rbThin" min="2" value="2" style="width:56px"><span data-i18n="rbThinB"></span><button id="rbExp" data-i18n="rbExp"></button></div>
-        <div class="lbl2" data-i18n="mapSummary"></div><p class="sub" data-i18n="mapNote"></p><table class="map"><tbody id="pmaMap"></tbody></table>
       </details>
     </div>
     <div id="pane_walk" hidden>
-      <div class="warnbox" data-i18n="walkWarn"></div>
       <button id="wGo" class="primary wide"></button>
       <div class="status"><span id="wState"></span><span id="wTick" class="mono"></span></div>
       <div class="pads">
@@ -172,6 +192,13 @@
         <div id="chkRTab"></div><p class="sub" data-i18n="chkNote"></p>
       </details>
       <div class="group"><button id="rcPlay" data-i18n="recPlay"></button><button id="rcExp" data-i18n="recExp"></button><button id="rcClr" class="danger" data-i18n="recClr"></button></div>
+      <div class="group"><button id="rcIns" class="sm" data-i18n="rcIns" data-i18n-title="rcInsTip"></button><button id="rcDup" class="sm" data-i18n="rcDup"></button><button id="rcTrimB" class="sm" data-i18n="rcTrimB" data-i18n-title="rcTrimBTip"></button><button id="rcTrimA" class="sm" data-i18n="rcTrimA" data-i18n-title="rcTrimATip"></button><button id="rcSplit" class="sm" data-i18n="rcSplit" data-i18n-title="rcSplitTip"></button><button id="rcMerge" class="sm" data-i18n="rcMerge" data-i18n-title="rcMergeTip"></button></div>
+      <label class="chip"><input type="checkbox" id="rcOnion"><span data-i18n="onionL"></span></label> <span id="rcAlt" class="sub"></span>
+      <div class="lbl2" data-i18n="teachL"></div>
+      <div class="group"><button id="tcStart" class="rbc primary" data-i18n="tcStart" data-i18n-title="tcStartTip"></button><button id="tcHold" class="rbc" data-i18n="tcHold" data-i18n-title="tcHoldTip"></button></div>
+      <div class="group" style="align-items:center"><button id="tcCap" class="rbc" data-i18n="tcCap"></button><button id="tcAuto" class="rbc"></button><input type="number" id="tcMs" min="100" max="5000" step="50" value="300" style="width:64px"><span>ms</span></div>
+      <div class="group"><button id="rcCsv" data-i18n="recCsv" data-i18n-title="recCsvTip"></button></div>
+      <p class="sub" id="tcInfo" style="min-height:1.3em"></p><p class="sub" data-i18n="teachNote"></p>
       <div class="lbl2" data-i18n="recTools"></div>
       <div class="group">
         <button id="rcMir" data-i18n="recMirror" data-i18n-title="recMirrorTip"></button>
@@ -185,10 +212,10 @@
     <div id="pane_robot" hidden>
       <div class="status"><span id="rbState"></span><span id="rbVolt" class="mono"></span></div>
       <button id="rbConn" class="primary wide"></button>
-      <div class="warnbox" data-i18n="rbWarnS"></div>
-      <div class="lbl2" data-i18n="rbBuiltinL"></div>
-      <select id="rbBuiltin" style="width:100%" data-i18n-title="rbBuiltinTip"></select>
-      <div class="group"><button id="rbPlayBuiltin" class="primary rbc" data-i18n="rbPlayBuiltin"></button><button id="rbStopMotion" class="danger rbc" data-i18n="rbStopMotion"></button></div>
+      <div class="field" style="grid-template-columns:32px minmax(0,1fr) auto;margin-top:6px" data-i18n-title="wsTip"><span class="mono">WS</span><input type="text" id="wsUrl" spellcheck="false" autocomplete="off"><button id="wsConn" data-i18n="wsConn"></button></div>
+      <div class="lbl2" data-i18n="rbBuiltinL" data-i18n-title="rbBuiltinTip"></div>
+      <div id="rbBuiltinGrid" class="bgrid"></div>
+      <button id="rbStopMotion" class="danger rbc wide" style="margin-top:6px" data-i18n="rbStopMotion"></button>
       <div id="rbMotion" class="sub" style="min-height:1.3em"></div>
       <div class="lbl2" data-i18n="rbModeL"></div>
       <div class="seg full"><button class="rbc" data-rbmode="off" data-i18n="mOff"></button><button class="rbc" data-rbmode="live" data-i18n="mLive"></button><button class="rbc" data-rbmode="stream" data-i18n="mStream"></button></div>
@@ -198,11 +225,28 @@
       <button id="rbRel" class="rbc danger wide" data-i18n="rbRel"></button>
       <label class="chip" style="margin-top:10px"><input type="checkbox" id="rbSafe" checked><span data-i18n="rbSafe"></span></label>
       <label class="chip" style="margin-top:6px"><input type="checkbox" id="rbSafeStream"><span data-i18n="rbSafeStream"></span></label>
+      <details class="sec" id="stSec"><summary data-i18n="stTitle"></summary>
+        <div class="group"><label class="chip"><input type="checkbox" id="stOn" class="rbc"><span data-i18n="stPoll"></span></label><label class="chip" data-i18n-title="stTwinTip"><input type="checkbox" id="stTwin" class="rbc"><span data-i18n="stTwin"></span></label></div>
+        <div class="field" style="grid-template-columns:78px minmax(0,1fr)" data-i18n-title="mirTip"><span data-i18n="mirL"></span><select id="mrMode"><option value="off" data-i18n="mirOff"></option><option value="any" data-i18n="mirAny"></option><option value="lr" data-i18n="mirLR"></option><option value="rl" data-i18n="mirRL"></option></select></div>
+        <div id="stSum" class="sub mono" style="min-height:1.3em"></div>
+        <div class="stt"><table><thead><tr><th>ID</th><th data-i18n="stColJ"></th><th data-i18n="stColAct"></th><th>°</th><th data-i18n="stColCmd"></th><th>spd/str</th><th>gyro</th></tr></thead><tbody id="stBody"></tbody></table></div>
+        <p class="sub" data-i18n="stNote"></p>
+      </details>
+      <details class="sec" id="mnSec"><summary data-i18n="mnTitle"></summary>
+        <div class="sub" style="margin-top:2px" data-i18n="bvL"></div><canvas id="bvG" width="320" height="56"></canvas><div id="bvTxt" class="sub mono"></div>
+        <label class="chip" style="margin-top:6px"><input type="checkbox" id="mnWake" checked><span data-i18n="wakeL"></span></label> <span id="mnWakeS" class="sub"></span>
+        <div class="group" style="align-items:center;margin-top:6px"><label class="chip"><input type="checkbox" id="mnHide" checked><span data-i18n="mnHide"></span></label><label class="chip"><input type="checkbox" id="mnPause"><span data-i18n="mnPause"></span></label><button id="mnClear" class="sm" data-i18n="mnClear"></button><button id="mnCopy" class="sm" data-i18n="mnCopy"></button></div>
+        <div id="mnLog"></div><div id="mnCnt" class="sub mono"></div>
+        <div class="field" style="grid-template-columns:minmax(0,1fr) auto auto;margin-top:6px"><input type="text" id="mnHex" class="mono" spellcheck="false" placeholder="CMD payload… e.g. 01 00 02 00 02"><label class="chip" data-i18n-title="mnAutoTip"><input type="checkbox" id="mnAuto" checked><span>LEN+XOR</span></label><button id="mnSend" class="rbc" data-i18n="mnSend"></button></div>
+      </details>
       <details class="sec"><summary data-i18n="advanced"></summary>
         <div class="group"><button id="rbBat" class="rbc" data-i18n="rbBat"></button></div>
         <div class="field" style="grid-template-columns:62px minmax(0,1fr) auto"><span>stretch</span><input type="number" id="rbStr" min="1" max="127" value="60"><button id="rbStrB" class="rbc" data-i18n="rbApply"></button></div>
         <div class="field" style="grid-template-columns:62px minmax(0,1fr) auto"><span>speed</span><input type="number" id="rbSpd" min="1" max="127" value="60"><button id="rbSpdB" class="rbc" data-i18n="rbApply"></button></div>
         <p class="sub" data-i18n="rbWarn"></p>
+        <div class="lbl2" data-i18n="ledTitle"></div>
+        <label class="chip"><input type="checkbox" id="ledOk"><span data-i18n="ledOk"></span></label>
+        <div class="field" style="grid-template-columns:34px minmax(0,1fr) auto;margin-top:6px"><span class="mono">1E +</span><input type="text" id="ledHex" class="mono" spellcheck="false" placeholder="payload hex"><button id="ledSend" class="rbc" data-i18n="ledSend"></button></div>
       </details>
     </div>
   </div>
@@ -232,6 +276,22 @@
       <div class="group" style="margin-top:4px"><button data-push="fwd" data-i18n="pushFwd"></button><button data-push="back" data-i18n="pushBack"></button><button data-push="left" data-i18n="pushLeft"></button><button data-push="right" data-i18n="pushRight"></button></div>
       <div class="field" style="grid-template-columns:70px minmax(0,1fr) 44px"><span data-i18n="pushForce"></span><input type="range" id="pushF" min="1" max="20" step="1" value="5"><span id="pushFV" class="mono">5 N</span></div>
       <p class="sub" data-i18n="pushNote"></p>
+      <div class="lbl2" data-i18n="balTitle"></div>
+      <label class="chip"><input type="checkbox" id="balOn"><span data-i18n="balOn"></span></label>
+      <div class="field" style="grid-template-columns:50px minmax(0,1fr) 44px"><span>kp</span><input type="range" id="balKp" min="0" max="3" step="0.1" value="1"><span id="balKpV" class="mono">1</span></div>
+      <div class="field" style="grid-template-columns:50px minmax(0,1fr) 44px"><span>kd</span><input type="range" id="balKd" min="0" max="0.3" step="0.01" value="0.05"><span id="balKdV" class="mono">0.05</span></div>
+      <div class="field" style="grid-template-columns:50px minmax(0,1fr) 44px"><span>CoM</span><input type="range" id="balKc" min="0" max="1000" step="50" value="600"><span id="balKcV" class="mono">600</span></div>
+      <div id="balInfo" class="sub mono" style="min-height:1.3em"></div><p class="sub" data-i18n="balNote"></p>
+      <div class="lbl2" data-i18n="senTitle"></div>
+      <div class="group"><label class="chip"><input type="checkbox" id="cSen"><span data-i18n="cSenL"></span></label><label class="chip"><input type="checkbox" id="cTrail"><span data-i18n="cTrailL"></span></label></div>
+      <div class="lbl2" data-i18n="shareTitle"></div>
+      <div class="group"><button id="shBtn" data-i18n="shBtn"></button><button id="emBtn" data-i18n="emBtn"></button><button id="fsBtn" data-i18n="fsBtn"></button></div>
+      <div class="group" style="align-items:center"><button id="recBtn"></button><button id="gifBtn"></button><input type="number" id="gifSec" min="1" max="10" value="3" style="width:52px"><span>s</span><label class="chip" data-i18n-title="recOnceTip"><input type="checkbox" id="recOnce" checked><span data-i18n="recOnceL"></span></label></div>
+      <div class="lbl2" data-i18n="teleTitle"></div>
+      <label class="chip"><input type="checkbox" id="teleOn"><span data-i18n="teleOn"></span></label> <span id="teleInfo" class="sub"></span><p class="sub" data-i18n="teleNote"></p>
+      <div class="lbl2" data-i18n="mcTitle"></div>
+      <div class="group"><button id="mcBtn"></button></div><video id="mcVid" muted playsinline style="display:none"></video><p class="sub" id="mcInfo"></p><p class="sub" data-i18n="mcNote"></p>
+      <div class="lbl2">PWA</div><p class="sub" id="pwaInfo"></p>
       <div id="stat" class="mono">…</div>
       <details><summary data-i18n="modelSummary"></summary><p id="info"></p><p data-i18n="model1" data-i18n-html></p><p data-i18n="model2" data-i18n-html></p><p data-i18n="model3" data-i18n-html></p></details>
     </div>
@@ -242,7 +302,7 @@
     <div id="seekrow"><small id="pmaState"></small><input type="range" id="pSeek" min="0" max="1000" value="0" disabled><span id="pTime" class="mono">—</span></div>
     <div class="ctl2">
       <label class="chip" data-i18n-title="tipAud"><input type="checkbox" id="aOn" checked disabled><span>🎵</span></label>
-      <label class="chip" data-i18n-title="tipLoop"><input type="checkbox" id="pLoop" checked><span>🔁</span></label>
+      <label class="chip" data-i18n-title="tipLoop"><input type="checkbox" id="pLoop" checked><span>🔁</span></label><button id="abA" class="sm" data-i18n-title="abATip">A</button><button id="abB" class="sm" data-i18n-title="abBTip">B</button><button id="abX" class="sm" data-i18n-title="abXTip">✕</button><span id="abTxt" class="mono"></span>
       <select id="sSpeed" data-i18n-title="tipSpeed"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option></select>
     </div>
   </div>
@@ -287,7 +347,7 @@ var I18N = {
     modelSummary: '模型同物理設定',
     model1: 'Mesh 係 cm + Y-up，要套用 .dae 嘅 scene node（×0.01）；套用後 mesh 重心同 URDF <code>&lt;inertial&gt;</code> 吻合。URDF 嘅慣量張量正好大咗 100 倍（例如 r_uarm ixx 3.57e-3，由 mesh 均勻密度算得 3.57e-5），所以生成器用 ×0.01 修正。',
     model2: '碰撞：每個 link 一個凸包；只同地面碰撞，link 之間唔碰撞（相鄰 link 嘅凸包會互相重疊）。舵機：<code>torque = kp·(目標−q) − kv·q̇</code>，上限 = URDF effort（腿同肩 1.3712 N·m，其餘 0.9114 N·m）；joint armature 0.005 kg·m²，implicitfast 積分。',
-    model3: 'Slider 單位係 joint 角度，唔係 ICS 原始 position 值；ICS ID／中心值／正負號要由你嘅 firmware 對照表轉換（.pma 回放用嘅對照表喺上面「PMA 對照表」）。'
+    model3: 'Slider 單位係 joint 角度，唔係 ICS 原始 position 值；ICS ID／中心值／正負號要由你嘅 firmware 對照表轉換。'
   },
   en: {
     title: 'PreMaid AI · MuJoCo physics simulation · 25 servos', intro: 'Drag a slider = servo target angle (degrees, URDF joint angle). Position servos have a torque limit, and the body is affected by gravity and friction, so it falls when unbalanced.',
@@ -317,7 +377,7 @@ var I18N = {
     modelSummary: 'Model & physics notes',
     model1: 'The meshes are in cm with Y-up, so the .dae scene node (×0.01) must be applied; after that the mesh centre of mass matches the URDF <code>&lt;inertial&gt;</code>. The URDF inertia tensors are exactly 100× too large (e.g. r_uarm ixx 3.57e-3 vs 3.57e-5 from the mesh at uniform density), so the generator scales them by 0.01.',
     model2: 'Collision: one convex hull per link; links collide with the floor only, not with each other (hulls of neighbouring links overlap). Servo: <code>torque = kp·(target − q) − kv·q̇</code>, clipped to the URDF effort (legs and shoulder pitch 1.3712 N·m, others 0.9114 N·m); joint armature 0.005 kg·m², implicitfast integrator.',
-    model3: 'Slider units are joint angles, not raw ICS positions; ICS IDs / centre values / signs need your firmware\'s conversion table (the mapping used for .pma replay is in the "PMA mapping table" above).'
+    model3: 'Slider units are joint angles, not raw ICS positions; ICS IDs / centre values / signs need your firmware\'s conversion table.'
   }
 };
 Object.assign(I18N.zh, {
@@ -447,10 +507,107 @@ Object.assign(I18N.en, {
   pushNote: 'The force acts on the torso, direction relative to the body (simulated: about 8–10 N ≈ half the body weight topples a standing robot). Push while a motion plays or while walking to see how stable it is.',
   padGpOff: '🎮 Connect a gamepad (Xbox/PS…) and press any button: left stick = walk, right stick = waist yaw / lean, A = start / stop.', padGpOn: function (id) { return '🎮 ' + id; }
 });
+Object.assign(I18N.zh, {
+  estop: '■ 緊急停止', estopTip: '停止回放／步行／即時控制／示教錄製，並向機身送出 STOP（04 05 00 01 同 05 1F 08 01）。唔會脫力，機身維持現有姿勢。快捷鍵 Esc。',
+  estopNoLink: '⚠ 已停止網頁端動作；機身未連接，冇送出 STOP',
+  wsConn: '連接', wsTip: 'WebSocket 橋接（Raspberry Pi／ESP32／tools/ws_bridge.py）：Safari／iOS 冇 Web Serial，用呢個。https 頁面只可以連 wss:// 或者 ws://localhost。',
+  rbWsTry: '連接 WebSocket 中…', rbLost: '⚠ 連線中斷，自動重連中…', rbWsMixed: '⚠ https 頁面唔可以連 ws://（瀏覽器會封）：用 wss://，或者用 http:// 開呢個頁面（例如由 tools/ws_bridge.py serve）。ws://localhost 例外。',
+  stTitle: '舵機狀態（0x01）· digital twin', stPoll: '輪詢舵機狀態', stTwin: 'Twin：真機 → 模擬', stTwinTip: '真機手動郁（要先脫力）→ 模擬同步。同「即時控制」「串流」互斥。',
+  mirL: '左右跟隨', mirOff: '關', mirAny: '模擬：郁邊邊，另一邊跟', mirLR: '左 → 右（左邊手動示教）', mirRL: '右 → 左（右邊手動示教）',
+  mirTip: '模擬：拉 slider 時對側跟住郁。真機：揀方向 ＋ Twin 開，示教邊脫力、對側會被驅動去鏡像位置（要先撳「開始示教」）。',
+  stColJ: '關節', stColAct: '實際', stColCmd: '指令',
+  stSum: function (ok, lat, cyc, miss, bad) { return ok + ' 回覆 · ' + lat.toFixed(0) + ' ms · 一輪 ' + (cyc ? (cyc / 1000).toFixed(2) + ' s' : '—') + ' · 逾時 ' + miss + (bad ? ' · 錯誤 ' + bad : ''); },
+  stNote: '每粒舵機發一個 07 01 00 05 ID 0E 查詢，同時最多 3 個未回覆，收到回覆先補發下一個（逾時 200 ms，慢速連線會自動加長）；冇接線／無效嘅舵機每 8 輪先再試。實際 ＝ 編碼器值；指令 free ＝ 脫力。注意：premaiduino2 韌體冇獨立編碼器，實際值 ＝ 指令值，真機手動郁要用有回讀嘅韌體（原廠）。回覆格式未用原廠機驗證。',
+  teachL: '示教（真機）', tcStart: '● 開始示教（脫力）', tcStartTip: '開 Twin ＋ 輪詢，並將舵機脫力（揀咗「左→右」就只脫力左邊）。', tcHold: '▣ 鎖住現姿勢', tcHoldTip: '將每粒舵機鎖喺佢而家嘅實際位置（停止脫力）',
+  tcCap: '● 記錄一幀', tcAuto: '⏺ 自動記錄', tcAutoStop: '■ 停止自動記錄',
+  tcCaptured: function (n, live) { return '已記錄第 ' + n + ' 幀（' + live + ' 粒舵機用真機讀數）'; }, tcNoData: '未有有效舵機讀數：先開「輪詢舵機狀態」', tcNeedPoll: '要先連接機身並開「輪詢舵機狀態」', tcHeld: function (n) { return '已鎖住 ' + n + ' 粒舵機'; },
+  teachConfirm: '機身會全部脫力：腿會即刻軟晒。請先托住／吊起機身，之後先確定。', teachConfirmSide: '只有示教邊（左或右）會脫力：嗰邊嘅腿會軟晒，請先托住／吊起機身，之後先確定。',
+  teachNote: '流程：吊起機身 → 開始示教 → 手動擺 pose → 記錄一幀（或自動記錄）→ 鎖住現姿勢。記錄會加入上面嘅關鍵幀列表，可以預覽、匯出 .pma 或 CSV。',
+  recCsv: '⬇ 匯出 CSV', recCsvTip: '每幀一行：frame、time_ms、spd、每粒舵機 raw 同角度',
+  mnTitle: '序列監視 · 電量 · Wake Lock', bvL: '電壓（每 10 秒讀一次；紅虛線 ＝ 9 V）', bvTxt: function (v, mn, mx, n, min) { return v.toFixed(2) + ' V · min ' + mn.toFixed(2) + ' · max ' + mx.toFixed(2) + ' · ' + n + ' 點 / ' + min.toFixed(1) + ' 分鐘'; },
+  wakeL: '連接時保持螢幕長亮', wakeNo: '呢個瀏覽器冇 Wake Lock', wakeOn: '✓ 長亮中', mnHide: '隱藏狀態輪詢', mnPause: '暫停', mnClear: '清除', mnCopy: '複製', mnSend: '送出', mnAutoTip: '自動加 LEN 同 XOR：只輸入 CMD 同 payload',
+  mnCnt: function (tx, rx) { return 'TX ' + tx + ' · RX ' + rx + ' 個封包'; }, mnBad: '請輸入十六進位 byte（例如 01 00 02 00 02）', mnFlash: '呢個 CMD 係 Flash 管理指令（0x04／0x1C／0x1D／0x1E）：喺 premaiduino2 韌體會擦寫動作儲存區。真係要送？',
+  ledTitle: 'LED（0x1E，實驗）', ledWarn: '⚠ LED 封包格式未經實機驗證。premaiduino2 韌體入面 0x1E ＝ SaveMotionData（擦寫 Flash 動作頁），亂送會毀動作。呢度淨係俾你用原廠機逐個試 payload，並喺序列監視睇回覆。', ledOk: '我明白，呢度送嘅 0x1E 可能寫入 Flash', ledSend: '送出',
+  ledConfirm: function (hex) { return '送出 ' + hex + ' ？'; }
+});
+Object.assign(I18N.en, {
+  estop: '■ E-STOP', estopTip: 'Stops playback / walking / live control / teach capture and sends STOP to the robot (04 05 00 01 and 05 1F 08 01). The servos are NOT released: the robot holds its pose. Shortcut: Esc.',
+  estopNoLink: '⚠ Page-side motion stopped; robot not connected, no STOP sent',
+  wsConn: 'Connect', wsTip: 'WebSocket bridge (Raspberry Pi / ESP32 / tools/ws_bridge.py): Safari and iOS have no Web Serial, use this. An https page can only reach wss:// or ws://localhost.',
+  rbWsTry: 'Connecting WebSocket…', rbLost: '⚠ Link lost, reconnecting…', rbWsMixed: '⚠ An https page cannot open ws:// (the browser blocks it): use wss://, or open this page over http:// (for example served by tools/ws_bridge.py). ws://localhost is the exception.',
+  stTitle: 'Servo status (0x01) · digital twin', stPoll: 'Poll servo status', stTwin: 'Twin: robot → simulator', stTwinTip: 'Move the robot by hand (released first) and the simulator follows. Exclusive with Live control and Stream.',
+  mirL: 'L/R follow', mirOff: 'Off', mirAny: 'Simulator: either side leads', mirLR: 'Left → right (teach by hand on the left)', mirRL: 'Right → left (teach by hand on the right)',
+  mirTip: 'Simulator: the opposite servo follows a slider. Robot: pick a direction and turn Twin on; the leader side is released and the other side is driven to the mirrored position (press "Start teaching" first).',
+  stColJ: 'joint', stColAct: 'actual', stColCmd: 'command',
+  stSum: function (ok, lat, cyc, miss, bad) { return ok + ' replies · ' + lat.toFixed(0) + ' ms · round ' + (cyc ? (cyc / 1000).toFixed(2) + ' s' : '—') + ' · timeouts ' + miss + (bad ? ' · bad ' + bad : ''); },
+  stNote: 'One 07 01 00 05 ID 0E query per servo; up to 3 are in flight and the next goes out as each reply arrives (timeout 200 ms, longer on a slow link). Unwired / invalid servos are probed every 8th round. Actual = encoder value; command "free" = released. Note: the premaiduino2 firmware has no separate encoder, so actual = command there; moving the robot by hand needs firmware that reads positions back (factory). The reply layout is not verified on a factory robot.',
+  teachL: 'Teach (real robot)', tcStart: '● Start teaching (release)', tcStartTip: 'Turns Twin and polling on and releases the servos (with "left → right" only the left side).', tcHold: '▣ Hold current pose', tcHoldTip: 'Stiffen every servo at its actual position (ends the limp state)',
+  tcCap: '● Capture keyframe', tcAuto: '⏺ Auto capture', tcAutoStop: '■ Stop auto capture',
+  tcCaptured: function (n, live) { return 'Captured keyframe ' + n + ' (' + live + ' servos from robot readings)'; }, tcNoData: 'No valid servo readings yet: turn on "Poll servo status"', tcNeedPoll: 'Connect the robot and turn on "Poll servo status" first', tcHeld: function (n) { return 'Holding ' + n + ' servos'; },
+  teachConfirm: 'Every servo is released: the legs go limp at once. Support or hang the robot first, then confirm.', teachConfirmSide: 'Only the teaching side (left or right) is released: that leg goes limp. Support or hang the robot first, then confirm.',
+  teachNote: 'Flow: hang the robot → start teaching → pose it by hand → capture keyframe (or auto capture) → hold current pose. Captures land in the keyframe list above: preview, export .pma or CSV.',
+  recCsv: '⬇ Export CSV', recCsvTip: 'One row per keyframe: frame, time_ms, spd, raw and angle of every servo',
+  mnTitle: 'Serial monitor · battery · Wake Lock', bvL: 'Voltage (read every 10 s; dashed red = 9 V)', bvTxt: function (v, mn, mx, n, min) { return v.toFixed(2) + ' V · min ' + mn.toFixed(2) + ' · max ' + mx.toFixed(2) + ' · ' + n + ' samples / ' + min.toFixed(1) + ' min'; },
+  wakeL: 'Keep the screen on while connected', wakeNo: 'No Wake Lock in this browser', wakeOn: '✓ screen kept on', mnHide: 'Hide status polls', mnPause: 'Pause', mnClear: 'Clear', mnCopy: 'Copy', mnSend: 'Send', mnAutoTip: 'Adds LEN and XOR for you: type only CMD and payload',
+  mnCnt: function (tx, rx) { return 'TX ' + tx + ' · RX ' + rx + ' packets'; }, mnBad: 'Enter hex bytes (for example 01 00 02 00 02)', mnFlash: 'This CMD is a flash-management command (0x04 / 0x1C / 0x1D / 0x1E): on the premaiduino2 firmware it erases and writes the motion storage. Really send it?',
+  ledTitle: 'LED (0x1E, experimental)', ledWarn: '⚠ The LED packet format is not verified on hardware. On the premaiduino2 firmware 0x1E = SaveMotionData (erases/programs a flash motion page), so a wrong packet destroys stored motions. This box is only for trying payloads one by one on a factory robot while watching the replies in the serial monitor.', ledOk: 'I understand: a 0x1E sent here may write flash', ledSend: 'Send',
+  ledConfirm: function (hex) { return 'Send ' + hex + ' ?'; }
+});
+Object.assign(I18N.zh, {
+  balTitle: '站穩模式（腳踝 PD）', balOn: '站穩輔助', balNote: '用機身 IMU 令腳踝 pitch／roll 做 PD，再用重心側向偏差調髖／踝 roll。量度（呢個模擬器，推 0.1 s）：側推 9 N 原本跌、開咗要 9.5 N 先跌；前推 9 N → 10 N。提升好細（約 +0.5～1 N，5–10%）；單腳站立未解決；吊起（Hang body）時無效。', balInfo: function (f, s, tr) { return '前傾 ' + f.toFixed(1) + '° 側傾 ' + s.toFixed(1) + '° trim ' + tr.toFixed(1) + '°'; },
+  senTitle: '感測 / 除錯 HUD', cSenL: '感測 HUD', cTrailL: '重心軌跡', senFoot: '腳底力', senTq: '力矩',
+  shareTitle: '分享 · 錄影', shBtn: '🔗 分享連結', emBtn: '</> 嵌入碼', fsBtn: '⛶ 全螢幕', recBtn: '⏺ 錄影 WebM', recStop: '■ 停止錄影', gifBtn: 'GIF', copiedL: '已複製 ✓', noRec: '呢個瀏覽器唔支援錄影', recOnceL: '由頭播一次', recOnceTip: '錄影時由頭播放動作一次，完咗自動停',
+  plPrev: '上一個', plNext: '下一個', plAutoL: '自動下一首', plShufL: '隨機', plWakeL: '播放時長亮',
+  abATip: '設定 A 點（[）', abBTip: '設定 B 點（]）', abXTip: '清除 A-B 循環（\\）', abTxt: function (a, b) { return 'A ' + a + ' – B ' + b; },
+  rcIns: '＋插入', rcInsTip: '喺選中幀之後插入目前姿勢', rcDup: '⧉ 複製', rcTrimB: '⇤ 裁前', rcTrimBTip: '刪走選中幀之前嘅所有幀', rcTrimA: '裁後 ⇥', rcTrimATip: '刪走選中幀之後嘅所有幀', rcSplit: '✂ 拆開', rcSplitTip: '由選中幀拆開，後半放入暫存', rcMerge: '⊕ 合併', rcMergeTip: '將暫存嘅後半接返落尾', onionL: '洋蔥皮（前一幀藍／後一幀橙）', rcAltTxt: function (n) { return '暫存 ' + n + ' 幀'; },
+  teleTitle: '遙控（手制／鍵盤）', teleOn: '遙控模式', teleNote: '左搖桿＝頭，右搖桿＝手臂（左右＝側舉，上下＝前舉），LT／RT＝手肘，LB／RB 或 Q／E＝切換左右手，Y＝站穩，X＝播放。鍵盤：W A S D 頭、I J K L 手臂、U O 手肘。K 開關。', teleInfo: function (a) { return '而家控制：' + a; }, armR: '右手', armL: '左手',
+  mcTitle: '鏡頭動作捕捉（手臂）', mcStart: '📷 開始', mcStop: '■ 停止', mcLoading: '載入 MediaPipe…', mcOn: '捕捉中', mcErr: function (m) { return '失敗：' + m; }, mcNote: '用 MediaPipe Pose 嘅世界座標，經 IK 帶動兩隻手臂。需要鏡頭權限同網絡（由 CDN 載入模型）；呢部分喺開發環境冇辦法實測，只測咗座標→關節嘅數學。',
+  pwaOn: '✓ Service worker 已註冊：載入過一次之後可以離線用（可安裝成 App）', pwaOff: '只有 http(s) 先有離線／安裝功能',
+  kbHelp: '<b>鍵盤快捷鍵</b><table><tr><td><kbd>Space</kbd></td><td>播放／暫停</td></tr><tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>跳 ∓1 秒（Shift：5 秒）</td></tr><tr><td><kbd>,</kbd> <kbd>.</kbd></td><td>上一幀／下一幀</td></tr><tr><td><kbd>[</kbd> <kbd>]</kbd> <kbd>\\</kbd></td><td>A 點／B 點／清除循環</td></tr><tr><td><kbd>N</kbd> <kbd>P</kbd></td><td>下一首／上一首</td></tr><tr><td><kbd>R</kbd> <kbd>H</kbd></td><td>重置機身／吊起</td></tr><tr><td><kbd>1</kbd>–<kbd>6</kbd></td><td>視角（前、後、左、右、頂、3/4）</td></tr><tr><td><kbd>I</kbd> <kbd>C</kbd> <kbd>V</kbd> <kbd>T</kbd></td><td>IK、重心、感測 HUD、重心軌跡</td></tr><tr><td><kbd>B</kbd> <kbd>K</kbd></td><td>站穩輔助、遙控模式</td></tr><tr><td><kbd>L</kbd> <kbd>M</kbd></td><td>循環、音樂</td></tr><tr><td><kbd>S</kbd> <kbd>X</kbd> <kbd>G</kbd> <kbd>F</kbd></td><td>分享連結、錄影、GIF、全螢幕</td></tr><tr><td><kbd>Esc</kbd></td><td>緊急停止（關閉本說明）</td></tr><tr><td><kbd>?</kbd></td><td>顯示／隱藏本說明</td></tr></table><p class="sub">步行模式開啟時，W A S D 同方向鍵留畀步行，其他快捷鍵暫停。撳任何地方關閉。</p>'
+});
+Object.assign(I18N.en, {
+  balTitle: 'Stand assist (ankle PD)', balOn: 'Stand assist', balNote: 'Ankle pitch/roll PD from the base IMU plus a lateral CoM trim on hip/ankle roll. Measured in this simulator (0.1 s pushes): sideways tipping goes from 9 N to 9.5 N, forward from 9 N to 10 N. The gain is small (+0.5..1 N, 5-10 %); single-leg stance is not solved; no effect while the body is hanging.', balInfo: function (f, s, tr) { return 'pitch ' + f.toFixed(1) + '° roll ' + s.toFixed(1) + '° trim ' + tr.toFixed(1) + '°'; },
+  senTitle: 'Sensors / debug HUD', cSenL: 'Sensor HUD', cTrailL: 'CoM trail', senFoot: 'foot force', senTq: 'torque',
+  shareTitle: 'Share · record', shBtn: '🔗 Share link', emBtn: '</> Embed code', fsBtn: '⛶ Fullscreen', recBtn: '⏺ Record WebM', recStop: '■ Stop recording', gifBtn: 'GIF', copiedL: 'Copied ✓', noRec: 'Recording is not supported here', recOnceL: 'From start, once', recOnceTip: 'Record plays the motion once from the start and stops by itself',
+  plPrev: 'Previous', plNext: 'Next', plAutoL: 'Auto-next', plShufL: 'Shuffle', plWakeL: 'Keep screen on',
+  abATip: 'Set point A ([)', abBTip: 'Set point B (])', abXTip: 'Clear the A-B loop (\\)', abTxt: function (a, b) { return 'A ' + a + ' – B ' + b; },
+  rcIns: '＋ Insert', rcInsTip: 'Insert the current pose after the selected frame', rcDup: '⧉ Duplicate', rcTrimB: '⇤ Trim before', rcTrimBTip: 'Delete every frame before the selected one', rcTrimA: 'Trim after ⇥', rcTrimATip: 'Delete every frame after the selected one', rcSplit: '✂ Split', rcSplitTip: 'Split at the selected frame; the second half goes to a clipboard', rcMerge: '⊕ Merge', rcMergeTip: 'Append the clipboard half to the end', onionL: 'Onion skin (previous blue / next orange)', rcAltTxt: function (n) { return 'clipboard: ' + n + ' frames'; },
+  teleTitle: 'Teleop (gamepad / keyboard)', teleOn: 'Teleop mode', teleNote: 'Left stick = head, right stick = arm (left/right = raise sideways, up/down = raise forward), LT/RT = elbow, LB/RB or Q/E = switch arm, Y = stand assist, X = play. Keyboard: W A S D head, I J K L arm, U O elbow. K toggles.', teleInfo: function (a) { return 'controlling: ' + a; }, armR: 'right arm', armL: 'left arm',
+  mcTitle: 'Webcam mocap (arms)', mcStart: '📷 Start', mcStop: '■ Stop', mcLoading: 'Loading MediaPipe…', mcOn: 'tracking', mcErr: function (m) { return 'failed: ' + m; }, mcNote: 'MediaPipe Pose world landmarks drive both arms through IK. Needs camera permission and network (the model comes from a CDN); the runtime could not be tested in the development environment, only the landmark → joint math.',
+  pwaOn: '✓ Service worker registered: works offline after the first load (installable as an app)', pwaOff: 'Offline / install only works over http(s)',
+  kbHelp: '<b>Keyboard shortcuts</b><table><tr><td><kbd>Space</kbd></td><td>play / pause</td></tr><tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>seek ∓1 s (Shift: 5 s)</td></tr><tr><td><kbd>,</kbd> <kbd>.</kbd></td><td>previous / next frame</td></tr><tr><td><kbd>[</kbd> <kbd>]</kbd> <kbd>\\</kbd></td><td>A point / B point / clear loop</td></tr><tr><td><kbd>N</kbd> <kbd>P</kbd></td><td>next / previous motion</td></tr><tr><td><kbd>R</kbd> <kbd>H</kbd></td><td>reset body / hang</td></tr><tr><td><kbd>1</kbd>–<kbd>6</kbd></td><td>views (front, back, left, right, top, 3/4)</td></tr><tr><td><kbd>I</kbd> <kbd>C</kbd> <kbd>V</kbd> <kbd>T</kbd></td><td>IK, CoM, sensor HUD, CoM trail</td></tr><tr><td><kbd>B</kbd> <kbd>K</kbd></td><td>stand assist, teleop mode</td></tr><tr><td><kbd>L</kbd> <kbd>M</kbd></td><td>loop, music</td></tr><tr><td><kbd>S</kbd> <kbd>X</kbd> <kbd>G</kbd> <kbd>F</kbd></td><td>share link, record, GIF, fullscreen</td></tr><tr><td><kbd>Esc</kbd></td><td>E-stop (also closes this help)</td></tr><tr><td><kbd>?</kbd></td><td>show / hide this help</td></tr></table><p class="sub">While walking is on, W A S D and the arrow keys belong to the gait and the other shortcuts pause. Click anywhere to close.</p>'
+});
+I18N.ja = {
+  title: 'プリメイドAI · MuJoCo 物理シミュレーション · 25サーボ', loading: 'MuJoCo WASM を読み込み中（約11 MB・初回のみ）…', tabMotion: 'モーション', tabRobot: '実機', tabServos: 'サーボ', tabSet: '設定', tabWalk: '歩行', tabRec: '録画',
+  vFront: '前', vBack: '後', vLeft: '左', vRight: '右', vTop: '上', vIso: '斜め', reset: '↺ リセット', tipReset: '機体を床に戻して現在のポーズからやり直す', pin: '吊り下げ', tipPin: '機体を空中に固定する（ベース固定）', ikChip: '🎯 IK', setTip: 'シミュレーション設定',
+  estop: '■ 緊急停止', estopTip: '再生・歩行・ライブ制御・ティーチ録画を止め、実機へ STOP を送ります（サーボは脱力しません）。ショートカット: Esc',
+  loadBtn: '📂 .pma を読み込む', loopOrig: '元ファイルのループに従う', loopOnce: '1回だけ再生', audTitle: '音楽', audLoad: '🎵 音楽を読み込む', audVol: '音量', advanced: '詳細',
+  chkTitle: 'モーションチェック', walkParams: '歩容パラメータ', wLen: '歩幅', wRoll: '横揺れ', wPit: '振り', wSpd: 'ケイデンス', padHold: 'スティック位置を保持',
+  recAdd: '● キーフレーム追加（現在のポーズ）', recSpd: '既定 SPD', recPlay: '▶ プレビュー', recExp: '⬇ .pma 書き出し', recClr: 'クリア', recTools: '編集ツール', recMirror: '↔ 左右反転', recImport: '⤓ 読み込み中のモーションを取り込む', recCsv: '⬇ CSV 書き出し',
+  teachL: 'ティーチ（実機）', tcStart: '● ティーチ開始（脱力）', tcHold: '▣ 現在のポーズを保持', tcCap: '● キーフレーム取得', tcAuto: '⏺ 自動取得', tcAutoStop: '■ 自動取得を停止',
+  rbBuiltinL: '内蔵モーション（0x1F）', rbStopMotion: '■ STOP（0x05）', rbModeL: '制御モード', mOff: 'シミュのみ', mLive: 'スライダー同期', mStream: 'PMA 再生', rbSpdL: '実機の速度', rbOnce: '現在のポーズを送信', rbT: 'T 待機', rbRel: '⚠ 全脱力', rbSafe: '安全リミット',
+  rbConn: '🔌 実機に接続', rbDisc: '⏏ 切断', rbOff: '未接続', rbOn: '接続中', rbLost: '⚠ 接続が切れました。再接続中…', wsConn: '接続',
+  stTitle: 'サーボ状態（0x01）· デジタルツイン', stPoll: 'サーボ状態をポーリング', stTwin: 'ツイン：実機 → シミュ', mirL: '左右フォロー', mirOff: 'オフ', mirAny: 'シミュ：どちら側でも', mirLR: '左 → 右（左を手で動かす）', mirRL: '右 → 左（右を手で動かす）', stColJ: '関節', stColAct: '実測', stColCmd: '指令',
+  mnTitle: 'シリアルモニタ · バッテリー · Wake Lock', mnHide: 'ポーリングを隠す', mnPause: '一時停止', mnClear: 'クリア', mnCopy: 'コピー', mnSend: '送信', wakeL: '接続中は画面を点灯したままにする',
+  intro: 'スライダーでサーボの目標角（度）を設定します。機体は重力と摩擦の影響を受けるので、バランスを崩すと倒れます。', presetL: 'プリセットポーズ', pZero: 'ゼロ T ポーズ', pDown: '腕を下げる', pFwd: '腕を前へ', pSquat: '半スクワット', toolsSum: 'ツール：スイープ · コピー · ペースト',
+  copy: 'ポーズ JSON をコピー', paste: 'ポーズを貼り付け', setPhys: '物理', grav: '重力', com: '重心を表示', muL: '摩擦 μ', kpL: '剛性 kp', setPlay: '再生', interpL: '再生方式', smooth: 'なめらか', stepMode: 'ステップ',
+  pushTitle: '押しテスト（0.1 秒）', pushFwd: '↑ 前', pushBack: '↓ 後', pushLeft: '← 左', pushRight: '→ 右', pushForce: '力', modelSummary: 'モデルと物理のメモ', stop: '■ 停止', tipAud: '音楽 オン／オフ', tipLoop: 'モーション全体を繰り返す', tipSpeed: '再生速度',
+  g_head: '頭', g_r_arm: '右腕', g_l_arm: '左腕', g_r_leg: '右脚', g_l_leg: '左脚', play: '▶ 再生', pause: '⏸ 一時停止', resume: '▶ 再開', frame: 'フレーム', copied: 'コピーしました ✓', freeze: '❄ 物理を凍結', drop: '.pma／音楽ファイルをドロップ', notLoaded: '未読み込み',
+  balTitle: '安定化モード（足首 PD）', balOn: '安定化アシスト', balNote: '機体 IMU から足首の pitch／roll を PD 制御し、重心の横ずれで股関節／足首の roll を補正します。実測（このシミュレータ、0.1 秒の押し）：横押しの転倒限界が 9 N から 9.5 N、前押しが 9 N から 10 N に上がります。効果は小さく（+0.5〜1 N、5〜10%）、片脚立ちは未解決。吊り下げ中は無効。', balInfo: function (f, s, tr) { return '前傾 ' + f.toFixed(1) + '° 横傾 ' + s.toFixed(1) + '° trim ' + tr.toFixed(1) + '°'; },
+  senTitle: 'センサー／デバッグ HUD', cSenL: 'センサー HUD', cTrailL: '重心の軌跡', senFoot: '足裏の力', senTq: 'トルク',
+  shareTitle: '共有 · 録画', shBtn: '🔗 共有リンク', emBtn: '</> 埋め込みコード', fsBtn: '⛶ 全画面', recBtn: '⏺ WebM 録画', recStop: '■ 録画停止', gifBtn: 'GIF', copiedL: 'コピーしました ✓', noRec: 'このブラウザは録画に対応していません', recOnceL: '最初から1回', recOnceTip: '録画時にモーションを最初から1回だけ再生し、終わると自動で停止します',
+  plPrev: '前へ', plNext: '次へ', plAutoL: '自動で次へ', plShufL: 'シャッフル', plWakeL: '再生中は画面を消さない',
+  abATip: 'A 点を設定（[）', abBTip: 'B 点を設定（]）', abXTip: 'A-B ループを解除（\\）', abTxt: function (a, b) { return 'A ' + a + ' – B ' + b; },
+  rcIns: '＋ 挿入', rcInsTip: '選択フレームの後ろに現在のポーズを挿入', rcDup: '⧉ 複製', rcTrimB: '⇤ 前を削除', rcTrimBTip: '選択フレームより前をすべて削除', rcTrimA: '後を削除 ⇥', rcTrimATip: '選択フレームより後をすべて削除', rcSplit: '✂ 分割', rcSplitTip: '選択フレームで分割し、後半をクリップボードへ', rcMerge: '⊕ 結合', rcMergeTip: 'クリップボードの後半を末尾に追加', onionL: 'オニオンスキン（前＝青／次＝橙）', rcAltTxt: function (n) { return 'クリップボード: ' + n + ' フレーム'; },
+  teleTitle: 'テレオペ（ゲームパッド／キーボード）', teleOn: 'テレオペモード', teleNote: '左スティック＝頭、右スティック＝腕（左右＝横に上げる、上下＝前に上げる）、LT/RT＝肘、LB/RB または Q/E＝腕の切り替え、Y＝安定化、X＝再生。キーボード：W A S D 頭、I J K L 腕、U O 肘。K で切り替え。', teleInfo: function (a) { return '操作中: ' + a; }, armR: '右腕', armL: '左腕',
+  mcTitle: 'Web カメラ モーキャプ（腕）', mcStart: '📷 開始', mcStop: '■ 停止', mcLoading: 'MediaPipe を読み込み中…', mcOn: 'トラッキング中', mcErr: function (m) { return '失敗: ' + m; }, mcNote: 'MediaPipe Pose のワールド座標から IK で両腕を動かします。カメラ権限とネットワーク（モデルは CDN から）が必要です。開発環境では実行できず、ランドマーク→関節の計算のみテストしました。',
+  pwaOn: '✓ Service worker 登録済み：一度読み込めばオフラインで動作（アプリとしてインストール可）', pwaOff: 'オフライン／インストールは http(s) のみ',
+  kbHelp: '<b>キーボードショートカット</b><table><tr><td><kbd>Space</kbd></td><td>再生／一時停止</td></tr><tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>∓1 秒シーク（Shift: 5 秒）</td></tr><tr><td><kbd>,</kbd> <kbd>.</kbd></td><td>前／次のフレーム</td></tr><tr><td><kbd>[</kbd> <kbd>]</kbd> <kbd>\\</kbd></td><td>A 点／B 点／ループ解除</td></tr><tr><td><kbd>N</kbd> <kbd>P</kbd></td><td>次／前のモーション</td></tr><tr><td><kbd>R</kbd> <kbd>H</kbd></td><td>リセット／吊り下げ</td></tr><tr><td><kbd>1</kbd>–<kbd>6</kbd></td><td>視点（前・後・左・右・上・斜め）</td></tr><tr><td><kbd>I</kbd> <kbd>C</kbd> <kbd>V</kbd> <kbd>T</kbd></td><td>IK、重心、センサー HUD、重心軌跡</td></tr><tr><td><kbd>B</kbd> <kbd>K</kbd></td><td>安定化アシスト、テレオペ</td></tr><tr><td><kbd>L</kbd> <kbd>M</kbd></td><td>ループ、音楽</td></tr><tr><td><kbd>S</kbd> <kbd>X</kbd> <kbd>G</kbd> <kbd>F</kbd></td><td>共有リンク、録画、GIF、全画面</td></tr><tr><td><kbd>Esc</kbd></td><td>緊急停止（このヘルプも閉じる）</td></tr><tr><td><kbd>?</kbd></td><td>このヘルプの表示／非表示</td></tr></table><p class="sub">歩行モード中は W A S D と矢印キーが歩行用になり、他のショートカットは止まります。どこかをクリックすると閉じます。</p>'
+};
 var LANG = 'zh';
-try { var _l = localStorage.getItem('pmsim.lang'); if (_l === 'zh' || _l === 'en') LANG = _l; } catch (e) {}
+try { var _l = localStorage.getItem('pmsim.lang'); if (_l === 'zh' || _l === 'en' || _l === 'ja') LANG = _l; } catch (e) {}
 function t(key) {
-  var d = I18N[LANG][key]; if (d === undefined) d = I18N.zh[key];
+  var d = I18N[LANG][key]; if (d === undefined && LANG !== 'zh') d = I18N.en[key]; if (d === undefined) d = I18N.zh[key];
   return typeof d === 'function' ? d.apply(null, Array.prototype.slice.call(arguments, 1)) : d;
 }
 var GROUPS = ['head', 'r_arm', 'l_arm', 'r_leg', 'l_leg'], groupEls = [];
@@ -495,9 +652,9 @@ function setTarget(k, v, fromUi) {
       host.appendChild(el);
       var r = el.querySelector('input[type=range]'), nu = el.querySelector('input[type=number]'), z = el.querySelector('button'), bar = el.querySelector('.tq i');
       ui[k] = { range: r, num: nu, bar: bar, lbl: el.querySelector('.lbl') };
-      r.addEventListener('input', function () { touch(); setTarget(k, r.value, 'range'); });
-      nu.addEventListener('change', function () { touch(); setTarget(k, nu.value, 'num'); });
-      z.addEventListener('click', function () { touch(); setTarget(k, 0); });
+      r.addEventListener('input', function () { touch(); setTarget(k, r.value, 'range'); mirFollow(k); });
+      nu.addEventListener('change', function () { touch(); setTarget(k, nu.value, 'num'); mirFollow(k); });
+      z.addEventListener('click', function () { touch(); setTarget(k, 0); mirFollow(k); });
     });
     ge.n = n;
   });
@@ -627,9 +784,9 @@ function clearServoParams() {   // back to the normal servo settings when the us
 }
 function ctrlOf(k) { return clampDeg(k, target[k]) * D2R; }
 function setCtrl() {   // 0x19 speed -> maximum angular velocity of the position command (0 = unlimited)
-  var ct = S.d.ctrl, ts = S.ts;
+  var ct = S.d.ctrl, ts = S.ts; if (BAL.on && !S.pin && S.run) balStep(); else if (BAL.o.length) BAL.o = [];
   for (var k = 0; k < N; k++) {
-    var want = ctrlOf(k), sp = S.svSpeed[k] | 0;
+    var want = ctrlOf(k) + (BAL.o[k] || 0), sp = S.svSpeed[k] | 0;
     if (sp >= 1) {
       var maxStep = (SV_SPEED_LO + (Math.min(127, sp) / 127) * (SV_SPEED_HI - SV_SPEED_LO)) * D2R * ts, d = want - S.cmd[k];
       if (d > maxStep) want = S.cmd[k] + maxStep; else if (d < -maxStep) want = S.cmd[k] - maxStep;
@@ -687,9 +844,9 @@ function frame(now) {
     gpPoll(); if (WK.on && S.run) walkTick(dt * S.speed);
     if (S.run) pushTick(dt * S.speed);
     if (S.run) advance(dt * S.speed); else setCtrl();
-    updateScene(); status(now); rbTick(now); audioSync(); ikTick();
+    updateScene(); status(now); rbTick(now); audioSync(); ikTick(); p2Frame(now, dt);
   }
-  controls.update(); renderer.render(scene, camera);
+  controls.update(); renderer.render(scene, camera); if (REC.gif) gifSnap(now);
 }
 
 // ------------------------------------------------------------------ .pma replay (PreMaid AI motion files, see premaiduino2/PmaProtocol.h)
@@ -802,7 +959,8 @@ function updatePlayUI(force) {
 function pausePlay() { if (P.playing) { P.playing = false; updatePlayUI(true); } }
 function playTick(dt) {          // dt in seconds (sim time); the timeline is in ms
   P.t += dt * 1000;
-  if (P.t >= P.total) { if (P.loop) P.t -= P.total; else { P.t = P.total; P.playing = false; } }
+  if (AB.a >= 0 && AB.b > AB.a && P.t >= AB.b) P.t = AB.a + (P.t - AB.b);
+  if (P.t >= P.total) { if (PL.auto && LIB.cur >= 0 && !REC.once) { P.t = P.total; P.playing = false; plNext(1); } else if (P.loop) P.t -= P.total; else { P.t = P.total; P.playing = false; } }
   poseAt(P.t); updatePlayUI(!P.playing); rbStream();
 }
 function useSection(i, keepT) {
@@ -825,7 +983,7 @@ function loadSections(secs, file, bpm) {
   if (!secs.length) { P.state = { k: 'errFmt' }; P.infoD = { k: 'errFmtInfo' }; renderPma(); return; }
   P.playing = false; P.secs = secs; P.file = file || ''; P.bpm = +bpm || 0; var sel = $('pSec'); sel.innerHTML = '';
   secs.forEach(function (c, i) { var o = document.createElement('option'); o.value = i; o.textContent = (i + 1) + '. ' + (c.name || '(no name)'); sel.appendChild(o); });
-  sel.style.display = secs.length > 1 ? '' : 'none'; useSection(0);
+  sel.style.display = secs.length > 1 ? '' : 'none'; useSection(0); if (typeof AB !== 'undefined') { AB.a = AB.b = -1; abRender(); }
 }
 function loadFile(f, af) { if (!f) return; var r = new FileReader(); r.onload = function () { markActive(-1); LIB.cur = -1; audioSet('', '', ''); loadSections(decodePma(r.result), f.name, 0); if (af) audioFile(af); }; r.readAsArrayBuffer(f); }
 function loadFiles(fs) {      // any mix of .pma + audio (+ encrypted .wsdcf, which only triggers the explanation)
@@ -834,7 +992,7 @@ function loadFiles(fs) {      // any mix of .pma + audio (+ encrypted .wsdcf, wh
 }
 function b64bytes(b) { var bin = atob(b), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
 $('fPma').addEventListener('change', function () { loadFiles(this.files); this.value = ''; });
-function refreshList() { Array.prototype.forEach.call($('pList').children, function (b) { if (b.getAttribute('data-n')) { var txt = t('nFrames', b.getAttribute('data-n')) + ' · ' + b.getAttribute('data-t'); if (b.getAttribute('data-bpm')) txt += ' · ~' + b.getAttribute('data-bpm') + ' BPM'; b.lastChild.textContent = txt; } }); }
+function refreshList() {}      // the library box shows names only
 function markActive(i) { Array.prototype.forEach.call($('pList').children, function (b, n) { b.classList.toggle('on', n === i); }); }
 var LIB = { base: '../pma/', items: [], cur: -1 };      // window.PMA_LIBRARY from pma/library.js (written by pma/make_index.py, a plain <script>, so it also works from file://): { title, pma, audio?, drm?, data (base64 .pma) }
 var AU = { el: new Audio(), name: '', drm: '', err: false, obj: '' };
@@ -849,7 +1007,7 @@ function audioFile(f) { if (!f) return; var u = URL.createObjectURL(f); audioSet
 function renderAudio() {
   var has = !!AU.el.getAttribute('src');
   $('audName').textContent = has ? '🎵 ' + AU.name : t('audNone');
-  var note = AU.err ? t('audErr') : (!has && AU.drm ? t('audDrm') : ''); $('audNote').textContent = note; $('audNote').hidden = !note;
+  var note = AU.err ? t('audErr') : (!has && AU.drm ? t('audDrm') : '');
   $('aOn').disabled = !has;
 }
 AU.el.addEventListener('error', function () { if (AU.el.getAttribute('src')) { AU.err = true; renderAudio(); } });
@@ -871,12 +1029,12 @@ function libFetch(it) {      // the .pma comes base64-encoded inside pma/library
   try { var bin = atob(it.data), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); it.secs = decodePma(u.buffer); } catch (e) { return Promise.reject(e); }
   return it.secs.length ? Promise.resolve(it) : Promise.reject(new Error('format'));
 }
-function libLoad(i) {
+function libLoad(i, after) {
   var it = LIB.items[i]; if (!it) return;
   libFetch(it).then(function () {
     loadSections(it.secs, it.pma, it.bpm); markActive(i); LIB.cur = i;
     audioSet(it.audio ? LIB.base + encodeURIComponent(it.audio) : '', it.audio || '', it.drm || '');
-    $('pPlay').click();
+    $('pPlay').click(); if (after) after();
   }, function () { P.state = { k: 'errFmt' }; P.infoD = { k: 'errFmtInfo' }; renderPma(); });
 }
 (function () {
@@ -885,13 +1043,8 @@ function libLoad(i) {
   var list = window.PMA_LIBRARY; if (!list) { msg('libErr'); return; } if (!list.length) { msg('libEmpty'); return; }
   LIB.items = list;
   list.forEach(function (it, i) {
-    var b = document.createElement('button'); b.innerHTML = '<span></span><span></span>'; b.firstChild.textContent = it.title; b.title = it.pma + (it.audio ? ' + ' + it.audio : '') + (it.bpm ? ' · ~' + it.bpm + ' BPM' : '');
+    var b = document.createElement('button'); b.innerHTML = '<span></span>'; b.firstChild.textContent = it.title;
     b.addEventListener('click', function () { libLoad(i); }); box.appendChild(b);
-    if (it.frames) { b.setAttribute('data-n', it.frames); b.setAttribute('data-t', fmt((it.seconds || 0) * 1000).replace(/\.\d$/, '')); b.setAttribute('data-bpm', it.bpm || 0); }
-    libFetch(it).then(function () {
-      if (!it.frames) { var tl = buildTimeline(it.secs[0].bytes); b.setAttribute('data-n', tl.frames.length); b.setAttribute('data-t', fmt(tl.total).replace(/\.\d$/, '')); }
-      refreshList();
-    }, function () { b.disabled = true; });
   });
 })();
 $('pSec').addEventListener('change', function () { P.playing = false; useSection(+this.value); });
@@ -923,16 +1076,6 @@ function setFlip(k, on) {      // flip one servo's direction: sign, travel (and 
   var u = ui[k]; u.range.min = u.num.min = (s.lo / D2R).toFixed(2); u.range.max = u.num.max = (s.hi / D2R).toFixed(2);
   setTarget(k, -target[k]); if (P.frames) poseAt(P.t);
 }
-(function buildMapTable() {
-  var tb = $('pmaMap');
-  A.servos.map(function (s, k) { return k; }).sort(function (a, b) { return A.servos[a].pid - A.servos[b].pid; }).forEach(function (k) {
-    var s = A.servos[k], e = PM.byJoint[s.joint], tr = document.createElement('tr');
-    tr.innerHTML = '<td class="mono">0x' + (s.pid < 16 ? '0' : '') + s.pid.toString(16).toUpperCase() + '</td><td class="mono">' + s.joint.replace('_joint', '') + '</td><td class="mono">' + (e.sign > 0 ? '+' : '−') + '</td>' +
-      '<td><label><input type="checkbox"> <span data-i18n="flip"></span></label></td><td data-i18n="' + (e.inferred ? 'inferred' : 'verified') + '" data-i18n-title="' + (e.inferred ? 'tipInferred' : 'tipVerified') + '"></td>';
-    tr.querySelector('input').addEventListener('change', function () { setFlip(k, this.checked); });
-    tb.appendChild(tr);
-  });
-})();
 
 // ------------------------------------------------------------------ real robot over Web Serial (packets: neon-izm/PremaindAI_TechVerification)
 // packet = [LEN][CMD]...[XOR of all previous bytes]; 0x18 pose = [LEN][18][00][SPD]{pid, lo, hi}*n ; 0x01 = battery (V = u16/216)
@@ -942,7 +1085,7 @@ var PIDK = A.servos.map(function (s, k) { return k; }).sort(function (a, b) { re
 function xr(a) { var x = 0; for (var i = 0; i < a.length; i++) x ^= a[i]; return x & 255; }
 function mk(body) { var b = body.slice(); b.push(xr(b)); return Uint8Array.from(b); }
 function hexPkt(s) { return Uint8Array.from(s.trim().split(/\s+/).map(function (h) { return parseInt(h, 16); })); }
-function rbSend(u8, keep) { if (!RB.writer) return false; if (keep) RB.lastPkt = u8; RB.writer.write(u8).catch(function (e) { console.warn(e); }); return true; }
+function rbSend(u8, keep) { if (!RB.writer) return false; if (keep) RB.lastPkt = u8; rbLog('TX', u8); RB.writer.write(u8).catch(function (e) { console.warn(e); }); return true; }
 function rawOf(k, deg) {
   var s = A.servos[k], e = PM.byJoint[s.joint], r = Math.round(7500 + s.sign * deg / K_DEG), lo = e.rawLo, hi = e.rawHi, sf = SAFE[s.pid];
   if (sf && $('rbSafe').checked) { lo = Math.max(lo, sf[0]); hi = Math.min(hi, sf[1]); }
@@ -978,16 +1121,12 @@ var BUILTIN = [
   { id: 0x49, jp: 'ハート' }, { id: 0x4A, jp: 'キラッ' }, { id: 0x4B, jp: 'あなたへ' }, { id: 0x4C, jp: 'もんきー' },
   { id: 0x4D, jp: 'GO×2' }, { id: 0x4E, jp: 'エアギター' }, { id: 0x4F, jp: '右ターン' }, { id: 0x50, jp: '左ターン' }
 ];
-function builtinLabel(it, i) {
-  var names = t('rbBuiltinNames');
-  return (i + 1) + '. ' + (names[i] || it.jp) + '（' + it.jp + '）';
-}
-function renderBuiltin() {
-  var sel = $('rbBuiltin'); if (!sel) return;
-  var cur = sel.value; sel.innerHTML = '';
-  BUILTIN.forEach(function (it, i) { var o = document.createElement('option'); o.value = it.id; o.textContent = builtinLabel(it, i); sel.appendChild(o); });
-  var o = document.createElement('option'); o.value = 0x01; o.textContent = t('rbBuiltinTransferred'); sel.appendChild(o);
-  if (cur && sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
+function renderBuiltin() {       // 20 buttons, one tap = play that built-in motion (0x1F)
+  var box = $('rbBuiltinGrid'); if (!box) return; var names = t('rbBuiltinNames'); box.innerHTML = '';
+  BUILTIN.forEach(function (it, i) {
+    var b = document.createElement('button'); b.className = 'rbc'; b.textContent = names[i] || it.jp; b.title = (i + 1) + '. ' + it.jp + '  (0x' + h2(it.id) + ')'; b.disabled = !RB.writer;
+    b.addEventListener('click', function () { if (!RB.writer) { renderRb(); return; } rbMotionSend(it.id); }); box.appendChild(b);
+  });
 }
 function rbMotionSend(id) {
   $('rbLive').checked = false; $('rbStream').checked = false;
@@ -1001,15 +1140,16 @@ function rbStopMotion() {
   P.playing = false; updatePlayUI(true);
   RB.lastF = RB.lastK = null;
   RB.motion = 'rbMotionStopped'; renderRb();
-  rbSend(hexPkt('04 05 00 01'));
+  rbStopPackets();
 }
 function rbRx(u8) {
   for (var i = 0; i < u8.length; i++) RB.buf.push(u8[i]);
   while (RB.buf.length) {
     var L = RB.buf[0]; if (L === 0 || L < 4) { RB.buf.shift(); continue; }
     if (RB.buf.length < L) { if (RB.buf.length > 200) RB.buf.length = 0; break; }
-    var p = RB.buf.splice(0, L);
-    if (p[1] === 0x01 && L >= 5) { RB.volt = (p[3] | (p[4] << 8)) / 216; }
+    var p = RB.buf.splice(0, L); rbLog('RX', p);
+    if (p[1] === 0x01 && L === 18) stRx(p);
+    else if (p[1] === 0x01 && L === 6) { RB.volt = (p[3] | (p[4] << 8)) / 216; bvPush(RB.volt); }
     else if (p[1] === 0x1F && L >= 4) { RB.motion = (p[2] & 0x80) ? 'rbMotionErr' : 'rbMotionOk'; }
     else if (p[1] === 0x18) {
       if (p[2] === 0x08 && RB.lastPkt && RB.retry < 20) { RB.retry++; RB.perr = true; setTimeout(function () { rbSend(RB.lastPkt); }, 5); }   // reference code re-sends the last pose on "04 18 08 14"
@@ -1017,27 +1157,6 @@ function rbRx(u8) {
     }
   }
   renderRb();
-}
-function rbLoop() {
-  return (async function () {
-    try { while (RB.port && RB.port.readable) { RB.reader = RB.port.readable.getReader(); try { for (;;) { var r = await RB.reader.read(); if (r.done) break; rbRx(r.value); } } finally { RB.reader.releaseLock(); RB.reader = null; } } } catch (e) { console.warn(e); }
-  })();
-}
-async function rbConnect() {
-  if (!navigator.serial) { RB.msg = 'rbNoSerial'; renderRb(); return; }
-  try {
-    RB.port = await navigator.serial.requestPort(); await RB.port.open({ baudRate: 115200, dataBits: 8, stopBits: 1, parity: 'none' });
-    RB.writer = RB.port.writable.getWriter(); RB.msg = 'rbOn'; RB.err = ''; RB.buf = []; RB.volt = null; RB.motion = ''; RB.rp = rbLoop();
-    RB.bt = setInterval(rbBattery, 10000); setTimeout(rbBattery, 1500);
-  } catch (e) { RB.port = null; RB.writer = null; RB.msg = 'rbErr'; RB.err = e && e.message || String(e); }
-  renderRb();
-}
-async function rbDisconnect() {
-  clearInterval(RB.bt); $('rbLive').checked = false; $('rbStream').checked = false;
-  try { if (RB.reader) await RB.reader.cancel(); if (RB.rp) await RB.rp; } catch (e) {}
-  try { if (RB.writer) RB.writer.releaseLock(); } catch (e) {}
-  try { if (RB.port) await RB.port.close(); } catch (e) {}
-  RB.port = RB.writer = RB.reader = RB.rp = null; RB.msg = 'rbOff'; RB.motion = ''; renderRb();
 }
 function renderRb() {
   var on = !!RB.writer;
@@ -1048,6 +1167,7 @@ function renderRb() {
   $('rbConn').textContent = t(on ? 'rbDisc' : 'rbConn');
   $('rbVolt').textContent = RB.volt == null ? '' : t('rbVolt', RB.volt) + (RB.volt < 9 ? ' ' + t('rbLow') : '');
   Array.prototype.forEach.call(document.querySelectorAll('.rbc'), function (el) { el.disabled = !on; });
+  rbRender2(on);
 }
 function rbTick(now) {       // live mirror of the slider targets (not while a PMA is streamed), max ~12 packets/s
   if (!RB.writer || !$('rbLive').checked || (P.playing && $('rbStream').checked) || now - RB.last < 80) return;
@@ -1081,12 +1201,332 @@ $('rbConn').addEventListener('click', function () { RB.writer ? rbDisconnect() :
 $('rbOnce').addEventListener('click', rbPose);
 $('rbRel').addEventListener('click', function () { $('rbLive').checked = false; $('rbStream').checked = false; RB.motion = ''; var z = []; for (var k = 0; k < N; k++) z[k] = 0; RB.retry = 0; rbSend(poseBytes(z, 2), true); });
 $('rbT').addEventListener('click', rbStopMotion);
-$('rbPlayBuiltin').addEventListener('click', function () { if (!RB.writer) { renderRb(); return; } rbMotionSend(parseInt($('rbBuiltin').value, 10)); });
 $('rbStopMotion').addEventListener('click', function () { if (!RB.writer) { renderRb(); return; } rbStopMotion(); });
 $('rbStrB').addEventListener('click', function () { rbParam(true); });
 $('rbSpdB').addEventListener('click', function () { rbParam(false); });
 $('rbBat').addEventListener('click', rbBattery);
 $('rbExp').addEventListener('click', rbExport);
+// ------------------------------------------------------------------ P1: real-robot digital twin, teach & record, WebSocket bridge, monitor, E-stop
+// 0x01 servo query: request [07][01][00][05][pid][0E][xor]; reply [18][01][00][14-byte block][xor] = pid, flag(0x80 valid), encoder LE, trim, command LE, gyro flag x2, gyro gain, speed, stretch
+// (layout from the community analysis memo, implemented by github.com/arthurson/premaiduino2 PmaProtocol.h; the 14-byte block is verified against that firmware, not against a factory robot)
+var ST = { on: false, twin: false, i: 0, out: {}, win: 3, info: [], fail: [], cells: [], lat: 0, ok: 0, miss: 0, bad: 0, round: 0, cyc: 0, cycT: 0, sumT: 0 };
+var MIR = { mode: 'off', out: {}, sent: {}, last: 0 };
+var TC = { timer: 0 };
+var MN = { lines: [], paused: false, hidePoll: true, dirty: false, timer: 0, tx: 0, rx: 0 };
+var BV = [], LK = { want: false, kind: '', wsUrl: '', tries: 0, timer: 0, ws: null, wake: null, info: null };
+function h2(x) { return ('0' + (x & 255).toString(16).toUpperCase()).slice(-2); }
+function hexStr(u8) { return Array.prototype.map.call(u8, h2).join(' '); }
+function s16(lo, hi) { var v = (lo & 255) | ((hi & 255) << 8); return v > 32767 ? v - 65536 : v; }
+function sideOf(k) { var j = A.servos[k].joint; return j.indexOf('l_') === 0 ? 'l' : j.indexOf('r_') === 0 ? 'r' : ''; }
+function decodeServoInfo(p) {      // null unless a well-formed, checksummed 0x01 servo reply
+  if (!p || p.length !== 18 || p[0] !== 18 || p[1] !== 0x01 || p[2] !== 0 || xr(Array.prototype.slice.call(p, 0, 17)) !== p[17]) return null;
+  var gy = (p[11] === 0xFF && p[12] === 0xFF) ? '' : (p[11] === 2 && p[12] === 5) ? 'pitch' : (p[11] === 2 && p[12] === 7) ? 'roll' : h2(p[11]) + h2(p[12]);
+  return { pid: p[3], valid: (p[4] & 0x80) !== 0, enc: p[5] | (p[6] << 8), trim: s16(p[7], p[8]), cmd: p[9] | (p[10] << 8), gyro: gy, gyroGain: s16(p[13], p[14]), speed: p[15], stretch: p[16], t: 0 };
+}
+function poseBytesSome(ks, raws, spd) {      // 0x18 pose that carries only the listed servos (0 = release)
+  var b = [5 + 3 * ks.length, 0x18, 0, Math.max(1, Math.min(255, spd | 0))];
+  ks.forEach(function (k, i) { var v = raws[i]; b.push(A.servos[k].pid, v & 255, (v >> 8) & 255); });
+  return mk(b);
+}
+// ---- servo status polling (3 requests in flight, a new one as each reply arrives, timeout 200 ms or 4x the measured latency)
+function stNext() {
+  for (var n = 0; n < N; n++) {
+    var k = ST.i; ST.i = (ST.i + 1) % N;
+    if (!ST.i) { var now = performance.now(); ST.round++; ST.cyc = ST.cycT ? now - ST.cycT : 0; ST.cycT = now; }
+    var inf = ST.info[k];
+    if (((inf && !inf.valid) || ST.fail[k] >= 3) && ST.round % 8) continue;     // dead / unwired servos are probed once every 8 rounds
+    return k;
+  }
+  return 0;
+}
+function stPoll() {
+  if (!ST.on || !RB.writer || (P.playing && $('rbStream').checked)) return;     // never compete with a streamed motion
+  var now = performance.now(), to = Math.max(200, Math.min(1000, ST.lat * 4)), n = 0;
+  Object.keys(ST.out).forEach(function (q) { if (now - ST.out[q] >= to) { var kk = PM.pid2k[q]; ST.miss++; ST.fail[kk] = (ST.fail[kk] | 0) + 1; delete ST.out[q]; } else n++; });
+  while (n < ST.win) {                 // a few requests in flight: throughput no longer limited by one round trip
+    var k = stNext(), pid = A.servos[k].pid; if (ST.out[pid] !== undefined) break;
+    ST.out[pid] = now; n++; rbSend(mk([7, 0x01, 0, 5, pid, 14]));
+  }
+}
+setInterval(stPoll, 60);        // watchdog: restarts the chain after a lost reply
+function stRx(p) {
+  var d = decodeServoInfo(p); if (!d) { ST.bad++; return; }
+  var k = PM.pid2k[d.pid]; if (k === undefined) return;
+  var now = performance.now(); d.t = now;
+  if (ST.out[d.pid] !== undefined) { var dt = now - ST.out[d.pid]; ST.lat = ST.lat ? ST.lat * 0.8 + dt * 0.2 : dt; delete ST.out[d.pid]; }
+  ST.info[k] = d; ST.fail[k] = 0; ST.ok++;
+  twinApply(k, d); mirDrive(k, d); stCell(k, d);
+  setTimeout(stPoll, 0);
+}
+function stCell(k, d) {
+  var c = ST.cells[k]; if (!c) return;
+  c.row.classList.toggle('na', !d.valid); c.row.classList.remove('stale');
+  c.act.textContent = d.valid ? d.enc : '—'; c.deg.textContent = d.valid ? (A.servos[k].sign * (d.enc - 7500) * K_DEG).toFixed(1) : '';
+  c.cmd.textContent = d.cmd ? d.cmd : (d.valid ? 'free' : '—'); c.sp.textContent = d.speed + '/' + d.stretch;
+  c.gy.textContent = d.gyro ? d.gyro + (d.gyroGain ? ' ' + d.gyroGain : '') : '';
+}
+(function stBuild() {
+  var tb = $('stBody'); if (!tb) return;
+  A.servos.forEach(function (s, k) {
+    var tr = document.createElement('tr'); tr.innerHTML = '<td class="mono">' + h2(s.pid) + '</td><td class="mono"></td><td class="mono"></td><td class="mono"></td><td class="mono"></td><td class="mono"></td><td class="mono"></td>';
+    tr.children[1].textContent = s.joint.replace('_joint', ''); var c = tr.children;
+    ST.cells[k] = { row: tr, act: c[2], deg: c[3], cmd: c[4], sp: c[5], gy: c[6] }; tb.appendChild(tr);
+  });
+  setInterval(function () { var now = performance.now(); ST.cells.forEach(function (c, k) { var d = ST.info[k]; c.row.classList.toggle('stale', !!d && now - d.t > 3000); }); }, 500);
+})();
+// ---- digital twin: the robot's encoder positions drive the simulator targets
+function twinApply(k, d) {
+  if (!ST.twin || !d.valid || !d.enc) return;
+  var deg = A.servos[k].sign * (d.enc - 7500) * K_DEG;
+  if (Math.abs(deg - target[k]) > 0.15) setTarget(k, deg);
+}
+// ---- left / right following. Simulator: moving a slider moves its partner (A.mirror: servo k = m x angle of servo p).
+// Real robot (twin on, direction L->R or R->L): the leader side is released and moved by hand, the other side is driven to the mirrored position.
+function mirFollow(k) {
+  if (MIR.mode === 'off') return; var side = sideOf(k);
+  if ((MIR.mode === 'lr' && side !== 'l') || (MIR.mode === 'rl' && side !== 'r')) return;
+  A.mirror.forEach(function (e) { if (e.p === k && e.k !== k) setTarget(e.k, e.m * target[k]); });
+}
+function mirDrive(k, d) {
+  if ((MIR.mode !== 'lr' && MIR.mode !== 'rl') || !ST.twin || !RB.writer || !d.valid || !d.enc) return;
+  if (sideOf(k) !== (MIR.mode === 'lr' ? 'l' : 'r')) return;
+  A.mirror.forEach(function (e) {
+    if (e.p !== k || e.k === k) return;
+    var v = Math.round(7500 + A.servos[e.k].sign * A.servos[k].sign * e.m * (d.enc - 7500));
+    MIR.out[e.k] = $('rbSafe').checked ? rawClampSafe(e.k, v) : rcClampRaw(e.k, v);
+  });
+  var now = performance.now(); if (now - MIR.last < 70) return;
+  var ks = [], rs = []; Object.keys(MIR.out).forEach(function (key) { var q = +key, v = MIR.out[q]; if (MIR.sent[q] === undefined || Math.abs(v - MIR.sent[q]) >= 6) { ks.push(q); rs.push(v); } });
+  if (!ks.length) return; MIR.last = now; ks.forEach(function (q, i) { MIR.sent[q] = rs[i]; });
+  rbSend(poseBytesSome(ks, rs, 2));
+}
+// ---- teach: release the servos, move the robot by hand, capture keyframes (manual or every N ms) -> the keyframe recorder -> .pma / CSV
+function teachStart() {
+  if (!RB.writer) return;
+  var lead = MIR.mode === 'lr' ? 'l' : MIR.mode === 'rl' ? 'r' : '';
+  if (!confirm(t(lead ? 'teachConfirmSide' : 'teachConfirm'))) return;
+  $('rbLive').checked = false; $('rbStream').checked = false; touch(); if (typeof WK !== 'undefined') WK.on = false;
+  ST.on = true; ST.twin = true; $('stOn').checked = true; $('stTwin').checked = true; MIR.sent = {}; MIR.out = {};
+  var ks = [], rs = []; for (var k = 0; k < N; k++) { if (lead && sideOf(k) !== lead) continue; ks.push(k); rs.push(0); }
+  RB.retry = 0; RB.lastPkt = poseBytesSome(ks, rs, 2); rbSend(RB.lastPkt, true); RB.motion = ''; renderRb(); stPoll();
+}
+function teachHold() {          // stiffen every servo at the position it has right now (stops the limp state)
+  if (!RB.writer) return; var ks = [], rs = [], now = performance.now();
+  for (var k = 0; k < N; k++) { var d = ST.info[k]; if (d && d.valid && d.enc && now - d.t < 3000) { ks.push(k); rs.push(rcClampRaw(k, d.enc)); } }
+  if (!ks.length) { $('tcInfo').textContent = t('tcNoData'); return; }
+  RB.retry = 0; RB.lastPkt = poseBytesSome(ks, rs, 10); rbSend(RB.lastPkt, true); $('tcInfo').textContent = t('tcHeld', ks.length);
+}
+function teachCapture(auto) {
+  var base = rcRaw(), raw = [], live = 0, now = performance.now();
+  for (var k = 0; k < N; k++) { var d = ST.info[k]; if (d && d.valid && d.enc && now - d.t < 3000) { raw[k] = rcClampRaw(k, d.enc); live++; } else raw[k] = base[k]; }
+  var spd = auto ? Math.max(1, Math.min(255, Math.round((+$('tcMs').value || 300) / 15))) : (+$('rcSpd').value || 10);
+  RC.kf.push({ raw: raw, spd: spd }); rcSave(); rcRender(); $('rcList').scrollTop = 1e6; $('tcInfo').textContent = t('tcCaptured', RC.kf.length, live);
+  return live;
+}
+function teachStopAuto() { clearInterval(TC.timer); TC.timer = 0; tcRender(); }
+function teachAuto() {
+  if (TC.timer) { teachStopAuto(); return; } if (!RB.writer || !ST.on) { $('tcInfo').textContent = t('tcNeedPoll'); return; }
+  TC.timer = setInterval(function () { teachCapture(true); }, Math.max(100, +$('tcMs').value || 300)); teachCapture(true); tcRender();
+}
+function tcRender() { var b = $('tcAuto'); if (!b) return; b.textContent = t(TC.timer ? 'tcAutoStop' : 'tcAuto'); b.classList.toggle('danger', !!TC.timer); }
+function rcCsv() {
+  var nm = A.servos.map(function (s) { return s.joint.replace('_joint', ''); }), tt = 0;
+  var rows = ['frame,time_ms,spd,' + nm.map(function (n) { return n + '_raw'; }).concat(nm.map(function (n) { return n + '_deg'; })).join(',')];
+  RC.kf.forEach(function (f, i) {
+    tt += f.spd * 15;
+    var deg = f.raw.map(function (v, k) { return v ? (A.servos[k].sign * (v - 7500) * K_DEG).toFixed(2) : ''; });
+    rows.push([i + 1, tt, f.spd].concat(f.raw.map(function (v) { return v || 0; }), deg).join(','));
+  });
+  return rows.join('\r\n') + '\r\n';
+}
+// ---- serial monitor (hex TX/RX with decode), battery graph, Wake Lock
+var CMDN = { 0x01: 'status', 0x02: 'loop-start/MotionId', 0x04: 'SaveMotionId', 0x05: 'stop', 0x07: 'loop-end', 0x18: 'pose', 0x19: 'param', 0x1C: 'ReadFlash', 0x1D: 'WriteMotionData', 0x1E: 'SaveMotionData / LED?', 0x1F: 'motion' };
+function pktNote(u8, rx) {
+  var c = u8[1], n = CMDN[c] || '?';
+  if (c === 0x01 && rx && u8.length === 6) return 'volt ' + ((u8[3] | (u8[4] << 8)) / 216).toFixed(2) + ' V';
+  if (c === 0x01 && rx && u8.length === 18) { var d = decodeServoInfo(u8); return d ? 'servo ' + h2(d.pid) + ' act ' + d.enc + ' cmd ' + d.cmd + (d.valid ? '' : ' (n/a)') : 'servo reply (bad checksum)'; }
+  if (c === 0x01 && !rx) return u8[3] === 2 ? 'query volt' : u8[3] === 5 ? 'query servo ' + h2(u8[4]) : 'query';
+  if (c === 0x18 && rx) return 'pose ' + (u8[2] ? 'ERR' : 'ok');
+  if (c === 0x18) return 'pose ' + Math.max(0, ((u8.length - 5) / 3) | 0) + ' servos, spd ' + u8[3];
+  if (c === 0x1F && !rx) return u8[2] === 0x08 ? 'STOP motion' : 'play motion ' + h2(u8[3]);
+  if (c === 0x05 && !rx) return 'STOP';
+  return n;
+}
+function isPoll(u8) { return u8[1] === 1 && (u8.length === 18 || (u8.length === 7 && u8[3] === 5)); }
+function rbLog(dir, u8) {
+  if (dir === 'TX') MN.tx++; else MN.rx++;
+  if (MN.paused || (MN.hidePoll && isPoll(u8))) return;
+  MN.lines.push({ t: Date.now(), d: dir, h: hexStr(u8), n: pktNote(u8, dir === 'RX') }); if (MN.lines.length > 400) MN.lines.splice(0, 100);
+  MN.dirty = true; mnDraw();
+}
+function mnDraw() {
+  if (!MN.dirty || MN.timer) return;
+  MN.timer = setTimeout(function () {
+    MN.timer = 0; MN.dirty = false; var box = $('mnLog'); if (!box) return; var stick = box.scrollTop + box.clientHeight >= box.scrollHeight - 4;
+    box.textContent = MN.lines.slice(-150).map(function (l) { var d = new Date(l.t); return d.toTimeString().slice(0, 8) + '.' + ('00' + d.getMilliseconds()).slice(-3) + ' ' + l.d + '  ' + l.h + '   ; ' + l.n; }).join('\n');
+    if (stick) box.scrollTop = box.scrollHeight;
+  }, 200);
+}
+function mnSend() {
+  var txt = $('mnHex').value.trim(); if (!txt || !RB.writer) return;
+  var a = txt.split(/\s+/).map(function (h) { return /^[0-9a-f]{1,2}$/i.test(h) ? parseInt(h, 16) : NaN; });
+  if (a.some(isNaN)) { alert(t('mnBad')); return; }
+  var pk = $('mnAuto').checked ? mk([a.length + 2].concat(a)) : Uint8Array.from(a);
+  if (pk.length > 1 && [0x1C, 0x1D, 0x1E, 0x04].indexOf(pk[1]) >= 0 && !confirm(t('mnFlash'))) return;
+  rbSend(pk);
+}
+function bvPush(v) { BV.push({ t: Date.now(), v: v }); if (BV.length > 2000) BV.splice(0, 200); bvDraw(); }
+function bvDraw() {
+  var c = $('bvG'), tx = $('bvTxt'); if (!c || !c.getContext) return;
+  var g = c.getContext('2d'), w = c.width, h = c.height, cs = getComputedStyle(document.documentElement); g.clearRect(0, 0, w, h);
+  if (!BV.length) { if (tx) tx.textContent = ''; return; }
+  var vs = BV.map(function (p) { return p.v; }), vmin = Math.min.apply(null, vs), vmax = Math.max.apply(null, vs), lo = Math.min(vmin, 9) - 0.3, hi = Math.max(vmax, 9.6) + 0.3;
+  var t0 = BV[0].t, t1 = BV[BV.length - 1].t, X = function (tt) { return t1 > t0 ? 4 + (w - 8) * (tt - t0) / (t1 - t0) : w / 2; }, Y = function (v) { return h - 4 - (h - 8) * (v - lo) / (hi - lo); };
+  g.strokeStyle = cs.getPropertyValue('--danger').trim() || '#dc2626'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(0, Y(9)); g.lineTo(w, Y(9)); g.stroke(); g.setLineDash([]);
+  g.strokeStyle = cs.getPropertyValue('--accent').trim() || '#6d28d9'; g.lineWidth = 2; g.beginPath();
+  BV.forEach(function (p, i) { if (i) g.lineTo(X(p.t), Y(p.v)); else g.moveTo(X(p.t), Y(p.v)); }); g.stroke(); g.lineWidth = 1;
+  g.fillStyle = g.strokeStyle; g.beginPath(); g.arc(X(t1), Y(vs[vs.length - 1]), 3, 0, 6.3); g.fill();
+  if (tx) tx.textContent = t('bvTxt', vs[vs.length - 1], vmin, vmax, BV.length, (t1 - t0) / 60000);
+}
+async function wakeOn() {
+  if (!$('mnWake').checked || !navigator.wakeLock || LK.wake) return;
+  try { LK.wake = await navigator.wakeLock.request('screen'); LK.wake.addEventListener('release', function () { LK.wake = null; renderRb(); }); } catch (e) { LK.wake = null; } renderRb();
+}
+function wakeOff() { try { if (LK.wake) LK.wake.release(); } catch (e) {} LK.wake = null; }
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && RB.writer) wakeOn(); });
+// ---- E-stop: always visible, Esc as well. Stops page-side playback / walking / live control / teach capture and tells the robot to stop its motion.
+// It does NOT release the servos (the robot would collapse); both stop forms are sent: official "04 05 00 01" and StopMotion "05 1F 08 01".
+function rbStopPackets() { var a = rbSend(hexPkt('04 05 00 01')), b = rbSend(mk([0x05, 0x1F, 0x08, 0x01])); return a && b; }
+function estop() {
+  $('rbLive').checked = false; $('rbStream').checked = false; teachStopAuto();
+  P.playing = false; updatePlayUI(true); if (typeof WK !== 'undefined') WK.on = false; if (SW.on) stopSweep();
+  RB.lastF = RB.lastK = null; RB.lastPkt = null; RB.retry = 99;           // no automatic re-send of the last pose after the stop
+  var ok = RB.writer ? rbStopPackets() : false;
+  if (ok) { setTimeout(rbStopPackets, 60); setTimeout(rbStopPackets, 200); }
+  RB.motion = ok ? 'rbMotionStopped' : 'estopNoLink'; renderRb();
+  var b = $('estop'); b.classList.remove('hit'); void b.offsetWidth; b.classList.add('hit');
+}
+$('estop').addEventListener('click', estop);
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') estop(); });
+// ---- link: Web Serial (Chrome / Edge) or WebSocket bridge (Safari / iOS, Raspberry Pi, ESP32), auto reconnect
+function lkUp(kind) {
+  LK.kind = kind; LK.tries = 0; RB.msg = 'rbOn'; RB.err = ''; RB.buf = []; RB.volt = null; RB.motion = ''; ST.out = {};
+  clearInterval(RB.bt); RB.bt = setInterval(rbBattery, 10000); setTimeout(rbBattery, 1500);
+  wakeOn(); renderRb(); stPoll();
+}
+function rbLost() {          // the link went away by itself (unplug, reset, Wi-Fi drop): keep trying while the user still wants a connection
+  if (!RB.writer && !RB.port) return;
+  try { if (RB.writer) RB.writer.releaseLock(); } catch (e) {}
+  var port = RB.port; RB.writer = RB.reader = RB.rp = null; RB.port = null; LK.ws = null;
+  try { if (port && port.close) Promise.resolve(port.close()).catch(function () {}); } catch (e) {}
+  clearInterval(RB.bt); ST.out = {}; teachStopAuto(); wakeOff(); $('rbLive').checked = false; $('rbStream').checked = false;
+  RB.msg = LK.want ? 'rbLost' : 'rbOff'; renderRb(); if (LK.want) lkRetry();
+}
+function lkRetry() {
+  clearTimeout(LK.timer); if (!LK.want || RB.writer) return;
+  LK.timer = setTimeout(async function () {
+    if (!LK.want || RB.writer) return;
+    try {
+      if (LK.kind === 'ws') await wsOpen(LK.wsUrl);
+      else {
+        var ports = await navigator.serial.getPorts(), inf = LK.info || {};
+        var pick = ports.filter(function (p) { var i = p.getInfo ? p.getInfo() : {}; return i.usbVendorId === inf.usbVendorId && i.usbProductId === inf.usbProductId; })[0] || (ports.length === 1 ? ports[0] : null);
+        if (!pick) throw new Error('no port'); await rbOpenSerial(pick);
+      }
+    } catch (e) { LK.tries++; lkRetry(); }
+  }, Math.min(5000, Math.round(1000 * Math.pow(1.5, LK.tries))));
+}
+function rbLoop() {
+  return (async function () {
+    var port = RB.port;
+    try { while (RB.port === port && !RB.closing && port.readable) { RB.reader = port.readable.getReader(); try { for (;;) { var r = await RB.reader.read(); if (r.done) break; rbRx(r.value); } } finally { RB.reader.releaseLock(); RB.reader = null; } } } catch (e) { console.warn(e); }
+    if (RB.port === port && !RB.closing) rbLost();
+  })();
+}
+async function rbOpenSerial(port) {
+  await port.open({ baudRate: 115200, dataBits: 8, stopBits: 1, parity: 'none' });
+  RB.closing = false; RB.port = port; RB.writer = port.writable.getWriter(); RB.rp = rbLoop(); lkUp('serial');
+}
+async function rbConnect() {
+  if (RB.writer) return;
+  if (!navigator.serial) { RB.msg = 'rbNoSerial'; renderRb(); return; }
+  try { var port = await navigator.serial.requestPort(); LK.info = port.getInfo ? port.getInfo() : {}; LK.want = true; await rbOpenSerial(port); }
+  catch (e) { LK.want = false; RB.port = null; RB.writer = null; RB.msg = 'rbErr'; RB.err = e && e.message || String(e); }
+  renderRb();
+}
+function wsOpen(url) {
+  return new Promise(function (res, rej) {
+    var ws, opened = false; try { ws = new WebSocket(url); } catch (e) { rej(e); return; }
+    ws.binaryType = 'arraybuffer';
+    ws.onopen = function () {
+      opened = true; LK.ws = ws; RB.closing = false; RB.port = ws;
+      RB.writer = { write: function (u) { if (ws.readyState !== 1) return Promise.reject(new Error('WebSocket closed')); ws.send(u); return Promise.resolve(); }, releaseLock: function () {} };
+      lkUp('ws'); res();
+    };
+    ws.onmessage = function (ev) { if (ev.data instanceof ArrayBuffer) rbRx(new Uint8Array(ev.data)); };
+    ws.onclose = function () { if (!opened) { rej(new Error('WebSocket connection failed')); return; } if (RB.port === ws && !RB.closing) rbLost(); };
+    ws.onerror = function () {};
+  });
+}
+async function wsConnect() {
+  if (RB.writer) return; var url = $('wsUrl').value.trim(); if (!url) return;
+  if (location.protocol === 'https:' && /^ws:\/\//i.test(url) && !/^ws:\/\/(localhost|127\.0\.0\.1|\[::1\])([:\/]|$)/i.test(url)) { RB.msg = 'rbWsMixed'; renderRb(); return; }
+  try { localStorage.setItem('pmsim.ws', url); } catch (e) {}
+  LK.wsUrl = url; LK.kind = 'ws'; RB.msg = 'rbWsTry'; renderRb();
+  try { LK.want = true; await wsOpen(url); } catch (e) { LK.want = false; RB.msg = 'rbErr'; RB.err = e && e.message || String(e); }
+  renderRb();
+}
+async function rbDisconnect() {
+  LK.want = false; clearTimeout(LK.timer); LK.timer = 0; RB.closing = true;
+  clearInterval(RB.bt); $('rbLive').checked = false; $('rbStream').checked = false; teachStopAuto(); wakeOff();
+  try { if (RB.reader) await RB.reader.cancel(); if (RB.rp) await RB.rp; } catch (e) {}
+  try { if (RB.writer) RB.writer.releaseLock(); } catch (e) {}
+  try { if (RB.port) await RB.port.close(); } catch (e) {}
+  RB.port = RB.writer = RB.reader = RB.rp = null; LK.ws = null; RB.msg = 'rbOff'; RB.motion = ''; ST.out = {}; renderRb();
+}
+if (navigator.serial && navigator.serial.addEventListener) {
+  navigator.serial.addEventListener('disconnect', function (e) { if (e.target === RB.port) rbLost(); });
+  navigator.serial.addEventListener('connect', function () { if (LK.want && !RB.writer && LK.kind === 'serial') { LK.tries = 0; lkRetry(); } });
+}
+(function p1Init() {
+  var u = ''; try { u = localStorage.getItem('pmsim.ws') || ''; } catch (e) {}
+  $('wsUrl').value = u || (location.protocol === 'http:' || location.protocol === 'https:' ? (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws' : 'ws://raspberrypi.local:8765/ws');
+  $('wsConn').addEventListener('click', wsConnect);
+  $('stOn').addEventListener('change', function () { ST.on = this.checked; if (!ST.on) { ST.twin = false; $('stTwin').checked = false; teachStopAuto(); } else stPoll(); renderRb(); });
+  $('stTwin').addEventListener('change', function () {
+    ST.twin = this.checked;
+    if (ST.twin) { ST.on = true; $('stOn').checked = true; $('rbLive').checked = false; $('rbStream').checked = false; touch(); if (typeof WK !== 'undefined') WK.on = false; MIR.sent = {}; MIR.out = {}; stPoll(); }
+    renderRb();
+  });
+  $('mrMode').addEventListener('change', function () { MIR.mode = this.value; MIR.sent = {}; MIR.out = {}; });
+  $('tcStart').addEventListener('click', teachStart); $('tcHold').addEventListener('click', teachHold);
+  $('tcCap').addEventListener('click', function () { teachCapture(false); }); $('tcAuto').addEventListener('click', teachAuto);
+  $('rcCsv').addEventListener('click', function () {
+    if (!RC.kf.length) return; var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF' + rcCsv()], { type: 'text/csv' })); a.download = rcName().replace(/[\\/:*?"<>|]+/g, '_') + '.csv'; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
+  $('mnPause').addEventListener('change', function () { MN.paused = this.checked; }); $('mnHide').addEventListener('change', function () { MN.hidePoll = this.checked; });
+  $('mnClear').addEventListener('click', function () { MN.lines = []; MN.dirty = true; mnDraw(); });
+  $('mnCopy').addEventListener('click', function () { var s = MN.lines.map(function (l) { return l.d + ' ' + l.h; }).join('\n'); try { navigator.clipboard.writeText(s); } catch (e) {} });
+  $('mnSend').addEventListener('click', mnSend); $('mnHex').addEventListener('keydown', function (e) { if (e.key === 'Enter') mnSend(); });
+  $('mnWake').addEventListener('change', function () { if (this.checked) wakeOn(); else wakeOff(); renderRb(); });
+  $('ledOk').addEventListener('change', renderRb);
+  $('ledSend').addEventListener('click', function () {
+    if (!RB.writer || !$('ledOk').checked) return;
+    var a = $('ledHex').value.trim().split(/\s+/).filter(Boolean).map(function (h) { return /^[0-9a-f]{1,2}$/i.test(h) ? parseInt(h, 16) : NaN; });
+    if (!a.length || a.some(isNaN)) { alert(t('mnBad')); return; }
+    var pk = mk([a.length + 3, 0x1E].concat(a)); if (!confirm(t('ledConfirm', hexStr(pk)))) return; rbSend(pk);
+  });
+})();
+function rbRender2(on) {
+  $('wsConn').disabled = on || RB.msg === 'rbWsTry';
+  if (ST.twin && ($('rbLive').checked || $('rbStream').checked)) { ST.twin = false; $('stTwin').checked = false; }
+  $('ledSend').disabled = !on || !$('ledOk').checked;
+  ['tcStart', 'tcHold', 'tcCap', 'tcAuto'].forEach(function (id) { $(id).disabled = !on; });
+  var now = performance.now();
+  if (now - ST.sumT > 250) { ST.sumT = now; $('stSum').textContent = ST.on ? t('stSum', ST.ok, ST.lat, ST.cyc, ST.miss, ST.bad) : ''; }
+  $('mnWakeS').textContent = !navigator.wakeLock ? t('wakeNo') : LK.wake ? t('wakeOn') : '';
+  $('mnCnt').textContent = t('mnCnt', MN.tx, MN.rx); tcRender();
+}
 
 (function () {      // panels, tabs, settings card, robot control mode
   var h = document.documentElement;
@@ -1300,7 +1740,7 @@ function rcRender() {
   RC.kf.forEach(function (f, i) {
     var row = document.createElement('div'); row.className = 'rcrow';
     function btn(txt, tip, fn) { var b = document.createElement('button'); b.className = 'sm'; b.textContent = txt; b.title = tip; b.addEventListener('click', fn); row.appendChild(b); return b; }
-    btn('#' + (i + 1), t('recGo'), function () { rcGo(i); });
+    var nb = btn('#' + (i + 1), t('recGo'), function () { rcGo(i); rcSelect(i); }); if (i === RC.sel) row.classList.add('sel');
     var sp = document.createElement('input'); sp.type = 'number'; sp.min = 1; sp.max = 255; sp.value = f.spd; sp.title = t('recSpdRow') + ' (× 15 ms)';
     sp.addEventListener('change', function () { f.spd = Math.max(1, Math.min(255, parseInt(sp.value, 10) || 10)); sp.value = f.spd; rcSave(); rcInfo(); }); row.appendChild(sp);
     btn('⟳', t('recSet'), function () { f.raw = rcRaw(); rcSave(); });
@@ -1309,7 +1749,7 @@ function rcRender() {
     btn('✕', t('recDel'), function () { RC.kf.splice(i, 1); rcSave(); rcRender(); });
     box.appendChild(row);
   });
-  rcInfo(); $('rcPlay').disabled = $('rcExp').disabled = $('rcClr').disabled = !RC.kf.length;
+  rcInfo(); $('rcPlay').disabled = $('rcExp').disabled = $('rcClr').disabled = $('rcCsv').disabled = !RC.kf.length; $('rcAlt').textContent = RC.alt ? t('rcAltTxt', RC.alt.kf.length) : ''; if (typeof onRefresh === 'function') onRefresh();
 }
 function rcInfo() { var tl = RC.kf.length ? buildTimeline(rcBytes()) : null; $('rcInfo').textContent = tl ? t('recInfo', RC.kf.length, tl.total / 1000) : ''; renderCheck('chkR', tl); }
 function rcGo(i) { touch(); if (typeof WK !== 'undefined') WK.on = false; var f = RC.kf[i]; for (var k = 0; k < N; k++) if (f.raw[k]) setTarget(k, A.servos[k].sign * (f.raw[k] - 7500) * K_DEG); }
@@ -1387,9 +1827,10 @@ function gpLabel() { $('wGp').textContent = WK.gp.name ? t('padGpOn', WK.gp.name
 function gpPoll() {
   var gps = navigator.getGamepads ? navigator.getGamepads() : [], g = null, i, G = WK.gp, dz = function (v) { v = v || 0; return Math.abs(v) < 0.15 ? 0 : v; };
   for (i = 0; i < gps.length; i++) if (gps[i] && gps[i].connected) { g = gps[i]; break; }
-  if (!g) { G.x1 = G.y1 = G.x2 = G.y2 = 0; G.a = false; if (G.name) { G.name = ''; gpLabel(); } return; }
+  if (!g) { G.x1 = G.y1 = G.x2 = G.y2 = 0; G.a = false; G.lt = G.rt = 0; G.lb = G.rb = G.x = G.y = false; if (G.name) { G.name = ''; gpLabel(); } return; }
   if (G.name !== g.id) { G.name = g.id; gpLabel(); }
   G.x1 = dz(g.axes[0]); G.y1 = -dz(g.axes[1]); G.x2 = dz(g.axes[2]); G.y2 = -dz(g.axes[3]);
+  var bt = function (n) { return g.buttons[n] || { pressed: false, value: 0 }; }; G.lt = bt(6).value; G.rt = bt(7).value; G.lb = bt(4).pressed; G.rb = bt(5).pressed; G.x = bt(2).pressed; G.y = bt(3).pressed;
   var a = !!(g.buttons[0] && g.buttons[0].pressed); if (a && !G.a) { if (!WK.on) walkStart(); else if (WK.go) { WK.go = false; wRender(); } } G.a = a;
 }
 gpLabel();
@@ -1404,21 +1845,303 @@ $('rMu').addEventListener('input', function () { setMu(this.value); });
 $('rKp').addEventListener('input', function () { setKp(this.value); });
 $('sSpeed').addEventListener('change', function () { S.speed = +this.value; });
 setMu(S.mu); setKp(S.kp);
+// ================================================================== P2: stand assist, sensor HUD, share / kiosk, recording, playlist, editor, teleop, mocap, shortcuts
+function dlBlob(blob, name) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000); }
+function curTitle() { return (LIB.cur >= 0 && LIB.items[LIB.cur] ? LIB.items[LIB.cur].title : (P.name || 'premaid')).replace(/[\\/:*?"<>|]+/g, '_'); }
+function clickId(id) { var e = $(id); if (e) e.click(); }
+function toggleId(id) { var e = $(id); if (e) { e.checked = !e.checked; e.dispatchEvent(new Event('change')); } }
+// ---- stand assist: ankle strategy (pitch / roll PD on the base IMU) + lateral CoM trim over the support foot (hip roll + opposite ankle roll).
+// Measured in this simulator (tests/e2e_p2.py, 0.1 s pushes): the sideways tipping threshold goes from 9.0 N to 9.5 N, forward from 9.0 N to 10 N, i.e. +0.5..1 N (5-10 %). Single-leg stance is NOT solved.
+var BAL = { on: false, kp: 1, kd: 0.05, kc: 600, lim: 20, o: [], ak: [], ax: [], hx: [], idx: false, trim: 0, fwd: 0, side: 0 };
+function balIndex() { if (BAL.idx) return; BAL.idx = true; A.servos.forEach(function (s, k) { var j = s.joint; if (/^[rl]_aky_joint$/.test(j)) BAL.ak.push(k); else if (/^[rl]_akx_joint$/.test(j)) BAL.ax.push(k); else if (/^[rl]_hpx_joint$/.test(j)) BAL.hx.push(k); }); }
+function balStep() {
+  balIndex(); var d = S.d, b = S.base, xq = d.xquat, R = qmat([xq[4 * b], xq[4 * b + 1], xq[4 * b + 2], xq[4 * b + 3]]), cl = function (v) { return Math.max(-1, Math.min(1, v)); };
+  var fwd = Math.asin(cl(-R[6])), side = Math.asin(cl(R[7])), wx = d.qvel[3], wy = d.qvel[4];
+  var rf = bid.r_foot, lf = bid.l_foot, xp = d.xpos, pr = [xp[3 * rf], xp[3 * rf + 1], xp[3 * rf + 2]], pl = [xp[3 * lf], xp[3 * lf + 1], xp[3 * lf + 2]];
+  var sup = pl[2] - pr[2] > 0.012 ? pr : pr[2] - pl[2] > 0.012 ? pl : [(pr[0] + pl[0]) / 2, (pr[1] + pl[1]) / 2];
+  var sc = d.subtree_com, yaw = Math.atan2(R[3], R[0]), ey = -Math.sin(yaw) * (sc[3 * b] - sup[0]) + Math.cos(yaw) * (sc[3 * b + 1] - sup[1]);
+  var trim = Math.max(-BAL.lim, Math.min(BAL.lim, BAL.kc * ey)) * D2R, op = BAL.kp * fwd + BAL.kd * wy, or = BAL.kp * side + BAL.kd * wx;
+  BAL.o = []; BAL.ak.forEach(function (k) { BAL.o[k] = op; }); BAL.ax.forEach(function (k) { BAL.o[k] = or - trim; }); BAL.hx.forEach(function (k) { BAL.o[k] = trim; });
+  BAL.trim = trim / D2R; BAL.fwd = fwd / D2R; BAL.side = side / D2R;
+}
+function balRender() { $('balInfo').textContent = BAL.on ? t('balInfo', BAL.fwd, BAL.side, BAL.trim) : ''; }
+['balKp', 'balKd', 'balKc'].forEach(function (id) { $(id).addEventListener('input', function () { BAL[id === 'balKp' ? 'kp' : id === 'balKd' ? 'kd' : 'kc'] = +this.value; $(id + 'V').textContent = this.value; }); });
+$('balOn').addEventListener('change', function () { BAL.on = this.checked; if (!BAL.on) BAL.o = []; balRender(); });
+// ---- sensor HUD (IMU from the base state, foot contact force from MuJoCo contacts, joint torque, CoM + trail)
+var SEN = { pv: null, pt: 0, acc: [0, 0, 0], trail: null, n: 0, last: null, tl: 0, cf: new Float64Array(6), noF: false, T: 0 };
+function senTrail() {
+  if (SEN.trail) return SEN.trail; var g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(3 * 800), 3)); g.setDrawRange(0, 0);
+  SEN.trail = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xff8a00, depthTest: false })); SEN.trail.renderOrder = 8; SEN.trail.frustumCulled = false; world.add(SEN.trail); return SEN.trail;
+}
+function senFoot() {      // normal force (N) on each foot: sum of the contact's friction-pyramid facet forces in efc_force (elliptic cone: the first row)
+  var d = S.d, m = S.m, rf = bid.r_foot, lf = bid.l_foot, out = { r: 0, l: 0, nr: 0, nl: 0 }, i, j, c, b1, b2, f, ad, nr, fn;
+  for (i = 0; i < d.ncon; i++) {
+    c = d.contact.get(i); b1 = m.geom_bodyid[c.geom1]; b2 = m.geom_bodyid[c.geom2]; f = b1 === rf || b2 === rf ? 'r' : b1 === lf || b2 === lf ? 'l' : ''; if (!f || c.dist > 0.0005) continue;
+    out['n' + f]++; ad = c.efc_address; if (ad < 0) continue; nr = m.opt.cone === 0 ? 2 * (c.dim - 1) : 1; fn = 0; for (j = 0; j < nr; j++) fn += d.efc_force[ad + j]; out[f] += Math.abs(fn);
+  } return out;
+}
+function senTick(now) {
+  var on = $('cSen').checked, tr = $('cTrail').checked; $('senHud').style.display = on ? 'block' : 'none';
+  var d = S.d, b = S.base, sc = d.subtree_com, cx = sc[3 * b], cy = sc[3 * b + 1], cz = sc[3 * b + 2];
+  if (S.simT < SEN.tl - 0.01) SEN.n = 0; SEN.tl = S.simT;
+  if (tr) {
+    var ln = senTrail(), p = ln.geometry.attributes.position, a = p.array, mv = !SEN.last || Math.hypot(cx - SEN.last[0], cy - SEN.last[1]) > 0.0015;
+    if (mv) { if (SEN.n >= 800) { a.copyWithin(0, 3, 2400); SEN.n = 799; } a[3 * SEN.n] = cx; a[3 * SEN.n + 1] = cy; a[3 * SEN.n + 2] = 0.002; SEN.n++; SEN.last = [cx, cy]; p.needsUpdate = true; ln.geometry.setDrawRange(0, SEN.n); }
+    ln.visible = true;
+  } else if (SEN.trail) { SEN.trail.visible = false; if (SEN.n) { SEN.n = 0; SEN.last = null; } }
+  if (!on || now - SEN.T < 100) return; SEN.T = now;
+  var xq = d.xquat, R = qmat([xq[4 * b], xq[4 * b + 1], xq[4 * b + 2], xq[4 * b + 3]]), dg = 180 / Math.PI, v = [d.qvel[0], d.qvel[1], d.qvel[2]];
+  if (SEN.pv && S.simT - SEN.pt > 0.04) { var dt = S.simT - SEN.pt, aw = [(v[0] - SEN.pv[0]) / dt, (v[1] - SEN.pv[1]) / dt, (v[2] - SEN.pv[2]) / dt + 9.81], ab = mtvec(R, aw); for (var i = 0; i < 3; i++) SEN.acc[i] = SEN.ai ? SEN.acc[i] * 0.5 + ab[i] * 0.5 : ab[i]; SEN.ai = true; SEN.pv = v; SEN.pt = S.simT; } else if (!SEN.pv || S.simT < SEN.pt) { SEN.pv = v; SEN.pt = S.simT; }
+  var ft = senFoot(), af = d.actuator_force, fr = S.m.actuator_forcerange, rank = [], k, f1 = function (x) { return (x >= 0 ? '+' : '') + x.toFixed(1); };
+  for (k = 0; k < N; k++) rank.push([Math.abs(af[act[k]]) / fr[2 * act[k] + 1], k]); rank.sort(function (a, b2) { return b2[0] - a[0]; });
+  $('senHud').textContent =
+    'IMU  roll ' + f1(Math.atan2(R[7], R[8]) * dg) + '°  pitch ' + f1(Math.asin(Math.max(-1, Math.min(1, -R[6]))) * dg) + '°  yaw ' + f1(Math.atan2(R[3], R[0]) * dg) + '°\n' +
+    'gyro ' + f1(d.qvel[3] * dg) + ' ' + f1(d.qvel[4] * dg) + ' ' + f1(d.qvel[5] * dg) + ' °/s\n' +
+    'accel ' + f1(SEN.acc[0]) + ' ' + f1(SEN.acc[1]) + ' ' + f1(SEN.acc[2]) + ' m/s²\n' +
+    t('senFoot') + '  R ' + ft.r.toFixed(2) + ' N   L ' + ft.l.toFixed(2) + ' N' + '\n' +
+    'CoM  x ' + f1(cx * 100) + '  y ' + f1(cy * 100) + '  z ' + (cz * 100).toFixed(1) + ' cm\n' +
+    t('senTq') + '  ' + rank.slice(0, 3).map(function (r) { return '#' + String(r[1] + 1).padStart(2, '0') + ' ' + A.servos[r[1]].joint.replace('_joint', '') + ' ' + (r[0] * fr[2 * act[r[1]] + 1]).toFixed(2) + ' (' + Math.round(r[0] * 100) + '%)'; }).join('\n          ');
+}
+// ---- share link / kiosk / embed:  #m=<motion title>&t=<ms>&cam=x,y,z,tx,ty,tz&play=0&speed=&loop=0&hang=1&kiosk=1&embed=1&bar=0
+function shareHash() {
+  var p = [];
+  if (LIB.cur >= 0 && LIB.items[LIB.cur]) { p.push('m=' + encodeURIComponent(LIB.items[LIB.cur].title)); p.push('t=' + Math.round(P.t)); if (!P.playing) p.push('play=0'); }
+  p.push('cam=' + [camera.position.x, camera.position.y, camera.position.z, controls.target.x, controls.target.y, controls.target.z].map(function (v) { return v.toFixed(3); }).join(','));
+  if (S.speed !== 1) p.push('speed=' + S.speed); if (!P.loop) p.push('loop=0'); if ($('cPin').checked) p.push('hang=1');
+  return '#' + p.join('&');
+}
+function shareUrl(extra) { return location.href.split('#')[0] + shareHash() + (extra || ''); }
+function hashParse(h) { var o = {}; String(h == null ? location.hash : h).replace(/^#/, '').split('&').forEach(function (kv) { if (!kv) return; var i = kv.indexOf('='), k = i < 0 ? kv : kv.slice(0, i), v = i < 0 ? '1' : kv.slice(i + 1); try { v = decodeURIComponent(v); } catch (e) {} o[k] = v; }); return o; }
+function hashApply(o) {
+  if (o.kiosk === '1' || o.embed === '1') document.body.classList.add('kiosk'); if (o.embed === '1') document.body.classList.add('embed'); if (o.bar === '0') document.body.classList.add('nobar');
+  if (o.speed && +o.speed > 0) { S.speed = +o.speed; var so = $('sSpeed'), has = Array.prototype.some.call(so.options, function (op) { return +op.value === S.speed; }); if (has) so.value = String(S.speed); }
+  if (o.loop === '0') { $('pLoop').checked = false; P.loop = false; }
+  if (o.hang === '1') { $('cPin').checked = true; $('cPin').dispatchEvent(new Event('change')); }
+  var cam = (o.cam || '').split(',').map(Number); if (cam.length === 6 && cam.every(isFinite)) { camera.position.set(cam[0], cam[1], cam[2]); controls.target.set(cam[3], cam[4], cam[5]); controls.update(); }
+  if (o.m) {
+    var i = -1; LIB.items.forEach(function (it, n) { if (it.title === o.m) i = n; }); if (i < 0 && /^\d+$/.test(o.m) && LIB.items[+o.m]) i = +o.m;
+    if (i >= 0) libLoad(i, function () { if (o.t && isFinite(+o.t)) { P.t = Math.max(0, Math.min(P.total, +o.t)); poseAt(P.t); } if (o.play === '0') P.playing = false; updatePlayUI(true); });
+  }
+}
+function hashBoot() { try { hashApply(hashParse()); } catch (e) { console.warn(e); } }
+$('shBtn').addEventListener('click', function () { var u = shareUrl(); try { navigator.clipboard.writeText(u); } catch (e) { prompt('URL', u); } flash(this, t('copiedL'), 'shBtn'); });
+$('emBtn').addEventListener('click', function () { var u = shareUrl('&embed=1&bar=0'), c = '<iframe src="' + u + '" width="640" height="480" allow="fullscreen; autoplay" style="border:0"></iframe>'; try { navigator.clipboard.writeText(c); } catch (e) { prompt('HTML', c); } flash(this, t('copiedL'), 'emBtn'); });
+function fsToggle() { var d = document, el = d.documentElement; if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d); else (el.requestFullscreen || el.webkitRequestFullscreen || function () {}).call(el); }
+$('fsBtn').addEventListener('click', fsToggle);
+// ---- recording: WebM (canvas + music) and GIF (own encoder, 3-3-2 palette)
+var REC = { mr: null, chunks: [], once: false, gif: null, off: null };
+function recUI() { $('recBtn').textContent = t(REC.mr ? 'recStop' : 'recBtn'); $('recBtn').classList.toggle('danger', !!REC.mr); $('gifBtn').disabled = !!REC.gif; }
+function recStart() {
+  if (REC.mr) { recStop(); return; }
+  if (!window.MediaRecorder || !canvas.captureStream) { flash($('recBtn'), t('noRec'), 'recBtn'); return; }
+  var stream = canvas.captureStream(30);
+  try { var as = AU.el && AU.el.src && !AU.drm ? (AU.el.captureStream ? AU.el.captureStream() : (AU.el.mozCaptureStream ? AU.el.mozCaptureStream() : null)) : null; if (as) as.getAudioTracks().forEach(function (tr) { stream.addTrack(tr); }); } catch (e) {}
+  var mt = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm;codecs=vp8', 'video/webm'].filter(function (m) { return MediaRecorder.isTypeSupported(m); })[0];
+  if (!mt) { flash($('recBtn'), t('noRec'), 'recBtn'); return; }
+  REC.chunks = []; REC.name = curTitle(); REC.mr = new MediaRecorder(stream, { mimeType: mt, videoBitsPerSecond: 5e6 });
+  REC.mr.ondataavailable = function (e) { if (e.data && e.data.size) REC.chunks.push(e.data); };
+  REC.mr.onstop = function () { var blob = new Blob(REC.chunks, { type: 'video/webm' }); REC.last = blob; REC.mr = null; REC.once = false; recUI(); dlBlob(blob, REC.name + '.webm'); };
+  REC.mr.start(250);
+  if ($('recOnce').checked && P.frames) { P.loop = false; $('pLoop').checked = false; P.t = 0; poseAt(0); P.playing = true; REC.once = true; updatePlayUI(true); }
+  recUI();
+}
+function recStop() { if (REC.mr && REC.mr.state !== 'inactive') REC.mr.stop(); }
+function lzwEncode(px, minCode) {      // GIF variant of LZW (variable code size, clear / end codes)
+  var initBits = minCode + 1, clear = 1 << minCode, eof = clear + 1, nBits = initBits, maxcode = (1 << nBits) - 1, free = clear + 2, out = [], cur = 0, nb = 0, dict = new Map();
+  function put(code, isClear) { cur |= code << nb; nb += nBits; while (nb >= 8) { out.push(cur & 255); cur >>>= 8; nb -= 8; } if (isClear) { nBits = initBits; maxcode = (1 << nBits) - 1; } else if (free > maxcode) { nBits++; maxcode = nBits === 12 ? 4096 : (1 << nBits) - 1; } }
+  put(clear, true); var ent = px[0], i, c, key, got;
+  for (i = 1; i < px.length; i++) {
+    c = px[i]; key = (c << 12) + ent; got = dict.get(key);
+    if (got !== undefined) ent = got;
+    else { put(ent, false); ent = c; if (free < 4096) dict.set(key, free++); else { dict.clear(); free = clear + 2; put(clear, true); } }
+  }
+  put(ent, false); put(eof, false); if (nb > 0) out.push(cur & 255); return out;
+}
+function gifEncode(frames, w, h, delayMs) {      // frames: RGBA Uint8ClampedArray each; fixed 3-3-2 palette, endless loop
+  var o = [], i, f, k, px, lz, n;
+  function w16(v) { o.push(v & 255, (v >> 8) & 255); }
+  o.push(71, 73, 70, 56, 57, 97); w16(w); w16(h); o.push(0xF7, 0, 0);
+  for (i = 0; i < 256; i++) o.push(Math.round(((i >> 5) & 7) * 255 / 7), Math.round(((i >> 2) & 7) * 255 / 7), Math.round((i & 3) * 255 / 3));
+  o.push(0x21, 0xFF, 11, 78, 69, 84, 83, 67, 65, 80, 69, 50, 46, 48, 3, 1, 0, 0, 0);
+  for (f = 0; f < frames.length; f++) {
+    var src = frames[f]; px = new Uint8Array(w * h); for (k = 0, n = w * h; k < n; k++) px[k] = (src[4 * k] & 0xE0) | ((src[4 * k + 1] >> 3) & 0x1C) | (src[4 * k + 2] >> 6);
+    var dc = Math.max(2, Math.round(delayMs / 10)); o.push(0x21, 0xF9, 4, 0, dc & 255, (dc >> 8) & 255, 0, 0);
+    o.push(0x2C); w16(0); w16(0); w16(w); w16(h); o.push(0, 8);
+    lz = lzwEncode(px, 8); for (k = 0; k < lz.length; k += 255) { n = Math.min(255, lz.length - k); o.push(n); for (var q = 0; q < n; q++) o.push(lz[k + q]); } o.push(0);
+  }
+  o.push(0x3B); return Uint8Array.from(o);
+}
+function gifStart() {
+  if (REC.gif) return; var secs = Math.max(1, Math.min(10, +$('gifSec').value || 3)), w = 320, h = Math.max(2, Math.round(w * canvas.height / canvas.width));
+  REC.gif = { frames: [], w: w, h: h, need: secs * 10, last: 0, name: curTitle() }; recUI();
+}
+function gifSnap(now) {      // called right after renderer.render, while the WebGL buffer is still valid
+  var g = REC.gif; if (!g || now - g.last < 100) return; g.last = now;
+  if (!REC.off) REC.off = document.createElement('canvas'); var c = REC.off; c.width = g.w; c.height = g.h; var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(canvas, 0, 0, g.w, g.h); g.frames.push(x.getImageData(0, 0, g.w, g.h).data);
+  $('gifBtn').textContent = 'GIF ' + g.frames.length + '/' + g.need;
+  if (g.frames.length >= g.need) { REC.gif = null; setTimeout(function () { var bytes = gifEncode(g.frames, g.w, g.h, 100); REC.lastGif = bytes; $('gifBtn').textContent = t('gifBtn'); recUI(); dlBlob(new Blob([bytes], { type: 'image/gif' }), g.name + '.gif'); }, 20); }
+}
+$('recBtn').addEventListener('click', recStart); $('gifBtn').addEventListener('click', gifStart);
+// ---- playlist (library): auto-next, shuffle, prev / next; screen kept on while a motion plays
+var PL = { auto: false, shuf: false, hist: [], wake: null };
+function plPick(dir) {
+  var n = LIB.items.length; if (!n) return -1; var cur = LIB.cur, i;
+  if (PL.shuf && dir > 0) { var c = []; for (i = 0; i < n; i++) if (i !== cur) c.push(i); return c.length ? c[Math.floor(Math.random() * c.length)] : cur; }
+  if (PL.shuf && dir < 0 && PL.hist.length) return PL.hist.pop();
+  return ((cur < 0 ? (dir > 0 ? -1 : 0) : cur) + dir + n) % n;
+}
+function plNext(dir) { var i = plPick(dir || 1); if (i < 0) return; if (LIB.cur >= 0 && (dir || 1) > 0) PL.hist.push(LIB.cur); libLoad(i); }
+$('plAuto').addEventListener('change', function () { PL.auto = this.checked; }); $('plShuf').addEventListener('change', function () { PL.shuf = this.checked; });
+$('plPrev').addEventListener('click', function () { plNext(-1); }); $('plNext').addEventListener('click', function () { plNext(1); });
+async function pwSync() {
+  if (!$('plWake').checked || !navigator.wakeLock) return;
+  if (P.playing && !PL.wake && !PL.wl) { PL.wl = true; try { PL.wake = await navigator.wakeLock.request('screen'); PL.wake.addEventListener('release', function () { PL.wake = null; }); } catch (e) {} PL.wl = false; }
+  else if (!P.playing && PL.wake) { try { PL.wake.release(); } catch (e) {} PL.wake = null; }
+}
+// ---- A-B loop
+var AB = { a: -1, b: -1 };
+function abRender() {
+  var on = AB.a >= 0 && AB.b > AB.a && P.total > 0, s = $('pSeek');
+  s.style.background = on ? 'linear-gradient(to right, transparent ' + (AB.a / P.total * 100) + '%, color-mix(in srgb, var(--accent) 35%, transparent) ' + (AB.a / P.total * 100) + '%, color-mix(in srgb, var(--accent) 35%, transparent) ' + (AB.b / P.total * 100) + '%, transparent ' + (AB.b / P.total * 100) + '%)' : '';
+  $('abTxt').textContent = AB.a >= 0 || AB.b >= 0 ? t('abTxt', AB.a >= 0 ? fmt(AB.a) : '–', AB.b >= 0 ? fmt(AB.b) : '–') : '';
+}
+function abSet(w) {
+  if (!P.frames) return; var tt = Math.round(P.t);
+  if (w === 'a') { AB.a = tt; if (AB.b <= AB.a) AB.b = -1; } else { AB.b = tt; if (AB.a < 0 || AB.a >= AB.b) AB.a = 0; }
+  abRender();
+}
+function abClear() { AB.a = AB.b = -1; abRender(); }
+$('abA').addEventListener('click', function () { abSet('a'); }); $('abB').addEventListener('click', function () { abSet('b'); }); $('abX').addEventListener('click', abClear);
+// ---- motion editor: selection, insert / duplicate / trim / split / merge, onion skin
+RC.sel = -1; RC.alt = null;
+function rcSelect(i) { RC.sel = i; rcRender(); }
+function rcEdit(fn) { fn(); if (RC.sel >= RC.kf.length) RC.sel = RC.kf.length - 1; rcSave(); rcRender(); }
+$('rcIns').addEventListener('click', function () { rcEdit(function () { var at = RC.sel >= 0 ? RC.sel + 1 : RC.kf.length; RC.kf.splice(at, 0, { raw: rcRaw(), spd: +$('rcSpd').value }); RC.sel = at; }); });
+$('rcDup').addEventListener('click', function () { if (RC.sel < 0) return; rcEdit(function () { var f = RC.kf[RC.sel]; RC.kf.splice(RC.sel + 1, 0, { raw: f.raw.slice(), spd: f.spd }); RC.sel++; }); });
+$('rcTrimB').addEventListener('click', function () { if (RC.sel <= 0) return; rcEdit(function () { RC.kf.splice(0, RC.sel); RC.sel = 0; }); });
+$('rcTrimA').addEventListener('click', function () { if (RC.sel < 0) return; rcEdit(function () { RC.kf.splice(RC.sel + 1); }); });
+$('rcSplit').addEventListener('click', function () { if (RC.sel <= 0) return; rcEdit(function () { RC.alt = { name: rcName() + ' (2)', kf: RC.kf.splice(RC.sel) }; RC.sel = RC.kf.length - 1; }); });
+$('rcMerge').addEventListener('click', function () { if (!RC.alt) return; rcEdit(function () { RC.kf = RC.kf.concat(RC.alt.kf); RC.alt = null; }); });
+var ON = { d2: null, g: [null, null], T: 0 };
+function onInit() {
+  if (ON.d2 || !S.ready) return !!ON.d2; ON.d2 = new S.mj.MjData(S.m);
+  [0x4488ff, 0xff8844].forEach(function (col, gi) {
+    var grp = new THREE.Group(), mat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.3, depthWrite: false }); grp.userData.m = {}; grp.visible = false;
+    for (var nm in bodyMesh) { var ms = new THREE.Mesh(bodyMesh[nm].geometry, mat); ms.frustumCulled = false; grp.add(ms); grp.userData.m[nm] = ms; }
+    world.add(grp); ON.g[gi] = grp;
+  }); return true;
+}
+function onPose(grp, f) {
+  var d = S.d, d2 = ON.d2, i, k; for (i = 0; i < 7; i++) d2.qpos[i] = d.qpos[i];
+  for (k = 0; k < N; k++) { var raw = f.raw[k], deg = raw ? A.servos[k].sign * (raw - 7500) * K_DEG : target[k]; d2.qpos[qadr[k]] = clampDeg(k, deg) * D2R; }
+  S.mj.mj_forward(S.m, d2); var xp = d2.xpos, xq = d2.xquat;
+  for (var nm in grp.userData.m) { var b = bid[nm], m = grp.userData.m[nm]; m.position.set(xp[3 * b], xp[3 * b + 1], xp[3 * b + 2]); m.quaternion.set(xq[4 * b + 1], xq[4 * b + 2], xq[4 * b + 3], xq[4 * b]); }
+}
+function onRefresh() {
+  if (typeof ON === 'undefined' || !ON) return;      // rcRender runs once before this block has executed
+  var show = $('rcOnion') && $('rcOnion').checked && S.ready && RC.sel >= 0 && RC.kf.length > 1; if (!show) { ON.g.forEach(function (g) { if (g) g.visible = false; }); return; }
+  if (!onInit()) return; [-1, 1].forEach(function (dir, gi) { var f = RC.kf[RC.sel + dir]; ON.g[gi].visible = !!f; if (f) onPose(ON.g[gi], f); });
+}
+$('rcOnion').addEventListener('change', onRefresh);
+// ---- teleop: gamepad (or keyboard when enabled) drives head + the active arm
+var TL = { on: false, arm: 'r', keys: {}, last: { lb: false, rb: false, y: false, x: false }, idx: null };
+function tlIdx() { if (TL.idx) return TL.idx; var o = {}; A.servos.forEach(function (s, k) { o[s.joint.replace('_joint', '')] = k; }); return (TL.idx = o); }
+function tlRender() { $('teleInfo').textContent = TL.on ? t('teleInfo', TL.arm === 'r' ? t('armR') : t('armL')) : ''; }
+function teleTick(dt) {
+  if (!TL.on || WK.on || !S.ready) return; var I = tlIdx(), G = WK.gp, K = TL.keys, ax = function (neg, pos) { return (K[pos] ? 1 : 0) - (K[neg] ? 1 : 0); };
+  var hx = G.x1 + ax('a', 'd'), hy = G.y1 + ax('s', 'w'), ax2 = G.x2 + ax('j', 'l'), ay2 = G.y2 + ax('k', 'i'), el = (G.rt || 0) - (G.lt || 0) + ax('u', 'o');
+  if (G.lb && !TL.last.lb) { TL.arm = 'l'; tlRender(); } if (G.rb && !TL.last.rb) { TL.arm = 'r'; tlRender(); } if (K.q) { TL.arm = 'l'; tlRender(); } if (K.e) { TL.arm = 'r'; tlRender(); }
+  if (G.y && !TL.last.y) toggleId('balOn'); if (G.x && !TL.last.x) clickId('pPlay'); TL.last = { lb: !!G.lb, rb: !!G.rb, y: !!G.y, x: !!G.x };
+  if (!(hx || hy || ax2 || ay2 || el)) return; touch(); var s = TL.arm, roll = s === 'r' ? -1 : 1;
+  function add(name, dd) { var k = I[name]; if (k !== undefined) setTarget(k, target[k] + dd); }
+  add('head_nz', -hx * 60 * dt); add('head_ny', -hy * 40 * dt); add(s + '_shx', roll * ax2 * 90 * dt); add(s + '_shy', -ay2 * 90 * dt); add(s + '_ely', el * 90 * dt);
+}
+$('teleOn').addEventListener('change', function () { TL.on = this.checked; TL.keys = {}; tlRender(); });
+// ---- webcam arm mocap (MediaPipe Pose world landmarks -> IK on the arm chains). The runtime (camera, model download) needs network + a camera and is NOT tested here; the landmark -> joint math is (tests/e2e_p2.py).
+var MC = { on: false, lm: null, vid: null, stream: null, raf: 0, seen: 0, sm: {} };
+function mcNorm(v) { var n = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / n, v[1] / n, v[2] / n]; }
+function mcCross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+function mcDot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+function mcSub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+function mcPoint(l) { return [l.x, l.y, l.z]; }
+function mcPoseToTargets(lm, cur) {      // lm: 33 MediaPipe world landmarks (right-handed, any axes); returns {k: deg} for both arms
+  var Ls = mcPoint(lm[11]), Rs = mcPoint(lm[12]), Lh = mcPoint(lm[23]), Rh = mcPoint(lm[24]);
+  var ex = mcNorm(mcSub(Ls, Rs)), up = mcNorm(mcSub([(Ls[0] + Rs[0]) / 2, (Ls[1] + Rs[1]) / 2, (Ls[2] + Rs[2]) / 2], [(Lh[0] + Rh[0]) / 2, (Lh[1] + Rh[1]) / 2, (Lh[2] + Rh[2]) / 2]));
+  var fw = mcNorm(mcCross(ex, up)); ex = mcNorm(mcCross(up, fw));      // person frame: forward, left, up  (= the robot base frame)
+  var b = function (v) { return [mcDot(v, fw), mcDot(v, ex), mcDot(v, up)]; }, out = {};
+  [['l', 11, 13, 15], ['r', 12, 14, 16]].forEach(function (c) {
+    var ch = A.chains[c[0] + '_arm']; if (!ch) return; var S0 = mcPoint(lm[c[1]]), E = mcPoint(lm[c[2]]), W = mcPoint(lm[c[3]]), sh = ch.joints[0].pos;
+    var robotLen = Math.hypot.apply(null, ikFK(ch, ch.joints.map(function () { return 0; })).p.map(function (v, i) { return v - sh[i]; })), pl = Math.hypot.apply(null, mcSub(E, S0)) + Math.hypot.apply(null, mcSub(W, E)), sc = 0.88 * robotLen / (pl || 1);      // a fully stretched human arm maps to 88 % of the robot's reach (the IK cannot hit the exact limit)
+    var d = b(mcSub(W, S0)), pt = [sh[0] + sc * d[0], sh[1] + sc * d[1], sh[2] + sc * d[2]], q0 = ch.joints.map(function (j) { return (cur ? cur[j.k] : target[j.k]) * D2R; }), res = ikSolve(ch, q0, pt);
+    ch.joints.forEach(function (j, i) { out[j.k] = res.q[i] / D2R; }); out['err_' + c[0]] = res.err;
+  }); return out;
+}
+async function mcStart() {
+  if (MC.on) { mcStop(); return; } $('mcInfo').textContent = t('mcLoading');
+  try {
+    MC.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }); MC.vid = $('mcVid'); MC.vid.srcObject = MC.stream; await MC.vid.play();
+    var V = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs'), fs = await V.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+    MC.lm = await V.PoseLandmarker.createFromOptions(fs, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task' }, runningMode: 'VIDEO', numPoses: 1 });
+    MC.on = true; $('mcBtn').textContent = t('mcStop'); $('mcInfo').textContent = t('mcOn'); touch(); mcLoop();
+  } catch (e) { $('mcInfo').textContent = t('mcErr', e && e.message || String(e)); mcStop(true); }
+}
+function mcLoop() {
+  if (!MC.on) return; MC.raf = requestAnimationFrame(mcLoop); var now = performance.now(); if (now - MC.seen < 40 || MC.vid.readyState < 2) return; MC.seen = now;
+  var r = MC.lm.detectForVideo(MC.vid, now); if (!r.worldLandmarks || !r.worldLandmarks[0]) return;
+  var tg = mcPoseToTargets(r.worldLandmarks[0]); Object.keys(tg).forEach(function (k) { if (/^err/.test(k)) return; k = +k; var v = MC.sm[k] === undefined ? tg[k] : MC.sm[k] * 0.6 + tg[k] * 0.4; MC.sm[k] = v; setTarget(k, v); });
+}
+function mcStop(keepMsg) { MC.on = false; cancelAnimationFrame(MC.raf); if (MC.stream) MC.stream.getTracks().forEach(function (tr) { tr.stop(); }); MC.stream = null; $('mcBtn').textContent = t('mcStart'); if (!keepMsg) $('mcInfo').textContent = ''; }
+$('mcBtn').addEventListener('click', mcStart);
+// ---- keyboard shortcuts + help
+var VIEW_KEYS = ['front', 'back', 'left', 'right', 'top', 'iso'];
+function seekBy(ms) { if (!P.frames) return; P.t = Math.max(0, Math.min(P.total, P.t + ms)); poseAt(P.t); updatePlayUI(true); }
+function stepFrame(dir) { if (!P.frames) return; pausePlay(); var k = findK(P.t) + dir; k = Math.max(0, Math.min(P.frames.length - 1, k)); P.t = P.T[k]; poseAt(P.t); updatePlayUI(true); }
+function kbHelp(on) { var e = $('kbHelp'); e.hidden = on === undefined ? !e.hidden : !on; }
+document.addEventListener('keydown', function (e) {
+  var tag = e.target && e.target.tagName; if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Escape') { kbHelp(false); return; }
+  if (/INPUT|TEXTAREA|SELECT/.test(tag) || (e.target && e.target.isContentEditable)) return;
+  var k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  if (k === 'k') { toggleId('teleOn'); e.preventDefault(); return; }
+  if (TL.on) { if ('wasdjliuoqe'.indexOf(k) >= 0 && k.length === 1) { TL.keys[k] = true; e.preventDefault(); return; } }
+  if (WK.on) return;
+  if (tag === 'BUTTON' && (k === ' ' || k === 'Enter')) return;
+  var done = true;
+  if (k === ' ') clickId('pPlay'); else if (k === 'ArrowLeft') seekBy(e.shiftKey ? -5000 : -1000); else if (k === 'ArrowRight') seekBy(e.shiftKey ? 5000 : 1000);
+  else if (k === ',') stepFrame(-1); else if (k === '.') stepFrame(1); else if (k === 'r') clickId('bReset'); else if (k === 'h') toggleId('cPin'); else if (k === 'i') toggleId('cIK');
+  else if (k === 'c') toggleId('cCom'); else if (k === 'v') toggleId('cSen'); else if (k === 't') toggleId('cTrail'); else if (k === 'l') toggleId('pLoop'); else if (k === 'm') toggleId('aOn');
+  else if (k === 'b') toggleId('balOn'); else if (/^[1-6]$/.test(k)) view(VIEW_KEYS[+k - 1]); else if (k === 'f') fsToggle(); else if (k === '?' || k === '/') kbHelp();
+  else if (k === '[') abSet('a'); else if (k === ']') abSet('b'); else if (k === '\\') abClear(); else if (k === 'n') plNext(1); else if (k === 'p') plNext(-1); else if (k === 's') clickId('shBtn'); else if (k === 'g') clickId('gifBtn'); else if (k === 'x') clickId('recBtn');
+  else done = false;
+  if (done) e.preventDefault();
+});
+document.addEventListener('keyup', function (e) { var k = e.key.length === 1 ? e.key.toLowerCase() : e.key; delete TL.keys[k]; });
+$('kbHelp').addEventListener('click', function () { kbHelp(false); });
+// ---- PWA: manifest + service worker (offline), registered only over http(s)
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').then(function () { $('pwaInfo').textContent = t('pwaOn'); }, function () { $('pwaInfo').textContent = t('pwaOff'); });
+else $('pwaInfo').textContent = t('pwaOff');
+// ---- per-frame hook (called from frame())
+function p2Frame(now, dt) {
+  teleTick(dt); if (BAL.on) balRender(); senTick(now); pwSync();
+  if (REC.once && REC.mr && !P.playing && P.t >= P.total - 1) recStop();
+  if (ON.d2 && now - ON.T > 250) { ON.T = now; onRefresh(); }
+}
+
 function applyLang() {
-  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : 'en';
+  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
   Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function (el) { var v = t(el.getAttribute('data-i18n')); if (el.hasAttribute('data-i18n-html')) el.innerHTML = v; else el.textContent = v; });
   Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-title]'), function (el) { el.title = t(el.getAttribute('data-i18n-title')); });
-  $('stage').setAttribute('data-drop', t('drop')); $('bLang').textContent = LANG === 'zh' ? 'EN' : '中文'; $('bLang2').textContent = $('bLang').textContent;
+  $('stage').setAttribute('data-drop', t('drop')); $('bLang').textContent = LANG === 'zh' ? 'EN' : LANG === 'en' ? '日本語' : '中文'; $('bLang2').textContent = $('bLang').textContent;
   groupEls.forEach(function (g) { g.h.firstChild.textContent = t('g_' + g.key); g.h.querySelector('small').textContent = t('nServos', g.n); });
   A.servos.forEach(function (s, k) { ui[k].lbl.innerHTML = servoLabel(s, k); });
-  refreshRun(); refreshSweep(); refreshList(); renderPma(); renderRb(); renderAudio(); renderBuiltin(); wRender(); rcRender(); gpLabel(); renderInfo(); updatePlayUI(true); S.statT = 0; if (S.ready) status(performance.now());
+  recUI(); tlRender(); balRender(); abRender(); if (!MC.on) $('mcBtn').textContent = t('mcStart'); refreshRun(); refreshSweep(); refreshList(); renderPma(); renderRb(); renderAudio(); renderBuiltin(); wRender(); rcRender(); gpLabel(); renderInfo(); updatePlayUI(true); S.statT = 0; if (S.ready) status(performance.now());
 }
-$('bLang').addEventListener('click', function () { LANG = LANG === 'zh' ? 'en' : 'zh'; try { localStorage.setItem('pmsim.lang', LANG); } catch (e) {} applyLang(); });
+$('bLang').addEventListener('click', function () { LANG = LANG === 'zh' ? 'en' : LANG === 'en' ? 'ja' : 'zh'; try { localStorage.setItem('pmsim.lang', LANG); } catch (e) {} applyLang(); });
 applyLang();
 
 loadMujoco().then(function (mj) {
-  build(mj); buildMeshes(); reset(); S.ready = true; $('loader').style.display = 'none';
-  window.PMSIM = { S: S, target: target, setTarget: setTarget, reset: reset, advance: advance, applyPose: applyPose, PRESETS: PRESETS, view: view, camera: camera, pma: { P: P, decode: decodePma, timeline: buildTimeline, load: loadSections, poseAt: poseAt, setFlip: setFlip }, rb: { send: rbMotionSend, stop: rbStopMotion, rx: rbRx, state: RB } };   // for tests / scripting
+  build(mj); buildMeshes(); reset(); S.ready = true; $('loader').style.display = 'none'; hashBoot();
+  window.PMSIM = { p2: { BAL: BAL, SEN: SEN, REC: REC, PL: PL, AB: AB, ON: ON, TL: TL, MC: MC, shareHash: shareHash, hashParse: hashParse, hashApply: hashApply, gifEncode: gifEncode, lzwEncode: lzwEncode, mcPoseToTargets: mcPoseToTargets, plPick: plPick, plNext: plNext, teleTick: teleTick, abSet: abSet, rcSelect: rcSelect, onRefresh: onRefresh, senTick: senTick, balStep: balStep, kbHelp: kbHelp, playTick: playTick, WK: WK, gpPoll: gpPoll, RC: RC, fsToggle: fsToggle, recUI: recUI }, S: S, target: target, setTarget: setTarget, reset: reset, advance: advance, applyPose: applyPose, PRESETS: PRESETS, view: view, camera: camera, pma: { P: P, decode: decodePma, timeline: buildTimeline, load: loadSections, poseAt: poseAt, setFlip: setFlip }, rb: { send: rbMotionSend, stop: rbStopMotion, rx: rbRx, state: RB }, p1: { ST: ST, MIR: MIR, TC: TC, BV: BV, LK: LK, MN: MN, estop: estop, decodeServoInfo: decodeServoInfo, mirFollow: mirFollow, teachCapture: teachCapture, rcCsv: rcCsv, RC: RC, poseBytesSome: poseBytesSome } };   // for tests / scripting
 }).catch(function (e) { console.error(e); $('loadMsg').textContent = t('failed'); $('loadErr').textContent = String(e && e.message || e) + (location.protocol === 'file:' ? '' : t('httpHint')); });
 requestAnimationFrame(frame);
 })();

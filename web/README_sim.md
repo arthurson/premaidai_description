@@ -64,3 +64,31 @@ Web Serial，115200 8N1。直接 pose 封包 `LEN 18 00 SPD {pid lo hi}×25 XOR`
 ## 主控台 API
 
 `PMSIM.setTarget(k, deg)`、`PMSIM.applyPose({r_kny_joint: 40})`、`PMSIM.reset()`。
+
+## 真機：digital twin、示教、WebSocket 橋接、監視（Robot 分頁）
+
+* **舵機狀態（0x01）**：每粒舵機發 `07 01 00 05 ID 0E`，回覆 `[18][01][00]` ＋ 14 byte（ID、有效旗標 0x80、編碼器值、trim、指令值、陀螺旗標、陀螺倍率、speed、stretch）＋ XOR。同時最多 3 個未回覆，逾時 200 ms（或 4 倍實測延遲）；無效／冇回覆嘅舵機每 8 輪先再試。表格顯示實際／角度／指令（`free` ＝ 脫力）／speed·stretch／gyro，並顯示延遲同一輪時間。**回覆格式只對 premaiduino2 韌體驗證過，未用原廠機驗證；premaiduino2 冇獨立編碼器（實際 ＝ 指令）。**
+* **Twin**：實際值轉角度（`θ = sign × (raw − 7500) × 270/8000°`）直接設做模擬器目標。同「即時控制」「串流」互斥。
+* **示教**（Record 分頁）：「開始示教」開 Twin＋輪詢並脫力（揀「左→右」只脫力左邊）→ 手動擺 pose → 「記錄一幀」或「自動記錄」（每 N ms 一幀，SPD ＝ N/15）→ 「鎖住現姿勢」。記錄入關鍵幀列表，可預覽、匯出 `.pma` 或 CSV（frame、time_ms、spd、每粒舵機 raw 同角度）。
+* **左右跟隨**：模擬器內拉 slider，對側按 `A.mirror`（`角度_k ＝ m × 角度_p`）跟住郁；真機揀「左→右／右→左」＋ Twin，示教邊脫力，對側以部分 `0x18` 封包（只帶對側舵機，SPD 2，變化 ≥ 6 raw 先送，70 ms 節流）驅動到鏡像位置。
+* **WebSocket 橋接**：Robot 分頁嘅 `WS` 行。`python tools/ws_bridge.py /dev/ttyUSB0 --host 0.0.0.0`（`pip install aiohttp pyserial`）同時 serve 本頁（`http://<pi>:8765/web/premaid-sim.html`）同 `/ws`；二進位 frame 原樣雙向轉發。冇驗證，預設只聽 127.0.0.1。https 頁面只可以連 `wss://` 或 `ws://localhost`（瀏覽器限制），所以用 http serve。Safari／iOS 冇 Web Serial，要用呢個。
+* **序列監視**：TX／RX hex ＋解碼（CMD 名、電壓、舵機回覆）、可隱藏輪詢、暫停、複製、手動送 hex（自動加 LEN＋XOR；Flash 指令要確認）。電壓每 10 秒讀一次，畫成曲線（紅虛線 ＝ 9 V）。連接時用 Screen Wake Lock 保持亮屏。
+* **自動重連**：序列口拔走／WebSocket 斷線後，只要冇撳「中斷連線」就自動重試（序列口按 USB vendor／product 對返同一個裝置，退避 1→5 秒）。
+* **LED（0x1E）**：只係探針。premaiduino2 入面 0x1E ＝ SaveMotionData（擦寫 Flash），LED 封包格式未知，所以要先剔「我明白」，每次送出都要確認，回覆喺序列監視睇。**唔好喺 premaiduino2 韌體上亂試。**
+* **常駐 E-stop**：畫面底部紅掣（同 `Esc`）：停止回放／步行／即時控制／示教錄製，並送 `04 05 00 01` 同 `05 1F 08 01`（各重送 2 次）。唔會脫力（脫力會令機身跌倒）。
+* 測試：`python -m unittest discover -s tests`（包括 bridge ↔ 假機身）；`python tests/e2e_p1.py` 用 Chromium → WebSocket → bridge → 假機身跑晒以上功能（需要 playwright；Web Serial 本身 headless 測唔到）。
+* **常駐 E-stop** 而家喺舞台左邊中間（唔再壓住進度條）。內建動作係 20 粒掣，一按即送 `05 1F 00 ID`；動作庫清單只顯示名稱。
+
+## 創作工具／模擬器（P2）
+
+* **多語言＋快捷鍵**：介面有 中文／English／日本語（按鈕循環；日文未翻譯嘅字會用英文）。按 `?` 睇快捷鍵：Space 播放、←→ 跳 1 秒（Shift 5 秒）、`,` `.` 逐幀、`[` `]` `\` A-B 循環、N／P 上下首、R 重置、H 吊起、1–6 視角、I IK、C 重心、V 感測 HUD、T 重心軌跡、B 站穩、K 遙控、L 循環、M 音樂、S 分享、X 錄影、G GIF、F 全螢幕、Esc 緊急停止。步行模式開咗，W A S D／方向鍵留畀步行。
+* **IK 拖曳**（原有）：開 `🎯 IK` 後拖手腳／頭嘅圓點。
+* **動作編輯**（錄製分頁）：點 `#n` 選幀；＋插入、複製、裁前、裁後、拆開（後半入暫存）、合併；洋蔥皮（前一幀藍、後一幀橙，用第二個 MjData 做 FK）；匯出 `.pma`／CSV。播放列 `A` `B` `✕` 設 A-B 循環（`[` `]` `\`），進度條有色帶。
+* **遙控**：設定→遙控模式（或 `K`）。手制：左搖桿頭、右搖桿手臂、LT／RT 手肘、LB／RB 換手、Y 站穩、X 播放；鍵盤 W A S D 頭、I J K L 手臂、U O 手肘。
+* **分享／嵌入／錄影**：`🔗 分享連結` 複製 `#m=動作名&t=毫秒&cam=相機&play=0&speed=&loop=0&hang=1`；加 `&kiosk=1` 只剩舞台，`&embed=1`（隱藏所有面板同緊急停止）、`&bar=0`（隱藏進度條）；`</> 嵌入碼` 複製 iframe。`⏺ 錄影 WebM` 用 MediaRecorder 錄 canvas＋音樂（預設由頭播一次，完咗自動停）；`GIF` 錄 1–10 秒（10 fps、320 px，自家 GIF 編碼器、3-3-2 調色盤）。
+* **PWA／離線／播放清單**：`manifest.webmanifest`＋`sw.js`（stale-while-revalidate，預先快取 html、three、MuJoCo wasm、動作庫），載入過一次之後可離線用、可安裝；只喺 http(s) 生效。動作庫有 ⏮ ⏭、自動下一首、隨機、播放時長亮（Wake Lock）、全螢幕。
+* **感測／除錯 HUD**（設定）：IMU（由機身姿態同速度推算：roll／pitch／yaw、gyro、加速度計）、左右腳底法向力（由 MuJoCo 接觸約束力 `efc_force` 加總；靜止時兩腳加起嚟 ≈ 機重）、力矩最大 3 粒（佔力矩上限 %）、重心 x／y／z、重心地面軌跡（橙線）。冇改 MJCF，所以冇加 `<sensor>` 元素；數值係由狀態算出嚟。
+* **站穩輔助**（設定）：腳踝 pitch／roll PD（IMU）＋重心側向偏差調髖／踝 roll。實測（呢個模擬器，0.1 s 推）：側推倒下限 9 N → 9.5 N，前推 9 N → 10 N，**提升好細（+0.5～1 N）**；單腳站立未解決。
+* **premaidai-gym 嘅 `SimpleWalkController` 冇移植**：我喺呢個 MJCF 上試過（原版加 80 組正負號／幅度變體），全部 2.7 秒內跌倒，行唔到，所以冇放入。現有步行用 pm_sample 嘅查表步態（已喺真機驗證過）。
+* **鏡頭動作捕捉（手臂）**：MediaPipe Pose 世界座標 → 人體座標系（前／左／上）→ 手腕相對肩膀嘅位置按手臂長度縮放（88 % 臂展）→ 手臂 IK。**執行期（鏡頭、由 CDN 載入模型）喺開發環境冇辦法實測**，只測咗座標→關節嘅數學（尺寸無關、方向正確、IK 誤差 < 1 mm）；只做兩隻手臂，冇做頭同腳。**WebXR／VMC 冇做**：VMC 係 UDP／OSC，瀏覽器收唔到，要另外加橋接；WebXR 要 VR 頭戴裝置先測到。
+* 測試：`python tests/e2e_p2.py`（playwright＋Pillow；包括 GIF 用 Pillow 解碼、WebM EBML 檢查、離線重載、分享連結重開、站穩推力測試）。

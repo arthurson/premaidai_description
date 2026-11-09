@@ -37,8 +37,8 @@
       if (!rec.match) { rec.ok = false; out.errors.push(item.title + ': metadata mismatch'); }
       out.items.push(rec);
     });
-    const bsel = document.getElementById('rbBuiltin');
-    out.builtin = bsel ? { count: bsel.options.length, first: bsel.options[0].value, last: bsel.options[bsel.options.length - 1].value, labels: Array.from(bsel.options).slice(0, 3).map(o => o.textContent) } : null;
+    const grid = document.getElementById('rbBuiltinGrid');
+    out.builtin = grid ? { count: grid.children.length, labels: Array.from(grid.children).slice(0, 3).map(o => o.textContent) } : null;
     const stopBtn = document.getElementById('rbStopMotion');
     out.stopDisabled = stopBtn.disabled;
     // packet capture: built-in motion + STOP
@@ -48,7 +48,7 @@
     window.PMSIM.rb.stop();
     window.PMSIM.rb.state.writer = null;
     out.packets = cap;
-    out.packetMatch = cap.length === 2 && cap[0].join(',') === '5,31,0,61,39' && cap[1].join(',') === '4,5,0,1';
+    out.packetMatch = cap.length === 3 && cap[0].join(',') === '5,31,0,61,39' && cap[1].join(',') === '4,5,0,1' && cap[2].join(',') === '5,31,8,1,19';
     // ack handling (success = bit 7 clear, failure = bit 7 set)
     window.PMSIM.rb.rx(Uint8Array.from([4, 0x1F, 0x80, 0x9B]));
     out.ackFail = document.getElementById('rbMotion').textContent;
