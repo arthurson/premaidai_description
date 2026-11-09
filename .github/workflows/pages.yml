@@ -1,0 +1,52 @@
+name: pages
+
+# Manual first run: switch Settings -> Pages -> Source to "GitHub Actions",
+# then run this workflow. Once it succeeds, add a `push` trigger below.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Assemble static site
+        run: |
+          set -euo pipefail
+          mkdir -p _site/pma
+          cp index.html _site/
+          cp -R web _site/
+          cp pma/library.js pma/index.json _site/pma/
+          cp pma/*.pma _site/pma/
+          touch _site/.nojekyll
+          # pma/*.wsdcf are AES-encrypted containers that browsers cannot play.
+          # They are ~21 MB of the ~27 MB artifact and are not fetched by the
+          # simulator (pma/library.js embeds the .pma data), so leave them out.
+          test ! -e _site/pma/*.wsdcf
+          du -sh _site
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
