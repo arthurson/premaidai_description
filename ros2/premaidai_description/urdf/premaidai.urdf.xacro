@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!-- PreMaid AI for ROS 2: the plain URDF (urdf/premaidai.urdf, generated from the ROS 1 xacro) + ros2_control.
+     xacro premaidai.urdf.xacro use_mock_hardware:=true            fake hardware (default)
+     xacro premaidai.urdf.xacro use_gz:=true controllers_file:=... Gazebo (gz-sim) with gz_ros2_control
+     xacro premaidai.urdf.xacro use_mock_hardware:=false           real robot: needs a hardware plugin (not included yet) -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="premaidai">
+  <xacro:arg name="use_mock_hardware" default="true"/>
+  <xacro:arg name="use_gz" default="false"/>
+  <xacro:arg name="serial_port" default="/dev/ttyUSB0"/>
+  <xacro:arg name="controllers_file" default=""/>
+
+  <xacro:include filename="$(find premaidai_description)/urdf/premaidai.urdf"/>
+  <xacro:include filename="$(find premaidai_description)/urdf/premaidai.ros2_control.xacro"/>
+  <xacro:premaidai_ros2_control use_mock_hardware="$(arg use_mock_hardware)" use_gz="$(arg use_gz)" serial_port="$(arg serial_port)" controllers_file="$(arg controllers_file)"/>
+</robot>

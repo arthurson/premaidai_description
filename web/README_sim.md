@@ -4,7 +4,7 @@
 
 ## 檔案
 
-* `premaid-sim.src.html`：原始碼（HTML／CSS／JS，資料位置係 `/*__ASSETS__*/`）。
+* `src/index.template.html` ＋ `src/js/*.js`：原始碼（HTML／CSS 模板 ＋ 按檔名次序串接嘅 JS；資料位置係 `/*__ASSETS__*/`）。JS 係**一個** script 切開，唔可以單獨執行。`npm run dev`（Vite）係開發用，輸出仍然係單檔 `premaid-sim.html`。
 * `premaid-sim.html`：由 `mujoco/make_premaid_mjcf.py` 生成 ＝ src ＋ MJCF ＋ 彩色 mesh（`window.PREMAID`）。**唔好直接改。**
 * `../pma/library.js`：動作庫，由 `pma/make_index.py` 生成嘅普通 script（`window.PMA_LIBRARY = [{title, pma, audio?, drm?, data}]`，`data` ＝ base64 嘅 .pma），用 `<script src>` 載入，所以 `file://` 都讀到（`fetch()` 喺 `file://` 會被瀏覽器擋）。音樂唔內嵌，只記檔名，由頁面用相對路徑載入。
 * `vendor/`：`three.min.js`、`OrbitControls.js`、`mujoco/mujoco.{js,wasm}`，全部相對路徑載入。

@@ -1,16 +1,81 @@
 name: ci
 on: [push, pull_request]
+
 jobs:
-  check:
+  checks:
+    # generated files are up to date, ROS 1/2 + MJCF + URDF + PMA + glTF + Menagerie + Python package tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.x' }
+        with: { python-version: '3.12' }
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
-      - run: pip install xacro aiohttp pyserial
+      - run: pip install numpy scipy mujoco trimesh pycollada xacro pyyaml aiohttp pyserial yourdfpy pillow onnx onnxruntime gymnasium
+      - run: python tools/check_description.py        # xacro expands, 25 transmissions reference existing joints, no joint-tag typo
+      - run: python tools/check_js.py                  # inline scripts of the simulator parse
+      - run: python pma/make_index.py --check          # pma/index.json + library.js are current
+      - run: python mujoco/make_premaid_mjcf.py --verify   # mujoco/premaidai.xml + web/premaid-sim.html are regenerated from the sources
+      - run: python tools/make_urdf.py --verify        # urdf/premaidai.urdf
+      - run: python tools/make_menagerie.py --verify   # menagerie/premaid_ai
+      - run: python tools/export_gltf.py --verify      # export/premaidai.glb
+      - run: python tools/make_ros2.py --verify        # ros2/ generated config
+      - run: python tools/make_docs.py --verify        # docs/PROTOCOL.md tables
       - run: python -m unittest discover -s tests -v
-      - run: python tools/check_description.py   # joint-tag typo, transmissions, joints, meshes
-      - run: python tools/check_js.py
-      - run: python pma/make_index.py --check
+
+  e2e:
+    # Chromium end-to-end tests of the web simulator (WebSocket bridge, fake robot, twin, teach, share link, GIF/WebM, offline PWA ...)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install playwright aiohttp pyserial pillow numpy mujoco gymnasium onnxruntime onnx
+      - run: playwright install --with-deps chromium
+      - run: python tests/e2e_p1.py
+      - run: python tests/e2e_p2.py
+      - run: python tests/e2e_p3.py
+      - run: python tests/e2e_landing.py
+
+  package:
+    # build the wheel + sdist, install the wheel into a clean venv and load the robot from it
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install build
+      - run: python -m build --wheel --sdist -o dist .
+      - run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install dist/*.whl mujoco yourdfpy trimesh pycollada numpy
+          cd /tmp && /tmp/venv/bin/python -c "import premaidai_description as pm, os; m = pm.load_mujoco(); assert (m.nq, m.nu, m.nkey) == (32, 25, 3); assert os.path.dirname(pm.__file__) == pm.DESCRIPTION_PATH; assert len(pm.load_urdf().actuated_joint_names) == 25; print('wheel OK')"
+      - uses: actions/upload-artifact@v4
+        with: { name: dist, path: dist/ }
+
+  publish:
+    # PyPI "trusted publishing": configure the project on pypi.org first (Publishing -> add a GitHub publisher, workflow ci.yml, environment pypi)
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [checks, package]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions: { id-token: write }
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: dist, path: dist/ }
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  ros2:
+    # not run during development (no ROS 2 in the sandbox): builds both packages and checks the expanded URDF; failures do not block the other jobs yet
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    container: ros:jazzy
+    steps:
+      - uses: actions/checkout@v4
+      - run: apt-get update && apt-get install -y python3-colcon-common-extensions ros-jazzy-xacro liburdfdom-tools ros-jazzy-ros2-control ros-jazzy-ros2-controllers ros-jazzy-robot-state-publisher ros-jazzy-joint-state-publisher-gui ros-jazzy-rviz2 ros-jazzy-moveit-configs-utils ros-jazzy-moveit
+      - run: |
+          . /opt/ros/jazzy/setup.sh
+          colcon build --base-paths ros2 --packages-select premaidai_description premaidai_moveit_config
+          . install/setup.sh
+          xacro "$(ros2 pkg prefix --share premaidai_description)/urdf/premaidai.urdf.xacro" > /tmp/robot.urdf
+          check_urdf /tmp/robot.urdf

@@ -12,7 +12,7 @@ same-name .wsdcf (encrypted web-stream container) is only listed as "drm"; a
 browser cannot play it.
 
 The metadata is computed from the packets, using exactly the same rules as the
-web player (see web/premaid-sim.src.html):
+web player (see web/src/js/50-pma-replay.js):
   * 0x18 pose frames, duration = max(SPD * 15 ms, longest travel / 12.7 pulse/ms)
   * 0x08 0x02 / 0x08 0x07 loop blocks are expanded with a stack (iterations at
     payload byte 5, start = previous keyframe, as in the TechVerification

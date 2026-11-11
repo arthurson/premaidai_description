@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#6d28d9"><link rel="apple-touch-icon" href="icon-192.png">
+<title>PreMaid AI · MuJoCo WASM · 25 servos</title>
+<!-- Apache-2.0 (as this package). Generated file: edit web/src/ (index.template.html + js/*.js) and run `python mujoco/make_premaid_mjcf.py`.
+     Engine: vendor/mujoco/mujoco.{js,wasm} = official @mujoco/mujoco 3.17.0 (Apache-2.0). three.js r147 + OrbitControls in vendor/. -->
+<style>
+  :root { --bg: #eef0f5; --panel: #ffffff; --fg: #1d1d27; --mute: #6b6b7b; --line: #d6d6e0; --accent: #6d28d9; --warn: #c2410c; --danger: #dc2626; --floor: #d9dbe3; --grid: #b9bccb; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #14141b; --panel: #1d1d27; --fg: #ececf3; --mute: #9a9aae; --line: #34344a; --accent: #a78bfa; --warn: #fb923c; --danger: #f87171; --floor: #23242f; --grid: #3a3c4e; color-scheme: dark; } }
+  * { box-sizing: border-box; } [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--fg); font: 13px/1.45 system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif; overflow: hidden; }
+  .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+  #stage { position: fixed; inset: 0; overflow: hidden; } #view { width: 100%; height: 100%; display: block; touch-action: none; }
+  .panel { position: fixed; z-index: 10; background: color-mix(in srgb, var(--panel) 93%, transparent); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; box-shadow: 0 2px 14px rgba(0,0,0,.14); backdrop-filter: blur(6px); }
+  #leftcol { top: 10px; left: 10px; bottom: 74px; width: 312px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  #rightpanel { top: 10px; right: 10px; bottom: 74px; width: 340px; max-width: 46vw; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  button, .btn, select, .chip { font: inherit; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 9px; padding: 5px 11px; cursor: pointer; touch-action: manipulation; display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; }
+  button:hover:not(:disabled), .btn:hover, select:hover, .chip:hover { border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.on, .chip.on, .chip:has(input:checked) { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  button.danger { color: var(--danger); border-color: var(--danger); } button.danger:hover:not(:disabled) { background: var(--danger); color: #fff; }
+  button.wide { width: 100%; padding: 9px 12px; } button.sm { padding: 2px 8px; font-size: 12px; }
+  .chip { position: relative; } .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip:has(input:focus-visible), button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  input[type=range] { accent-color: var(--accent); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: var(--panel); }
+  .seg button { border: 0; border-radius: 0; padding: 5px 10px; background: transparent; } .seg button + button { border-left: 1px solid var(--line); }
+  .seg.full { display: flex; } .seg.full button { flex: 1; min-width: 0; }
+  #hud { position: fixed; z-index: 12; top: 10px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: calc(100vw - 690px); pointer-events: none; }
+  #hud > * { pointer-events: auto; }
+  .pill { display: flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--panel) 93%, transparent); border: 1px solid var(--line); border-radius: 12px; padding: 5px 7px; box-shadow: 0 2px 14px rgba(0,0,0,.14); backdrop-filter: blur(6px); max-width: 100%; }
+  #setcard { width: min(360px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; box-shadow: 0 6px 24px rgba(0,0,0,.22); }
+  .field { display: grid; grid-template-columns: 70px minmax(0, 1fr) 44px; align-items: center; gap: 8px; margin: 6px 0; } .field > span:last-child { text-align: right; color: var(--mute); }
+  .group { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .lbl2 { font-size: 11px; font-weight: 600; color: var(--mute); margin: 12px 0 4px; letter-spacing: .3px; }
+  #stat { font-size: 12px; color: var(--mute); margin-top: 8px; } #stat.warn { color: var(--mute); }
+  #loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--bg) 92%, transparent); z-index: 5; }
+  #loader .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; max-width: 420px; text-align: center; }
+  #loader .err { color: var(--mute); white-space: pre-wrap; margin-top: 8px; }
+  h1 { font-size: 16px; margin: 0 0 4px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  h2 { font-size: 13px; margin: 14px 0 4px; padding-bottom: 3px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; } h2 small { font-weight: normal; color: var(--mute); }
+  .sub { color: var(--mute); margin: 0 0 8px; font-size: 12px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 10px; padding: 3px; background: var(--bg); border-radius: 11px; }
+  .tabs button { flex: 1; border: 0; background: transparent; padding: 6px 4px; font-weight: 600; } .tabs button.on { background: var(--panel); color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.15); border: 0; }
+  .servo { display: grid; grid-template-columns: 86px minmax(0, 1fr) 50px 24px; gap: 0 6px; align-items: center; padding: 2px 0; }
+  .servo .name { grid-column: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .servo .name > span:last-child, .servo .lbl span { display: none; }
+  .servo input[type=range] { width: 100%; margin: 0; }
+  .servo input[type=number] { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 1px 3px; font: inherit; } .servo button { padding: 0; }
+  .tq { grid-column: 1 / -1; height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; margin-top: 1px; } .tq i { display: block; height: 100%; width: 0; background: var(--accent); } .tq i.sat { background: var(--warn); }
+  details { font-size: 12px; color: var(--mute); margin-top: 10px; } details p { margin: 4px 0; }
+  details.sec { color: var(--fg); border-top: 1px solid var(--line); } details.sec > summary { cursor: pointer; font-weight: 600; padding: 8px 0; color: var(--mute); }
+  code { background: var(--bg); padding: 0 3px; border-radius: 4px; }
+  .plist { display: flex; flex-direction: column; gap: 2px; max-height: 38vh; overflow-y: auto; margin: 8px 0; border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+  .plist button { display: flex; justify-content: space-between; gap: 8px; text-align: left; border: 0; border-radius: 7px; background: transparent; padding: 6px 8px; } .plist button span:first-child { overflow: hidden; text-overflow: ellipsis; } .plist button span:last-child { color: var(--mute); font-size: 11px; }
+  .plist button.on { background: var(--accent); color: #fff; } .plist button.on span:last-child { color: #fff; }
+  .info { font-size: 12px; margin: 4px 0 0; word-break: break-all; }
+  .status { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0; font-size: 12px; color: var(--mute); } #rbVolt:not(:empty)::before { content: "🔋 "; }
+  .warnbox { font-size: 12px; color: var(--warn); border: 1px solid var(--warn); border-radius: 9px; padding: 6px 8px; margin: 8px 0; }
+  #playbar { left: 50%; bottom: 10px; transform: translateX(-50%); width: min(960px, calc(100vw - 28px)); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 12px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+  #playbar .ctl { display: flex; gap: 6px; } #playbar .ctl2 { display: flex; gap: 6px; align-items: center; } #pPlay { min-width: 92px; }
+  #seekrow { display: flex; align-items: center; gap: 10px; min-width: 0; } #seekrow input[type=range] { flex: 1; min-width: 60px; margin: 0; }
+  #pTime { white-space: nowrap; font-size: 12px; } #pmaState { color: var(--mute); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+  #stage.drag::after { content: attr(data-drop); position: absolute; inset: 8px; border: 2px dashed var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--accent); background: color-mix(in srgb, var(--bg) 75%, transparent); z-index: 6; pointer-events: none; }
+  table.map { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 4px; } table.map td { padding: 1px 4px; border-bottom: 1px solid var(--line); }
+  #mtop { display: none; }
+  @media (max-width: 1100px) {
+    #mtop { display: flex; align-items: center; gap: 6px; position: fixed; left: 6px; right: 6px; top: 6px; z-index: 45; background: color-mix(in srgb, var(--panel) 94%, transparent); border: 1px solid var(--line); border-radius: 12px; padding: 4px 6px; padding-top: calc(4px + env(safe-area-inset-top, 0px)); box-shadow: 0 2px 12px rgba(0,0,0,.14); }
+    #mtop b { font-size: 14px; margin-right: auto; white-space: nowrap; }
+    #hud { top: calc(54px + env(safe-area-inset-top, 0px)); left: 6px; right: 6px; transform: none; max-width: none; align-items: stretch; gap: 6px; }
+    .pill { overflow-x: auto; scrollbar-width: none; } .pill > * { flex: none; }
+    #leftcol, #rightpanel { top: auto; bottom: 112px; width: min(94vw, 350px); max-width: none; height: min(60vh, calc(100dvh - 200px)); display: none; z-index: 35; }
+    #leftcol { left: 6px; } #rightpanel { left: auto; right: 6px; } html.mobL #leftcol, html.mobR #rightpanel { display: block; }
+    #playbar { left: 6px; right: 6px; bottom: 6px; transform: none; width: auto; grid-template-columns: auto 1fr; gap: 6px 8px; padding: 6px 8px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+    #estop { left: 8px; padding: 8px 12px; font-size: 13px; }
+    #playbar .ctl2 { justify-self: end; } #seekrow { grid-column: 1 / -1; grid-row: 2; } #pmaState { display: none; }
+  }
+  @media (pointer: coarse) {
+    button, .btn, select, .chip { min-height: 40px; padding: 6px 12px; } button.sm { min-height: 34px; min-width: 34px; }
+    input[type=number], input[type=text] { font-size: 16px; min-height: 34px; } input[type=range] { min-height: 30px; }
+    .servo { grid-template-columns: 80px minmax(0, 1fr) 58px 36px; padding: 5px 0; } .servo button { min-height: 32px; } .plist button { padding: 10px; }
+  }
+  .chip:has(input:disabled) { opacity: .45; cursor: default; }
+  .pads { display: flex; gap: 14px; justify-content: center; margin: 12px 0 8px; } .padwrap { text-align: center; font-size: 11px; color: var(--mute); }
+  .pad { position: relative; width: 118px; height: 118px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); touch-action: none; margin-bottom: 3px; }
+  .pad::before, .pad::after { content: ""; position: absolute; background: var(--line); } .pad::before { left: 50%; top: 8%; bottom: 8%; width: 1px; } .pad::after { top: 50%; left: 8%; right: 8%; height: 1px; }
+  .pad i { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 1px 6px rgba(0,0,0,.3); }
+  .rcrow { display: grid; grid-template-columns: 44px 62px repeat(4, minmax(0, 1fr)); gap: 4px; align-items: center; margin: 3px 0; } .rcrow input { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 4px; font: inherit; }
+  #rcList { max-height: 36vh; overflow-y: auto; margin: 8px 0; } #rcName { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font: inherit; }
+  .chkrow { display: grid; grid-template-columns: 74px minmax(0, 1fr) 84px; gap: 6px; align-items: center; font-size: 11px; margin: 2px 0; } .chkrow .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cbar { position: relative; height: 8px; border-radius: 4px; background: var(--line); } .cbar .sf { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 22%, var(--line)); } .cbar .us { position: absolute; top: 1px; bottom: 1px; background: var(--accent); border-radius: 3px; }
+  .cbar.bad .us { background: var(--danger); } .chkrow .tx { text-align: right; color: var(--mute); white-space: nowrap; } .chkrow .tx.bad { color: var(--fg); font-weight: 600; } .chk-sum { color: var(--mute); font-weight: normal; } .chk-sum.bad { color: var(--fg); }
+  #estop { position: fixed; z-index: 40; left: 334px; top: 50%; transform: translateY(-50%); background: var(--danger); color: #fff; border: 2px solid #fff; border-radius: 999px; padding: 10px 16px; font-size: 15px; font-weight: 700; letter-spacing: .5px; box-shadow: 0 4px 18px rgba(0,0,0,.45); cursor: pointer; }
+  #estop:hover { filter: brightness(1.12); } #estop.hit { animation: eflash .3s 3; } @keyframes eflash { 50% { background: #fff; color: var(--danger); } }
+  .stt { max-height: 280px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; margin: 6px 0; } .stt table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+  .stt th { position: sticky; top: 0; background: var(--panel); text-align: left; color: var(--mute); font-weight: 600; padding: 3px 4px; } .stt td { padding: 2px 4px; border-top: 1px solid var(--line); white-space: nowrap; }
+  .stt tr.na td { color: var(--mute); opacity: .55; } .stt tr.stale td { color: var(--mute); }
+  #mnLog { height: 170px; overflow: auto; margin: 6px 0; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font: 10.5px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre; }
+  #bvG { width: 100%; height: 56px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); display: block; margin-top: 6px; }
+  .field input[type=text], .group input[type=text] { min-width: 0; width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font: inherit; font-size: 12px; }
+  .bgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; } .bgrid button { padding: 7px 2px; font-size: 11.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #senHud { position: fixed; z-index: 12; left: 334px; top: 72px; display: none; margin: 0; padding: 8px 10px; font: 11px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--line); border-radius: 10px; white-space: pre; pointer-events: none; }
+  #kbHelp { position: fixed; z-index: 60; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: min(560px, 92vw); max-height: 86vh; overflow: auto; cursor: pointer; }
+  #kbHelp table { border-collapse: collapse; } #kbHelp td { padding: 2px 10px 2px 0; vertical-align: top; } #kbHelp kbd { font: 12px ui-monospace, Menlo, Consolas, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--bg); }
+  .rcrow.sel { outline: 1.5px solid var(--accent); outline-offset: 1px; border-radius: 8px; }
+  #abTxt { font-size: 11px; color: var(--mute); }
+  body.kiosk #leftcol, body.kiosk #rightpanel, body.kiosk #hud, body.kiosk #estop, body.kiosk #mtop, body.kiosk #senHud { display: none !important; }
+  body.kiosk.nobar #playbar { display: none !important; }
+  @media (max-width: 1100px) { #senHud { left: 8px; top: 108px; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <canvas id="view"></canvas>
+    <div id="loader"><div class="card">
+      <div id="loadMsg" data-i18n="loading"></div>
+      <div id="loadFile" style="display:none; margin-top:10px"><div class="sub" data-i18n="fileHelp" data-i18n-html></div><input type="file" id="fVendor" multiple accept=".js,.wasm"></div>
+      <div id="loadErr" class="err"></div>
+    </div></div>
+  </div>
+  <div id="mtop"><b>PreMaid AI</b><button id="mobL" class="sm" data-i18n="tabMotion"></button><button id="mobRb" class="sm" data-i18n="tabRobot"></button><button id="mobR" class="sm" data-i18n="tabServos"></button><button id="bLang2" class="sm"></button></div>
+
+  <div id="hud">
+    <div class="pill">
+      <div class="seg"><button data-view="front" data-i18n="vFront"></button><button data-view="back" data-i18n="vBack"></button><button data-view="left" data-i18n="vLeft"></button><button data-view="right" data-i18n="vRight"></button><button data-view="top" data-i18n="vTop"></button><button data-view="iso" data-i18n="vIso"></button></div>
+      <button id="bReset" data-i18n="reset" data-i18n-title="tipReset"></button>
+      <label class="chip" data-i18n-title="tipPin"><input type="checkbox" id="cPin"><span data-i18n="pin"></span></label>
+      <label class="chip" data-i18n-title="tipIK"><input type="checkbox" id="cIK"><span data-i18n="ikChip"></span></label>
+      <button id="bSet" data-i18n-title="setTip">⚙</button>
+    </div>
+  </div>
+
+  <button id="estop" data-i18n="estop" data-i18n-title="estopTip"></button>
+  <pre id="senHud"></pre>
+  <div id="kbHelp" class="panel" hidden><div data-i18n="kbHelp" data-i18n-html></div></div>
+
+  <div id="leftcol" class="panel">
+    <div class="tabs"><button class="on" data-tab="motion" data-i18n="tabMotion"></button><button data-tab="robot" data-i18n="tabRobot"></button><button data-tab="walk" data-i18n="tabWalk"></button><button data-tab="rec" data-i18n="tabRec"></button></div>
+    <div id="pane_motion">
+      <label class="btn primary wide" data-i18n-title="tipLoad"><input type="file" id="fPma" accept=".pma,.txt" hidden><span data-i18n="loadBtn"></span></label>
+      <select id="pSec" style="display:none; width:100%; margin-top:8px" data-i18n-title="tipSec"></select>
+      <div class="field" id="pLoopRow" style="grid-template-columns:72px minmax(0,1fr); display:none">
+        <span data-i18n="loopModeL"></span>
+        <select id="pLoopMode" data-i18n-title="tipLoopMode"><option value="orig" data-i18n="loopOrig"></option><option value="once" data-i18n="loopOnce"></option></select>
+      </div>
+      <div id="pList" class="plist"></div>
+      <div class="group" style="align-items:center;margin-top:6px"><button id="plPrev" class="sm" data-i18n-title="plPrev">⏮</button><button id="plNext" class="sm" data-i18n-title="plNext">⏭</button><label class="chip"><input type="checkbox" id="plAuto"><span data-i18n="plAutoL"></span></label><label class="chip"><input type="checkbox" id="plShuf"><span data-i18n="plShufL"></span></label><label class="chip"><input type="checkbox" id="plWake" checked><span data-i18n="plWakeL"></span></label></div>
+      <div class="lbl2" data-i18n="audTitle"></div>
+      <div class="status"><span id="audName" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><label class="btn sm" data-i18n-title="audLoadTip"><input type="file" id="fAud" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac" hidden><span data-i18n="audLoad"></span></label></div>
+      <div class="field" style="grid-template-columns:48px minmax(0,1fr) 38px"><span data-i18n="audVol"></span><input type="range" id="aVol" min="0" max="1" step="0.05" value="0.8"><span id="aVolV" class="mono">80</span></div>
+      <div id="pInfo" class="info sub"></div>
+      <div class="info sub" data-i18n="pmaNote"></div>
+      <details class="sec"><summary><span data-i18n="chkTitle"></span> <small id="chkSum" class="chk-sum"></small></summary>
+        <div id="chkTab"></div><p class="sub" data-i18n="chkNote"></p>
+      </details>
+      <details class="sec"><summary data-i18n="advanced"></summary>
+        <div class="lbl2" style="margin-top:4px" data-i18n="audOffL"></div>
+        <div class="field" style="grid-template-columns:0 minmax(0,1fr) 62px"><span></span><input type="range" id="aOff" min="-2000" max="2000" step="50" value="0"><span id="aOffV" class="mono">0 ms</span></div>
+        <div class="lbl2" data-i18n="thinTitle"></div>
+        <div class="group" style="align-items:center"><span data-i18n="rbThinA"></span><input type="number" id="rbThin" min="2" value="2" style="width:56px"><span data-i18n="rbThinB"></span><button id="rbExp" data-i18n="rbExp"></button></div>
+      </details>
+    </div>
+    <div id="pane_walk" hidden>
+      <button id="wGo" class="primary wide"></button>
+      <div class="status"><span id="wState"></span><span id="wTick" class="mono"></span></div>
+      <div class="pads">
+        <div class="padwrap"><div class="pad" id="padA"><i></i></div><span data-i18n="padA"></span></div>
+        <div class="padwrap"><div class="pad" id="padB"><i></i></div><span data-i18n="padB"></span></div>
+      </div>
+      <label class="chip"><input type="checkbox" id="wHold"><span data-i18n="padHold"></span></label>
+      <div class="lbl2" data-i18n="walkParams"></div>
+      <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px"><span data-i18n="wLen"></span><input type="range" id="wLen" min="0.5" max="1.5" step="0.05" value="1"><span id="wLenV" class="mono">1.00</span></div>
+      <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px"><span data-i18n="wRoll"></span><input type="range" id="wRoll" min="0.5" max="1.5" step="0.05" value="1"><span id="wRollV" class="mono">1.00</span></div>
+      <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px"><span data-i18n="wPit"></span><input type="range" id="wPit" min="0.5" max="1.5" step="0.05" value="1"><span id="wPitV" class="mono">1.00</span></div>
+      <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px" data-i18n-title="wSpdTip"><span data-i18n="wSpd"></span><input type="range" id="wSpd" min="6" max="14" step="1" value="9"><span id="wSpdV" class="mono">135 ms</span></div>
+      <label class="chip" style="margin-top:6px"><input type="checkbox" id="wRobot" class="rbc"><span data-i18n="walkRobot"></span></label>
+      <p class="sub" style="margin-top:8px" data-i18n="walkNote"></p>
+      <p class="sub" id="wGp" style="margin-top:6px"></p>
+    </div>
+    <div id="pane_rec" hidden>
+      <input type="text" id="rcName" value="My Motion">
+      <button id="rcAdd" class="primary wide" style="margin-top:8px" data-i18n="recAdd"></button>
+      <div class="field" style="grid-template-columns:62px minmax(0,1fr) 54px;margin-top:8px" data-i18n-title="recSpdTip"><span data-i18n="recSpd"></span><input type="range" id="rcSpd" min="2" max="60" value="10"><span id="rcSpdV" class="mono">150 ms</span></div>
+      <div id="rcList"></div>
+      <div id="rcInfo" class="info sub"></div>
+      <details class="sec"><summary><span data-i18n="chkTitle"></span> <small id="chkRSum" class="chk-sum"></small></summary>
+        <div id="chkRTab"></div><p class="sub" data-i18n="chkNote"></p>
+      </details>
+      <div class="group"><button id="rcPlay" data-i18n="recPlay"></button><button id="rcExp" data-i18n="recExp"></button><button id="rcClr" class="danger" data-i18n="recClr"></button></div>
+      <div class="group"><button id="rcIns" class="sm" data-i18n="rcIns" data-i18n-title="rcInsTip"></button><button id="rcDup" class="sm" data-i18n="rcDup"></button><button id="rcTrimB" class="sm" data-i18n="rcTrimB" data-i18n-title="rcTrimBTip"></button><button id="rcTrimA" class="sm" data-i18n="rcTrimA" data-i18n-title="rcTrimATip"></button><button id="rcSplit" class="sm" data-i18n="rcSplit" data-i18n-title="rcSplitTip"></button><button id="rcMerge" class="sm" data-i18n="rcMerge" data-i18n-title="rcMergeTip"></button></div>
+      <label class="chip"><input type="checkbox" id="rcOnion"><span data-i18n="onionL"></span></label> <span id="rcAlt" class="sub"></span>
+      <div class="lbl2" data-i18n="teachL"></div>
+      <div class="group"><button id="tcStart" class="rbc primary" data-i18n="tcStart" data-i18n-title="tcStartTip"></button><button id="tcHold" class="rbc" data-i18n="tcHold" data-i18n-title="tcHoldTip"></button></div>
+      <div class="group" style="align-items:center"><button id="tcCap" class="rbc" data-i18n="tcCap"></button><button id="tcAuto" class="rbc"></button><input type="number" id="tcMs" min="100" max="5000" step="50" value="300" style="width:64px"><span>ms</span></div>
+      <div class="group"><button id="rcCsv" data-i18n="recCsv" data-i18n-title="recCsvTip"></button></div>
+      <p class="sub" id="tcInfo" style="min-height:1.3em"></p><p class="sub" data-i18n="teachNote"></p>
+      <div class="lbl2" data-i18n="recTools"></div>
+      <div class="group">
+        <button id="rcMir" data-i18n="recMirror" data-i18n-title="recMirrorTip"></button>
+        <button id="rcImp" data-i18n="recImport" data-i18n-title="recImportTip"></button>
+      </div>
+      <div class="group" style="align-items:center"><span data-i18n="recEveryA"></span><input type="number" id="rcEvery" min="1" value="1" style="width:54px"><span data-i18n="recEveryB"></span>
+        <label class="chip"><input type="checkbox" id="rcComp" checked><span data-i18n="recComp"></span></label></div>
+      <div class="group" style="align-items:center"><span data-i18n="recScaleL"></span><input type="number" id="rcScale" min="0.1" max="10" step="0.25" value="2" style="width:62px"><button id="rcScaleB" data-i18n="recApply"></button></div>
+      <p class="sub" data-i18n="recNote"></p>
+    </div>
+    <div id="pane_robot" hidden>
+      <div class="status"><span id="rbState"></span><span id="rbVolt" class="mono"></span></div>
+      <button id="rbConn" class="primary wide"></button>
+      <div class="field" style="grid-template-columns:32px minmax(0,1fr) auto;margin-top:6px" data-i18n-title="wsTip"><span class="mono">WS</span><input type="text" id="wsUrl" spellcheck="false" autocomplete="off"><button id="wsConn" data-i18n="wsConn"></button></div>
+      <div class="lbl2" data-i18n="rbBuiltinL" data-i18n-title="rbBuiltinTip"></div>
+      <div id="rbBuiltinGrid" class="bgrid"></div>
+      <button id="rbStopMotion" class="danger rbc wide" style="margin-top:6px" data-i18n="rbStopMotion"></button>
+      <div id="rbMotion" class="sub" style="min-height:1.3em"></div>
+      <div class="lbl2" data-i18n="rbModeL"></div>
+      <div class="seg full"><button class="rbc" data-rbmode="off" data-i18n="mOff"></button><button class="rbc" data-rbmode="live" data-i18n="mLive"></button><button class="rbc" data-rbmode="stream" data-i18n="mStream"></button></div>
+      <input type="checkbox" id="rbLive" hidden><input type="checkbox" id="rbStream" hidden>
+      <div class="field" style="grid-template-columns:78px minmax(0,1fr) 30px;margin-top:10px" data-i18n-title="rbSpdTip"><span data-i18n="rbSpdL"></span><input type="range" id="rbSp" class="rbc" min="1" max="60" value="10"><span id="rbSpV" class="mono">10</span></div>
+      <div class="group"><button id="rbOnce" class="rbc" data-i18n="rbOnce"></button><button id="rbT" class="rbc" data-i18n="rbT"></button></div>
+      <button id="rbRel" class="rbc danger wide" data-i18n="rbRel"></button>
+      <label class="chip" style="margin-top:10px"><input type="checkbox" id="rbSafe" checked><span data-i18n="rbSafe"></span></label>
+      <label class="chip" style="margin-top:6px"><input type="checkbox" id="rbSafeStream"><span data-i18n="rbSafeStream"></span></label>
+      <details class="sec" id="stSec"><summary data-i18n="stTitle"></summary>
+        <div class="group"><label class="chip"><input type="checkbox" id="stOn" class="rbc"><span data-i18n="stPoll"></span></label><label class="chip" data-i18n-title="stTwinTip"><input type="checkbox" id="stTwin" class="rbc"><span data-i18n="stTwin"></span></label></div>
+        <div class="field" style="grid-template-columns:78px minmax(0,1fr)" data-i18n-title="mirTip"><span data-i18n="mirL"></span><select id="mrMode"><option value="off" data-i18n="mirOff"></option><option value="any" data-i18n="mirAny"></option><option value="lr" data-i18n="mirLR"></option><option value="rl" data-i18n="mirRL"></option></select></div>
+        <div id="stSum" class="sub mono" style="min-height:1.3em"></div>
+        <div class="stt"><table><thead><tr><th>ID</th><th data-i18n="stColJ"></th><th data-i18n="stColAct"></th><th>°</th><th data-i18n="stColCmd"></th><th>spd/str</th><th>gyro</th></tr></thead><tbody id="stBody"></tbody></table></div>
+        <p class="sub" data-i18n="stNote"></p>
+      </details>
+      <details class="sec" id="mnSec"><summary data-i18n="mnTitle"></summary>
+        <div class="sub" style="margin-top:2px" data-i18n="bvL"></div><canvas id="bvG" width="320" height="56"></canvas><div id="bvTxt" class="sub mono"></div>
+        <label class="chip" style="margin-top:6px"><input type="checkbox" id="mnWake" checked><span data-i18n="wakeL"></span></label> <span id="mnWakeS" class="sub"></span>
+        <div class="group" style="align-items:center;margin-top:6px"><label class="chip"><input type="checkbox" id="mnHide" checked><span data-i18n="mnHide"></span></label><label class="chip"><input type="checkbox" id="mnPause"><span data-i18n="mnPause"></span></label><button id="mnClear" class="sm" data-i18n="mnClear"></button><button id="mnCopy" class="sm" data-i18n="mnCopy"></button></div>
+        <div id="mnLog"></div><div id="mnCnt" class="sub mono"></div>
+        <div class="field" style="grid-template-columns:minmax(0,1fr) auto auto;margin-top:6px"><input type="text" id="mnHex" class="mono" spellcheck="false" placeholder="CMD payload… e.g. 01 00 02 00 02"><label class="chip" data-i18n-title="mnAutoTip"><input type="checkbox" id="mnAuto" checked><span>LEN+XOR</span></label><button id="mnSend" class="rbc" data-i18n="mnSend"></button></div>
+      </details>
+      <details class="sec"><summary data-i18n="advanced"></summary>
+        <div class="group"><button id="rbBat" class="rbc" data-i18n="rbBat"></button></div>
+        <div class="field" style="grid-template-columns:62px minmax(0,1fr) auto"><span>stretch</span><input type="number" id="rbStr" min="1" max="127" value="60"><button id="rbStrB" class="rbc" data-i18n="rbApply"></button></div>
+        <div class="field" style="grid-template-columns:62px minmax(0,1fr) auto"><span>speed</span><input type="number" id="rbSpd" min="1" max="127" value="60"><button id="rbSpdB" class="rbc" data-i18n="rbApply"></button></div>
+        <p class="sub" data-i18n="rbWarn"></p>
+        <div class="lbl2" data-i18n="ledTitle"></div>
+        <label class="chip"><input type="checkbox" id="ledOk"><span data-i18n="ledOk"></span></label>
+        <div class="field" style="grid-template-columns:34px minmax(0,1fr) auto;margin-top:6px"><span class="mono">1E +</span><input type="text" id="ledHex" class="mono" spellcheck="false" placeholder="payload hex"><button id="ledSend" class="rbc" data-i18n="ledSend"></button></div>
+      </details>
+    </div>
+  </div>
+
+  <aside id="rightpanel" class="panel">
+    <h1><span data-i18n="title"></span><button id="bLang" class="sm" title="Language / 語言">EN</button></h1>
+    <div class="tabs" id="rtabs"><button class="on" data-rtab="servo" data-i18n="tabServos"></button><button data-rtab="set" data-i18n="tabSet"></button></div>
+    <div id="rpane_servo">
+    <p class="sub" data-i18n="intro"></p>
+    <div class="lbl2" style="margin-top:2px" data-i18n="presetL"></div>
+    <div class="group" style="margin-top:4px"><button data-pose="zero" data-i18n="pZero"></button><button data-pose="armsdown" data-i18n="pDown"></button><button data-pose="armsfwd" data-i18n="pFwd"></button><button data-pose="squat" data-i18n="pSquat"></button></div>
+    <details style="margin-top:0"><summary data-i18n="toolsSum"></summary><div class="group"><button id="bSweep" data-i18n-title="tipSweep"></button><button id="bCopy" data-i18n="copy"></button><button id="bPaste" data-i18n="paste"></button></div></details>
+    <div id="servos"></div>
+    </div>
+    <div id="rpane_set" hidden>
+      <div class="lbl2" style="margin-top:0" data-i18n="setPhys"></div>
+      <div class="group">
+        <label class="chip"><input type="checkbox" id="cGrav" checked><span data-i18n="grav"></span></label>
+        <label class="chip"><input type="checkbox" id="cCom" checked><span data-i18n="com"></span></label>
+        <button id="bRun" data-i18n-title="tipRun"></button>
+      </div>
+      <div class="field" data-i18n-title="tipMu"><span data-i18n="muL"></span><input type="range" id="rMu" min="0.05" max="1.5" step="0.05"><span id="vMu" class="mono"></span></div>
+      <div class="field" data-i18n-title="tipKp"><span data-i18n="kpL"></span><input type="range" id="rKp" min="2" max="60" step="1"><span id="vKp" class="mono"></span></div>
+      <div class="lbl2" data-i18n="setPlay"></div>
+      <div class="field" data-i18n-title="tipInterp" style="grid-template-columns:70px 1fr"><span data-i18n="interpL"></span><select id="pInterp"><option value="1" data-i18n="smooth"></option><option value="0" data-i18n="stepMode"></option></select></div>
+      <div class="lbl2" data-i18n="pushTitle"></div>
+      <div class="group" style="margin-top:4px"><button data-push="fwd" data-i18n="pushFwd"></button><button data-push="back" data-i18n="pushBack"></button><button data-push="left" data-i18n="pushLeft"></button><button data-push="right" data-i18n="pushRight"></button></div>
+      <div class="field" style="grid-template-columns:70px minmax(0,1fr) 44px"><span data-i18n="pushForce"></span><input type="range" id="pushF" min="1" max="20" step="1" value="5"><span id="pushFV" class="mono">5 N</span></div>
+      <p class="sub" data-i18n="pushNote"></p>
+      <div class="lbl2" data-i18n="balTitle"></div>
+      <label class="chip"><input type="checkbox" id="balOn"><span data-i18n="balOn"></span></label>
+      <div class="field" style="grid-template-columns:50px minmax(0,1fr) 44px"><span>kp</span><input type="range" id="balKp" min="0" max="3" step="0.1" value="1"><span id="balKpV" class="mono">1</span></div>
+      <div class="field" style="grid-template-columns:50px minmax(0,1fr) 44px"><span>kd</span><input type="range" id="balKd" min="0" max="0.3" step="0.01" value="0.05"><span id="balKdV" class="mono">0.05</span></div>
+      <div class="field" style="grid-template-columns:50px minmax(0,1fr) 44px"><span>CoM</span><input type="range" id="balKc" min="0" max="1000" step="50" value="600"><span id="balKcV" class="mono">600</span></div>
+      <div id="balInfo" class="sub mono" style="min-height:1.3em"></div><p class="sub" data-i18n="balNote"></p>
+      <div class="lbl2" data-i18n="senTitle"></div>
+      <div class="group"><label class="chip"><input type="checkbox" id="cSen"><span data-i18n="cSenL"></span></label><label class="chip"><input type="checkbox" id="cTrail"><span data-i18n="cTrailL"></span></label></div>
+      <div class="lbl2" data-i18n="shareTitle"></div>
+      <div class="group"><button id="shBtn" data-i18n="shBtn"></button><button id="emBtn" data-i18n="emBtn"></button><button id="fsBtn" data-i18n="fsBtn"></button></div>
+      <div class="group" style="align-items:center"><button id="recBtn"></button><button id="gifBtn"></button><input type="number" id="gifSec" min="1" max="10" value="3" style="width:52px"><span>s</span><label class="chip" data-i18n-title="recOnceTip"><input type="checkbox" id="recOnce" checked><span data-i18n="recOnceL"></span></label></div>
+      <div class="lbl2" data-i18n="teleTitle"></div>
+      <label class="chip"><input type="checkbox" id="teleOn"><span data-i18n="teleOn"></span></label> <span id="teleInfo" class="sub"></span><p class="sub" data-i18n="teleNote"></p>
+      <div class="lbl2" data-i18n="mcTitle"></div>
+      <div class="group"><button id="mcBtn"></button></div><video id="mcVid" muted playsinline style="display:none"></video><p class="sub" id="mcInfo"></p><p class="sub" data-i18n="mcNote"></p>
+      <div class="lbl2" data-i18n="polTitle"></div>
+      <div class="group"><button id="polLoad" data-i18n="polLoadB"></button><button id="polFileBtn" data-i18n="polFileB"></button><input type="file" id="polFile" accept=".json" hidden><button id="polPose" data-i18n="polPoseB"></button></div>
+      <label class="chip"><input type="checkbox" id="polOn"><span data-i18n="polOnL"></span></label> <span id="polInfo" class="sub"></span><p class="sub" data-i18n="polNote"></p>
+      <div class="lbl2">PWA</div><p class="sub" id="pwaInfo"></p>
+      <div id="stat" class="mono">…</div>
+      <details><summary data-i18n="modelSummary"></summary><p id="info"></p><p data-i18n="model1" data-i18n-html></p><p data-i18n="model2" data-i18n-html></p><p data-i18n="model3" data-i18n-html></p></details>
+    </div>
+  </aside>
+
+  <div id="playbar" class="panel">
+    <div class="ctl"><button id="pPlay" class="primary" disabled></button><button id="pStop" data-i18n="stop" disabled></button></div>
+    <div id="seekrow"><small id="pmaState"></small><input type="range" id="pSeek" min="0" max="1000" value="0" disabled><span id="pTime" class="mono">—</span></div>
+    <div class="ctl2">
+      <label class="chip" data-i18n-title="tipAud"><input type="checkbox" id="aOn" checked disabled><span>🎵</span></label>
+      <label class="chip" data-i18n-title="tipLoop"><input type="checkbox" id="pLoop" checked><span>🔁</span></label><button id="abA" class="sm" data-i18n-title="abATip">A</button><button id="abB" class="sm" data-i18n-title="abBTip">B</button><button id="abX" class="sm" data-i18n-title="abXTip">✕</button><span id="abTxt" class="mono"></span>
+      <select id="sSpeed" data-i18n-title="tipSpeed"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option></select>
+    </div>
+  </div>
+</div>
+
+<script>/*__ASSETS__*/</script>
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script src="../pma/library.js"></script>
+<script>
+<!--@MAIN_SCRIPT--></script>
+</body>
+</html>

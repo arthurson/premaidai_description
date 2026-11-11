@@ -15,7 +15,7 @@ import sys
 import tempfile
 
 PKG = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAGES = ('web/premaid-sim.src.html', 'web/premaid-sim.html')
+PAGES = ('web/src', 'web/premaid-sim.html')      # web/src = index.template.html + js/*.js assembled the way the generator does it
 SCRIPT_RE = re.compile(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>', re.I | re.S)
 
 
@@ -27,12 +27,17 @@ def main():
     failed = False
     for rel in PAGES:
         path = os.path.join(PKG, rel)
-        if not os.path.isfile(path):
+        if not os.path.exists(path):
             print('FAILED: missing %s' % rel)
             failed = True
             continue
-        with open(path, encoding='utf-8') as f:
-            html = f.read()
+        if os.path.isdir(path):
+            import glob
+            tpl = open(os.path.join(path, 'index.template.html'), encoding='utf-8', newline='').read()
+            html = tpl.replace('<!--@MAIN_SCRIPT-->', ''.join(open(f, encoding='utf-8', newline='').read() for f in sorted(glob.glob(os.path.join(path, 'js', '*.js')))))
+        else:
+            with open(path, encoding='utf-8') as f:
+                html = f.read()
         scripts = SCRIPT_RE.findall(html)
         if not scripts:
             print('FAILED: %s has no inline scripts' % rel)

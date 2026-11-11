@@ -1,0 +1,15 @@
+{
+  "name": "premaidai-web-sim",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Dev tooling for the single-file PreMaid AI simulator (web/premaid-sim.html is still produced by mujoco/make_premaid_mjcf.py)",
+  "scripts": {
+    "dev": "vite",
+    "build": "python mujoco/make_premaid_mjcf.py",
+    "verify": "python mujoco/make_premaid_mjcf.py --verify",
+    "check": "python tools/check_js.py"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}

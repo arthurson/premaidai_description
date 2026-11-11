@@ -1,0 +1,5 @@
+    "premaidai_description": Repository(
+        url="https://github.com/arthurson/premaidai_description.git",
+        commit="@COMMIT@",
+        cache_path="premaidai_description",
+    ),

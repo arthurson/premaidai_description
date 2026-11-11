@@ -136,14 +136,14 @@ pma/
 | どうぞ／機內舞蹈 | `05 1F 00 3E 24`／`05 1F 00 01 1B` |
 | 回覆 `04 18 08 14` | pose 出錯，網頁會自動重送最後一個 pose（最多 20 次） |
 
-## 重新生成（改過 xacro 或 `premaid-sim.src.html` 之後）
+## 重新生成（改過 xacro 或 `web/src/` 之後）
 
 ```bash
 pip install mujoco numpy scipy trimesh pycollada xacro
 python mujoco/make_premaid_mjcf.py --check
 ```
 
-輸出：`mujoco/premaidai.xml`（單檔 MJCF）同 `web/premaid-sim.html`（＝ `premaid-sim.src.html` ＋ MJCF ＋ 彩色 mesh）。**請改 `.src.html`，唔好直接改生成嘅 `.html`。** 動作庫唔再內嵌喺 html，所以加動作只需要跑 `pma/make_index.py`。
+輸出：`mujoco/premaidai.xml`（單檔 MJCF）同 `web/premaid-sim.html`（＝ `web/src/` 模板同 JS 部件 ＋ MJCF ＋ 彩色 mesh）。**請改 `web/src/`，唔好直接改生成嘅 `.html`。** 動作庫唔再內嵌喺 html，所以加動作只需要跑 `pma/make_index.py`。
 
 主控台可用：`PMSIM.setTarget(k, deg)`、`PMSIM.applyPose({r_kny_joint: 40})`、`PMSIM.reset()`。
 
@@ -178,7 +178,7 @@ premaidai_description/
 ├─ index.html              跳去模擬器（GitHub Pages 入口）
 ├─ web/
 │  ├─ premaid-sim.html     單檔模擬器（生成）
-│  ├─ premaid-sim.src.html 模擬器原始碼（改呢個）
+│  ├─ src/                 模擬器原始碼（index.template.html ＋ js/*.js，改呢度）
 │  ├─ README_sim.md        模擬器技術說明
 │  └─ vendor/              three.js、OrbitControls、MuJoCo WASM
 ├─ pma/                    動作庫：*.pma ＋ 音樂 ＋ library.js ＋ make_index.py
@@ -200,3 +200,24 @@ premaidai_description/
 * 通訊協議：[neon-izm/PremaindAI_TechVerification](https://github.com/neon-izm/PremaindAI_TechVerification)；步態：[kazzlog/pm_sample](https://github.com/kazzlog/pm_sample)；舵機方向交叉驗證：[chikuta/premaidai_controller](https://github.com/chikuta/premaidai_controller)（MIT）；韌體參數：[arthurson/premaiduino2](https://github.com/arthurson/premaiduino2)；其他參考：[プリメイドAIパーツ軽量](https://drive.google.com/file/d/18qxGj2l_tFbyiChA9kbnJ-sgjDKE4dCX/view)。
 * 物理：[MuJoCo](https://github.com/google-deepmind/mujoco)（Apache-2.0）；畫面：[three.js](https://threejs.org/)（MIT）。
 * 本專案採用 [Apache License 2.0](LICENSE)。`pma/` 入面嘅動作同音樂版權屬原權利人，只作個人驗證用途。
+
+## 模型／研究／ROS 生態（P3）
+
+| 項目 | 位置 | 點用 |
+|---|---|---|
+| MJCF 加咗感測器、keyframe、相機、site | `mujoco/premaidai.xml` | IMU（gyro／acc／quat）、左右腳 touch、每粒關節 `pos_*`／`tau_*`、`com`；keyframe `t_pose`／`arms_down`／`squat`；相機 front／back／left／right／top／iso。生成器輸出係確定性嘅（hull 頂點排序＋取整），所以 CI 可以 `--verify` |
+| Python 套件 | `pyproject.toml`、`python/premaidai_description/` | `pip install ".[mujoco]"` → `premaidai_description.load_mujoco()`／`load_urdf()`／`load_pybullet()`；`python -m build` 出 wheel（已喺乾淨 venv 驗證）。上 PyPI：設定 trusted publishing 後打 `v*` tag，CI 嘅 `publish` job 會做（我冇上載） |
+| 通用 URDF | `urdf/premaidai.urdf`（`tools/make_urdf.py`） | 由 xacro 展開，去咗 ROS 1／Gazebo Classic 專用嘅 `<transmission>`、`<gazebo>` |
+| robot_descriptions.py | `contrib/robot_descriptions/` | 條目＋模組＋`overlay_test.py`（用佢哋自己嘅 MuJoCo／yourdfpy loader 載入咗，未開 PR） |
+| MuJoCo Menagerie 格式 | `menagerie/premaid_ai/`（`tools/make_menagerie.py`） | `scene.xml`、`assets/`（彩色 OBJ 視覺＋STL 碰撞凸包）、README、CHANGELOG、截圖、`test_load.py`；質量／慣量／關節／致動器同主 MJCF 一致（測試有驗）。**未向 Menagerie 開 PR** |
+| glTF | `export/premaidai.glb`（`tools/export_gltf.py`） | 零姿勢、關節階層、Y-up；每個 link 嘅位置同 MuJoCo 對得上（測試有驗）；關節軸／限位喺 `premaidai_joints.json` |
+| ROS 2 | `ros2/premaidai_description`、`ros2/premaidai_moveit_config`（`tools/make_ros2.py`） | ros2_control（mock／Gazebo／真機佔位）、joint_trajectory_controller、MoveIt 2；**只做咗靜態檢查（xacro 展開、yaml／SRDF 一致性）**，冇喺 ROS 2 跑過，CI 有 `ros2` job 但標為 `continue-on-error` |
+| 強化學習 | `rl/` | Gymnasium 環境、numpy PPO、ONNX／JSON 匯出、瀏覽器內推論。示範策略**冇贏過「唔郁」**（見 `rl/README.md`） |
+| 文件 | `docs/` | EN／JA README、`PROTOCOL.md`（表由資料生成）、`CALIBRATION.md`、`TROUBLESHOOTING.md` |
+| Landing page | `index.html`、`docs/img/` | 功能卡、內置動作庫（深連結）、demo GIF（`tools/make_demo.py`）；中／英／日 |
+| 開發 | `web/src/`、`package.json`、`vite.config.mjs` | 模擬器原始碼分成 `index.template.html` ＋ `js/*.js`（**一個** script 切開，串接輸出同舊嘅單檔位元組一致）；`npm run dev` 用 Vite 開發（改完 reload），輸出仍然係單檔 `web/premaid-sim.html`（`npm run build`＝跑生成器） |
+
+**未做**：Isaac Lab／USD（要 Isaac Sim 先驗證到；`cashlo/premaid_rl_simple` 已有 `premaidai.usd`）、Choreonoid `.body`、實機 ROS 2 硬件插件、向 Menagerie／robot_descriptions／PyPI 嘅實際提交。
+
+測試：`python -m unittest discover -s tests`（MJCF、Menagerie、glTF、套件 loader、ROS 2 靜態檢查、Gymnasium 環境、bridge、PMA）；瀏覽器：`tests/e2e_p1.py`、`e2e_p2.py`、`e2e_p3.py`、`e2e_landing.py`（需要 playwright）。
+

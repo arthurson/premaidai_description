@@ -3,11 +3,12 @@
 
 Reads the ROS xacro model (robots/premaidai.urdf.xacro), expands it, and writes
   mujoco/premaidai.xml        ONE self-contained MJCF (free base, floor, 25 position servos, collision hulls inlined)
-  web/premaid-sim.html        single-file simulator = web/premaid-sim.src.html + the MJCF + the coloured visual meshes
+  web/premaid-sim.html        single-file simulator = web/src/index.template.html + web/src/js/*.js (concatenated, in file-name order) + the MJCF + the coloured visual meshes
 
 Run (repo root):   pip install mujoco numpy scipy trimesh pycollada xacro
                    python mujoco/make_premaid_mjcf.py            # writes both files
                    python mujoco/make_premaid_mjcf.py --check    # also settles the model for 3 s and prints the result
+                   python mujoco/make_premaid_mjcf.py --verify   # writes nothing; exit 1 when the committed premaidai.xml / premaid-sim.html are stale (CI)
 Needs no ROS: $(find premaidai_description) is resolved to this checkout.
 
 Two fixes versus the raw package (both measured, see README_PHYSICS in the generated html footer):
@@ -22,7 +23,7 @@ import xml.etree.ElementTree as ET
 
 HERE = os.path.dirname(os.path.abspath(__file__)); PKG = os.path.dirname(HERE)
 XML_OUT = os.path.join(HERE, 'premaidai.xml')
-SRC_HTML = os.path.join(PKG, 'web', 'premaid-sim.src.html')
+SRC_DIR = os.path.join(PKG, 'web', 'src')
 HTML_OUT = os.path.join(PKG, 'web', 'premaid-sim.html')
 
 INERTIA_SCALE = 0.01        # URDF tensors are 100x too large (see docstring)
@@ -155,20 +156,31 @@ def build():
     fixed = [j for j in kids['base_link'] if j.type == 'fixed']; assert len(fixed) == 1 and fixed[0].child == 'body' and not any(fixed[0].xyz) and not any(fixed[0].rpy)
     merged = {'base_link': 'body'}
     mesh_dir = os.path.join(PKG, 'meshes')
-    visual, hull_xml, servos = [], [], []
+    visual, hull_xml, servos, jorder, HULL = [], [], [], [], {}
     def src_link(n): return merged.get(n, n)
 
     def link_assets(name):
         L = links[src_link(name)]
         V, F, C = load_dae(os.path.join(mesh_dir, L.mesh))
         tm = trimesh.Trimesh(V, F, process=False)
-        H = tm.convex_hull.vertices
+        H = np.unique(np.round(np.asarray(tm.convex_hull.vertices, dtype=float), 6), axis=0)      # sorted + rounded to 1 um: identical output on every scipy/qhull version
+        HULL[name] = H
         hull_xml.append('    <mesh name="hull_%s" vertex="%s"/>' % (name, ' '.join('%.7g' % x for x in np.asarray(H).ravel())))
         disp = 0.12 + 0.88 * C            # lift the near-black Blender materials so the shading stays readable
         visual.append(dict(name=name, nv=int(len(V)), nf=int(len(F)), pos=b64(V.astype('<f4')), col=b64((np.clip(disp, 0, 1) * 255).round().astype('u1')),
                            idx=b64(F.astype('<u2'))))
 
     body_lines = []
+    def link_sites(name, I, H):      # sites: IMU at the base inertial centre; sole centre + touch box on each foot; hand centre
+        out = []
+        if name == 'base_link': out.append('<site name="imu" pos="%.7g %.7g %.7g" size="0.004" rgba="1 0.2 0.2 1" group="3"/>' % tuple(I['pos']))
+        if name in ('r_foot', 'l_foot'):
+            lo = H[:, 2].min(); sole = H[H[:, 2] < lo + 0.003]; cx, cy = sole[:, 0].mean(), sole[:, 1].mean(); hx, hy = (H[:, 0].max() - H[:, 0].min()) / 2, (H[:, 1].max() - H[:, 1].min()) / 2
+            out.append('<site name="%s_sole" pos="%.6g %.6g %.6g" size="0.004" rgba="0.2 0.6 1 1" group="3"/>' % (name[0], cx, cy, lo))
+            out.append('<site name="%s_foot_touch" type="box" pos="%.6g %.6g %.6g" size="%.6g %.6g 0.008" rgba="0.2 0.8 0.3 0.3" group="3"/>' % (name[0], (H[:, 0].max() + H[:, 0].min()) / 2, (H[:, 1].max() + H[:, 1].min()) / 2, lo + 0.002, hx, hy))
+        if name in ('r_hand', 'l_hand'):
+            c = H.mean(axis=0); out.append('<site name="%s_hand_tip" pos="%.6g %.6g %.6g" size="0.004" rgba="1 0.7 0.1 1" group="3"/>' % (name[0], c[0], c[1], c[2]))
+        return out
     def emit(name, ind, parent_joint=None):
         pad = '  ' * ind; L = links[src_link(name)]
         if parent_joint is None:
@@ -177,11 +189,12 @@ def build():
             j = parent_joint; q = rpy_quat(*j.rpy); att = ' pos="%.7g %.7g %.7g"' % tuple(j.xyz)
             if any(abs(x) > 1e-12 for x in j.rpy): att += ' quat="%.9g %.9g %.9g %.9g"' % tuple(q)
             body_lines.append('%s<body name="%s"%s>' % (pad, name, att))
-            body_lines.append('%s  <joint name="%s" type="hinge" axis="%.6g %.6g %.6g" range="%.7g %.7g" limited="true"/>' % ((pad, j.name) + tuple(j.axis) + (j.lo, j.hi)))
+            body_lines.append('%s  <joint name="%s" type="hinge" axis="%.6g %.6g %.6g" range="%.7g %.7g" limited="true"/>' % ((pad, j.name) + tuple(j.axis) + (j.lo, j.hi))); jorder.append(j.name)
         I = L.inertial; s = INERTIA_SCALE
         body_lines.append('%s  <inertial pos="%.7g %.7g %.7g" mass="%.7g" fullinertia="%.9g %.9g %.9g %.9g %.9g %.9g"/>' % ((pad,) + tuple(I['pos']) + (I['mass'],) + tuple(x * s for x in I['I'])))
         link_assets(name)
         body_lines.append('%s  <geom type="mesh" mesh="hull_%s"/>' % (pad, name))
+        body_lines.extend(pad + '  ' + x for x in link_sites(name, I, HULL[name]))
         for c in kids.get(name, []) + (kids.get('body', []) if name == 'base_link' else []):
             if c.type == 'fixed':
                 continue            # base_link->body (merged) and *_hand_ee (collision stub only)
@@ -214,6 +227,7 @@ def build():
   <worldbody>
     <geom name="floor" type="plane" size="3 3 0.1" contype="0" conaffinity="1" friction="%g 0.005 0.0001" rgba="0.8 0.8 0.8 1"/>
 %s
+    @CAMERAS@
   </worldbody>
   <equality>
     <weld name="pin" body1="base_link" active="false"/>
@@ -221,9 +235,58 @@ def build():
   <actuator>
 %s
   </actuator>
-</mujoco>
-''' % (TIMESTEP, ARMATURE, DAMPING, MU, '\n'.join(hull_xml), MU, '\n'.join(body_lines), '\n'.join(act))
-    return xml, visual, servos
+  <sensor>
+%s
+  </sensor>
+@KEYS@</mujoco>
+''' % (TIMESTEP, ARMATURE, DAMPING, MU, '\n'.join(hull_xml), MU, '\n'.join(body_lines), '\n'.join(act), '\n'.join(sensors(servos)))
+    xml = xml.replace('@CAMERAS@', '\n    '.join(cameras()))
+    return xml, visual, servos, jorder
+
+def source_html():
+    """template + the JS parts (web/src/js/*.js, concatenated in file-name order: they are slices of ONE script, so no part is valid on its own)"""
+    import glob
+    tpl = open(os.path.join(SRC_DIR, 'index.template.html'), encoding='utf-8', newline='').read(); assert tpl.count('<!--@MAIN_SCRIPT-->') == 1
+    js = ''.join(open(f, encoding='utf-8', newline='').read() for f in sorted(glob.glob(os.path.join(SRC_DIR, 'js', '*.js'))))
+    return tpl.replace('<!--@MAIN_SCRIPT-->', js)
+
+def sensors(servos):
+    """IMU (gyro, accelerometer, orientation), foot touch (normal force on the sole), per-joint angle and actuator torque, centre of mass"""
+    out = ['    <gyro name="imu_gyro" site="imu"/>', '    <accelerometer name="imu_acc" site="imu"/>', '    <framequat name="imu_quat" objtype="site" objname="imu"/>',
+           '    <touch name="r_foot_touch" site="r_foot_touch"/>', '    <touch name="l_foot_touch" site="l_foot_touch"/>', '    <subtreecom name="com" body="base_link"/>']
+    out += ['    <jointpos name="pos_%s" joint="%s"/>' % (s['joint'], s['joint']) for s in servos]
+    out += ['    <actuatorfrc name="tau_%s" actuator="act_%s"/>' % (s['joint'], s['joint']) for s in servos]
+    return out
+
+def cameras():
+    """fixed viewpoints that look at the base_link (robot faces +x)"""
+    spec = [('front', (0.9, 0, 0.3)), ('back', (-0.9, 0, 0.3)), ('left', (0, 0.9, 0.3)), ('right', (0, -0.9, 0.3)), ('top', (0.001, 0, 1.1)), ('iso', (0.7, -0.7, 0.55))]
+    return ['<camera name="%s" pos="%g %g %g" mode="targetbody" target="base_link" fovy="45"/>' % ((n,) + p) for n, p in spec]
+
+POSES = {      # keyframes = the presets of the web simulator (joint angles in degrees)
+    't_pose': {},
+    'arms_down': {'r_shx_joint': 80, 'l_shx_joint': -80},
+    'squat': {'r_hpy_joint': -20, 'l_hpy_joint': -20, 'r_kny_joint': 40, 'l_kny_joint': 40, 'r_aky_joint': -20, 'l_aky_joint': -20, 'r_shx_joint': 80, 'l_shx_joint': -80},
+}
+
+def keyframes(xml, servos, jorder):
+    """<keyframe> block: base standing 1 mm above the floor for each pose (lowest collision vertex), joints and position-servo targets set"""
+    import mujoco
+    m = mujoco.MjModel.from_xml_string(xml.replace('@ZSTART@', '1').replace('@KEYS@', '')); d = mujoco.MjData(m)
+    out = ['  <keyframe>']
+    for name, pose in POSES.items():
+        mujoco.mj_resetData(m, d); d.qpos[:3] = (0, 0, 1)
+        for j, deg in pose.items(): d.qpos[m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, j)]] = math.radians(deg)
+        mujoco.mj_forward(m, d); lo = 1e9
+        for g in range(m.ngeom):
+            if m.geom_type[g] != mujoco.mjtGeom.mjGEOM_MESH: continue
+            mid = m.geom_dataid[g]; v = m.mesh_vert[m.mesh_vertadr[mid]:m.mesh_vertadr[mid] + m.mesh_vertnum[mid]]
+            lo = min(lo, float(np.min(d.geom_xpos[g][2] + v @ d.geom_xmat[g].reshape(3, 3)[2])))
+        q = [0, 0, 1 - lo + 0.001, 1, 0, 0, 0] + [math.radians(pose.get(j, 0.0)) for j in jorder]
+        c = [math.radians(pose.get(s['joint'], 0.0)) for s in servos]
+        out.append('    <key name="%s" qpos="%s" ctrl="%s"/>' % (name, ' '.join('%.7g' % x for x in q), ' '.join('%.7g' % x for x in c)))
+    out.append('  </keyframe>\n')
+    return '\n'.join(out)
 
 def zstart(xml):
     """base height so the lowest collision vertex of the zero pose sits 4 cm above the floor (= where 'Fix base' hangs it)"""
@@ -280,16 +343,21 @@ def mirror_table(xml, servos):
     return out
 
 def main():
-    xml, visual, servos = build()
+    xml, visual, servos, jorder = build()
+    xml = xml.replace('@KEYS@', keyframes(xml, servos, jorder))
     z0 = zstart(xml) + 0.04
     xml = xml.replace('@ZSTART@', '%.5f' % z0)
-    open(XML_OUT, 'w', encoding='utf-8').write(xml); print('wrote', XML_OUT, len(xml) // 1024, 'KB, base z %.4f' % z0)
+    if '--verify' not in sys.argv: open(XML_OUT, 'w', encoding='utf-8', newline='\n').write(xml); print('wrote', XML_OUT, len(xml) // 1024, 'KB, base z %.4f' % z0)
     pma = [dict(joint=j, pid=v[0], sign=v[1], rawLo=v[2] - v[4] + v[5], rawHi=v[3] - v[4] + v[5], inferred=v[6]) for j, v in PMA_CAL.items()]
     assets = dict(xml=xml, links=visual, servos=servos, pma=pma, chains=kin_chains(xml, servos), mirror=mirror_table(xml, servos), z0=z0, params=dict(kp=KP, kv=KV, armature=ARMATURE, damping=DAMPING, mu=MU, dt=TIMESTEP))
-    if os.path.exists(SRC_HTML):
-        html = open(SRC_HTML, encoding='utf-8').read(); assert '/*__ASSETS__*/' in html
+    if os.path.isdir(SRC_DIR):
+        html = source_html(); assert '/*__ASSETS__*/' in html
         js = 'window.PREMAID=' + json.dumps(assets, separators=(',', ':'), ensure_ascii=False).replace('</', '<\\/') + ';'
-        open(HTML_OUT, 'w', encoding='utf-8').write(html.replace('/*__ASSETS__*/', js)); print('wrote', HTML_OUT, os.path.getsize(HTML_OUT) // 1024, 'KB')
+        out = html.replace('/*__ASSETS__*/', js)
+        if '--verify' in sys.argv:
+            stale = [n for n, p, new in (('mujoco/premaidai.xml', XML_OUT, xml), ('web/premaid-sim.html', HTML_OUT, out)) if open(p, encoding='utf-8', newline='').read() != new]
+            print('STALE: ' + ', '.join(stale) + '  (run python mujoco/make_premaid_mjcf.py and commit)' if stale else 'OK: premaidai.xml and premaid-sim.html are up to date'); sys.exit(1 if stale else 0)
+        open(HTML_OUT, 'w', encoding='utf-8', newline='\n').write(out); print('wrote', HTML_OUT, os.path.getsize(HTML_OUT) // 1024, 'KB')
     if '--check' in sys.argv:
         import mujoco
         m = mujoco.MjModel.from_xml_string(xml); d = mujoco.MjData(m)

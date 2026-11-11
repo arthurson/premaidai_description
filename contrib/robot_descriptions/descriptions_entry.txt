@@ -1,0 +1,10 @@
+    "premaidai_description": Description(
+        formats={Format.URDF, Format.MJCF},
+        tags={"humanoid", "biped", "hobby"},
+        robot="PreMaid AI",
+        maker="Kondo / community model (chikuta, kuroiwasi, arthurson)",
+        dof=25,
+        repository="premaidai_description",
+        license_spdx="Apache-2.0",
+        license_file="LICENSE",
+    ),

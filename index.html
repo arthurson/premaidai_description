@@ -1,6 +1,89 @@
 <!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
 <meta charset="utf-8">
-<title>PreMaid AI · MuJoCo simulator</title>
-<meta http-equiv="refresh" content="0; url=web/premaid-sim.html">
-<link rel="canonical" href="web/premaid-sim.html">
-<p><a href="web/premaid-sim.html">PreMaid AI · MuJoCo WASM simulator →</a></p>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PreMaid AI · MuJoCo simulator, URDF, ROS, Python</title>
+<meta name="description" content="PreMaid AI humanoid: browser MuJoCo simulator, .pma motion player and editor, real-robot link, URDF / MJCF / glTF, ROS 2, Python loaders, RL.">
+<link rel="icon" href="web/icon.svg" type="image/svg+xml"><link rel="manifest" href="web/manifest.webmanifest"><meta name="theme-color" content="#6d28d9">
+<style>
+  :root { --bg: #fbfaff; --fg: #1d1b2e; --mute: #6b6880; --card: #fff; --line: #e4e0f2; --accent: #6d28d9; --accent2: #8b5cf6; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #14141b; --fg: #ecebf5; --mute: #a19fb8; --card: #1d1d28; --line: #2c2b3d; } }
+  * { box-sizing: border-box; } body { margin: 0; font: 16px/1.6 system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans TC", sans-serif; background: var(--bg); color: var(--fg); }
+  a { color: var(--accent2); } .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; } header b { font-size: 18px; }
+  .lang button { border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 999px; padding: 4px 12px; margin-left: 6px; cursor: pointer; } .lang button[aria-pressed=true] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: center; padding: 28px 0 40px; } @media (max-width: 820px) { .hero { grid-template-columns: 1fr; } }
+  h1 { font-size: clamp(28px, 5vw, 44px); line-height: 1.15; margin: 0 0 12px; } .tag { color: var(--mute); font-size: 18px; margin: 0 0 22px; }
+  .btn { display: inline-block; padding: 11px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; margin: 0 10px 10px 0; border: 1px solid var(--line); color: var(--fg); background: var(--card); }
+  .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: 0; }
+  .demo { border-radius: 16px; border: 1px solid var(--line); overflow: hidden; background: #f4f4f8; } .demo img { display: block; width: 100%; height: auto; }
+  h2 { font-size: 26px; margin: 44px 0 14px; } .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; } .card h3 { margin: 0 0 6px; font-size: 17px; } .card p { margin: 0; color: var(--mute); font-size: 14.5px; }
+  .motions a { display: flex; justify-content: space-between; gap: 10px; text-decoration: none; color: var(--fg); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+  .motions a:hover { border-color: var(--accent2); } .motions small { color: var(--mute); white-space: nowrap; }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; font-size: 13.5px; } .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; } .shots img { width: 100%; border-radius: 12px; border: 1px solid var(--line); }
+  footer { color: var(--mute); font-size: 14px; padding: 36px 0 50px; border-top: 1px solid var(--line); margin-top: 44px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><b>PreMaid AI</b><span class="lang"><button data-l="zh">中文</button><button data-l="en">EN</button><button data-l="ja">日本語</button></span></header>
+
+  <section class="hero">
+    <div>
+      <h1 data-i="h1"></h1><p class="tag" data-i="tag"></p>
+      <a class="btn primary" href="web/premaid-sim.html" data-i="launch"></a><a class="btn" href="docs/README.en.md" data-i="docs"></a><a class="btn" href="https://github.com/arthurson/premaidai_description" data-i="github"></a>
+    </div>
+    <div class="demo"><img src="docs/img/demo.gif" alt="PreMaid AI dancing in the simulator" width="480" height="360"></div>
+  </section>
+
+  <h2 data-i="featH"></h2>
+  <div class="grid" id="features"></div>
+
+  <h2 data-i="motH"></h2>
+  <p style="color:var(--mute)" data-i="motP"></p>
+  <div class="grid motions" id="motions"></div>
+
+  <h2 data-i="shotH"></h2>
+  <div class="shots"><img src="docs/img/sim-motion.png" alt="motion player" loading="lazy"><img src="docs/img/sim-editor.png" alt="motion editor" loading="lazy"><img src="docs/img/sim-robot-hud.png" alt="robot tab with sensor HUD" loading="lazy"></div>
+
+  <h2 data-i="startH"></h2>
+<pre>pip install ".[mujoco]"                    # in a checkout; PyPI release: see pyproject.toml / CI
+python -c "import premaidai_description as pm; m, d = pm.load_mujoco('arms_down'); print(m.nu, 'servos')"
+
+python tools/ws_bridge.py /dev/ttyUSB0 --host 0.0.0.0     # drive the robot from Safari / iOS / a Raspberry Pi
+colcon build --base-paths ros2                              # ROS 2 packages (premaidai_description, premaidai_moveit_config)</pre>
+
+  <footer><span data-i="foot"></span></footer>
+</div>
+<script>
+var T = {
+  zh: { h1: '喺瀏覽器玩 PreMaid AI：物理模擬、動作編輯、連真機', tag: 'MuJoCo WASM 模擬器 · .pma 動作播放同編輯 · Web Serial／WebSocket 連機身 · URDF／MJCF／glTF · ROS 2 · Python · 強化學習', launch: '開啟模擬器', docs: '文件（EN／日本語）', github: 'GitHub',
+        featH: '功能', motH: '內置動作庫', motP: '撳一個就喺模擬器入面開，仲會記住時間同視角（分享連結）。', shotH: '畫面', startH: '快速開始',
+        foot: 'Apache-2.0。ROS 1 模型 chikuta、網格 kuroiwasi、MJCF／模擬器 arthurson。非官方社群模型。', secs: '秒', loops: '個 loop',
+        f: [['Web 模擬器', '25 粒位置舵機、推力測試、IK、感測 HUD（IMU、腳底力、力矩、重心）、站穩輔助，單檔、可離線、可安裝成 App。'], ['動作播放／編輯', '.pma 播放（loop、speed／stretch、A-B 循環、播放清單）、關鍵幀編輯（插入、裁剪、拆併、洋蔥皮）、匯出 .pma／CSV、WebM／GIF 錄影。'], ['連真機', '內建動作 20 粒掣、舵機狀態表、digital twin、手動示教、左右跟隨、序列監視、自動重連、常駐緊急停止。'], ['Python／模型', 'pip 套件（MuJoCo／URDF／PyBullet loader）、Menagerie 格式資料夾、glTF（Blender／Unity）、確定性生成器同 CI。'], ['ROS 2', 'ros2_control（mock／Gazebo）、joint_trajectory_controller、MoveIt 2 設定。（只做咗靜態檢查，未喺 ROS 2 上行過。）'], ['AI 策略', 'Gymnasium 環境、numpy PPO、ONNX／JSON 匯出，喺瀏覽器直接跑；示範策略冇贏過「唔郁」，只係示範流程。']] },
+  en: { h1: 'PreMaid AI in your browser: physics, motion editing, real-robot link', tag: 'MuJoCo WASM simulator · .pma player and editor · Web Serial / WebSocket robot link · URDF / MJCF / glTF · ROS 2 · Python · RL', launch: 'Open the simulator', docs: 'Docs (EN / 日本語)', github: 'GitHub',
+        featH: 'Features', motH: 'Bundled motions', motP: 'Click one to open it in the simulator; the link also remembers time and camera (share links).', shotH: 'Screens', startH: 'Quick start',
+        foot: 'Apache-2.0. ROS 1 model by chikuta, meshes by kuroiwasi, MJCF / simulator by arthurson. Unofficial community model.', secs: 's', loops: 'loops',
+        f: [['Web simulator', '25 position servos, push test, IK, sensor HUD (IMU, foot force, torque, CoM), stand assist. One file, works offline, installable.'], ['Motion player / editor', '.pma playback (loops, speed / stretch, A-B loop, playlist), keyframe editing (insert, trim, split / merge, onion skin), .pma / CSV export, WebM / GIF recording.'], ['Real robot', '20 built-in motion buttons, servo status table, digital twin, teach by hand, left/right follow, serial monitor, auto-reconnect, always-visible E-stop.'], ['Python / models', 'pip package (MuJoCo / URDF / PyBullet loaders), Menagerie-style folder, glTF (Blender / Unity), deterministic generators and CI.'], ['ROS 2', 'ros2_control (mock / Gazebo), joint_trajectory_controller, MoveIt 2 config. (Static checks only; not run on ROS 2 yet.)'], ['AI policy', 'Gymnasium env, numpy PPO, ONNX / JSON export, runs in the browser; the demo policy does not beat holding the pose, it demonstrates the pipeline.']] },
+  ja: { h1: 'ブラウザで動くプリメイドAI：物理シミュレーション・モーション編集・実機接続', tag: 'MuJoCo WASM シミュレータ · .pma プレーヤー／エディタ · Web Serial／WebSocket 実機接続 · URDF／MJCF／glTF · ROS 2 · Python · 強化学習', launch: 'シミュレータを開く', docs: 'ドキュメント（EN／日本語）', github: 'GitHub',
+        featH: '機能', motH: '同梱モーション', motP: 'クリックするとシミュレータで開きます。リンクは再生位置とカメラも覚えています（共有リンク）。', shotH: '画面', startH: 'クイックスタート',
+        foot: 'Apache-2.0。ROS 1 モデル：chikuta、メッシュ：kuroiwasi、MJCF／シミュレータ：arthurson。非公式のコミュニティモデルです。', secs: '秒', loops: 'ループ',
+        f: [['Web シミュレータ', '25 軸の位置サーボ、押しテスト、IK、センサ HUD（IMU・足裏力・トルク・重心）、安定化アシスト。単一ファイルでオフライン動作、インストール可。'], ['モーション再生／編集', '.pma 再生（ループ、速度／ストレッチ、A-B ループ、プレイリスト）、キーフレーム編集（挿入・トリム・分割／結合・オニオンスキン）、.pma／CSV 書き出し、WebM／GIF 録画。'], ['実機接続', '内蔵モーション 20 ボタン、サーボ状態表、デジタルツイン、ティーチ、左右フォロー、シリアルモニタ、自動再接続、常時表示の緊急停止。'], ['Python／モデル', 'pip パッケージ（MuJoCo／URDF／PyBullet ローダ）、Menagerie 形式フォルダ、glTF（Blender／Unity）、決定的なジェネレータと CI。'], ['ROS 2', 'ros2_control（モック／Gazebo）、joint_trajectory_controller、MoveIt 2 設定。（静的チェックのみ。ROS 2 上では未実行です。）'], ['AI ポリシー', 'Gymnasium 環境、numpy PPO、ONNX／JSON 書き出し、ブラウザ内で実行。デモ方策は「何もしない」を上回らず、パイプラインの実演です。']] }
+};
+var motions = [], lang = 'zh';
+function render() {
+  var d = T[lang]; document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : lang;
+  document.querySelectorAll('[data-i]').forEach(function (e) { e.textContent = d[e.getAttribute('data-i')]; });
+  document.getElementById('features').innerHTML = d.f.map(function (x) { return '<div class="card"><h3>' + x[0] + '</h3><p>' + x[1] + '</p></div>'; }).join('');
+  var box = document.getElementById('motions'); box.innerHTML = '';
+  motions.forEach(function (m) { var a = document.createElement('a'); a.href = 'web/premaid-sim.html#m=' + encodeURIComponent(m.title); a.innerHTML = '<span></span><small></small>'; a.firstChild.textContent = m.title; a.lastChild.textContent = Math.round(m.seconds) + d.secs + (m.bpm ? ' · ' + m.bpm + ' BPM' : ''); box.appendChild(a); });
+  document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-l') === lang); });
+}
+document.querySelectorAll('.lang button').forEach(function (b) { b.addEventListener('click', function () { lang = b.getAttribute('data-l'); try { localStorage.setItem('pmsim.lang', lang); } catch (e) {} render(); }); });
+try { var l0 = localStorage.getItem('pmsim.lang'); if (T[l0]) lang = l0; else if (/^ja/.test(navigator.language)) lang = 'ja'; else if (/^en/.test(navigator.language)) lang = 'en'; } catch (e) {}
+render(); fetch('pma/index.json').then(function (r) { return r.json(); }).then(function (j) { motions = j; render(); }).catch(function () {});
+</script>
+</body>
+</html>

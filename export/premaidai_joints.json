@@ -1,0 +1,702 @@
+[
+ {
+  "name": "r_hpz_joint",
+  "type": "revolute",
+  "parent": "base_link",
+  "child": "r_hip_joint",
+  "origin_xyz": [
+   0.004225,
+   -0.0195245,
+   0.001412
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "lower": -1.413716694115407,
+  "upper": 1.787740752817792,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "r_hpx_joint",
+  "type": "revolute",
+  "parent": "r_hip_joint",
+  "child": "r_uleg_root",
+  "origin_xyz": [
+   0.0,
+   0.0021,
+   -0.028
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": -0.44244096538056255,
+  "upper": 0.3964166330054721,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "r_hpy_joint",
+  "type": "revolute",
+  "parent": "r_uleg_root",
+  "child": "r_uleg",
+  "origin_xyz": [
+   0.0,
+   -0.0128525,
+   -0.034358
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -1.5987215948268056,
+  "upper": 1.5745138781016443,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "r_kny_joint",
+  "type": "revolute",
+  "parent": "r_uleg",
+  "child": "r_lleg",
+  "origin_xyz": [
+   0.0,
+   0.0,
+   -0.0652
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -0.03652101459798134,
+  "upper": 2.0881119170860156,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "r_aky_joint",
+  "type": "revolute",
+  "parent": "r_lleg",
+  "child": "r_ankle",
+  "origin_xyz": [
+   0.0,
+   0.0,
+   -0.065
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -1.0708903957924207,
+  "upper": 0.4241150082346221,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "r_akx_joint",
+  "type": "revolute",
+  "parent": "r_ankle",
+  "child": "r_foot",
+  "origin_xyz": [
+   0.0,
+   0.0,
+   -0.040677
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": -0.6673920893469818,
+  "upper": 0.6508987279156353,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "l_hpz_joint",
+  "type": "revolute",
+  "parent": "base_link",
+  "child": "l_hip_joint",
+  "origin_xyz": [
+   0.004225,
+   0.0195245,
+   0.001412
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "lower": -1.413716694115407,
+  "upper": 1.787740752817792,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "l_hpx_joint",
+  "type": "revolute",
+  "parent": "l_hip_joint",
+  "child": "l_uleg_root",
+  "origin_xyz": [
+   0.0,
+   -0.0021,
+   -0.028
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": -0.3964166330054721,
+  "upper": 0.44244096538056255,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "l_hpy_joint",
+  "type": "revolute",
+  "parent": "l_uleg_root",
+  "child": "l_uleg",
+  "origin_xyz": [
+   0.0,
+   0.0128525,
+   -0.034358
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -1.5987215948268056,
+  "upper": 1.5745138781016443,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "l_kny_joint",
+  "type": "revolute",
+  "parent": "l_uleg",
+  "child": "l_lleg",
+  "origin_xyz": [
+   0.0,
+   0.0,
+   -0.0652
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -0.03652101459798134,
+  "upper": 2.0881119170860156,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "l_aky_joint",
+  "type": "revolute",
+  "parent": "l_lleg",
+  "child": "l_ankle",
+  "origin_xyz": [
+   0.0,
+   0.0,
+   -0.065
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -1.0708903957924207,
+  "upper": 0.4241150082346221,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "l_akx_joint",
+  "type": "revolute",
+  "parent": "l_ankle",
+  "child": "l_foot",
+  "origin_xyz": [
+   0.0,
+   0.0,
+   -0.040677
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": -0.6508987279156353,
+  "upper": 0.6673920893469818,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "r_shy_joint",
+  "type": "revolute",
+  "parent": "base_link",
+  "child": "r_uarm_joint",
+  "origin_xyz": [
+   0.0,
+   -0.0359,
+   0.113043
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -1.8849555921538759,
+  "upper": 2.238384765682728,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "r_shx_joint",
+  "type": "revolute",
+  "parent": "r_uarm_joint",
+  "child": "r_uarm",
+  "origin_xyz": [
+   0.0,
+   -0.0189,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": -0.053014376029327764,
+  "upper": 1.5980889129729579,
+  "effort": 0.9114,
+  "velocity": 5.817
+ },
+ {
+  "name": "r_ely_joint",
+  "type": "revolute",
+  "parent": "r_uarm",
+  "child": "r_larm_joint",
+  "origin_xyz": [
+   0.0088013,
+   -0.060007,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -2.246042397775853,
+  "upper": 2.344413517741383,
+  "effort": 0.9114,
+  "velocity": 5.817
+ },
+ {
+  "name": "r_elx_joint",
+  "type": "revolute",
+  "parent": "r_larm_joint",
+  "child": "r_larm",
+  "origin_xyz": [
+   0.0,
+   -0.024054,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": -0.23561944901923448,
+  "upper": 2.076396394482004,
+  "effort": 0.9114,
+  "velocity": 5.817
+ },
+ {
+  "name": "r_wry_joint",
+  "type": "revolute",
+  "parent": "r_larm",
+  "child": "r_hand",
+  "origin_xyz": [
+   0.0,
+   -0.061348,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -2.356194490192345,
+  "upper": 2.061670178918302,
+  "effort": 0.9114,
+  "velocity": 5.817
+ },
+ {
+  "name": "r_hand_ee_fixed_joint",
+  "type": "fixed",
+  "parent": "r_hand",
+  "child": "r_hand_ee",
+  "origin_xyz": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": null,
+  "upper": null,
+  "effort": null,
+  "velocity": null
+ },
+ {
+  "name": "l_shy_joint",
+  "type": "revolute",
+  "parent": "base_link",
+  "child": "l_uarm_joint",
+  "origin_xyz": [
+   0.0,
+   0.0359,
+   0.113043
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -1.8849555921538759,
+  "upper": 2.238384765682728,
+  "effort": 1.3712,
+  "velocity": 7.48
+ },
+ {
+  "name": "l_shx_joint",
+  "type": "revolute",
+  "parent": "l_uarm_joint",
+  "child": "l_uarm",
+  "origin_xyz": [
+   0.0,
+   0.0189,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": -1.5980889129729579,
+  "upper": 0.053014376029327764,
+  "effort": 0.9114,
+  "velocity": 5.817
+ },
+ {
+  "name": "l_ely_joint",
+  "type": "revolute",
+  "parent": "l_uarm",
+  "child": "l_larm_joint",
+  "origin_xyz": [
+   0.0088013,
+   0.060007,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -2.246042397775853,
+  "upper": 2.344413517741383,
+  "effort": 0.9114,
+  "velocity": 5.817
+ },
+ {
+  "name": "l_elx_joint",
+  "type": "revolute",
+  "parent": "l_larm_joint",
+  "child": "l_larm",
+  "origin_xyz": [
+   0.0,
+   0.024054,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": -2.076396394482004,
+  "upper": 0.23561944901923448,
+  "effort": 0.9114,
+  "velocity": 5.817
+ },
+ {
+  "name": "l_wry_joint",
+  "type": "revolute",
+  "parent": "l_larm",
+  "child": "l_hand",
+  "origin_xyz": [
+   0.0,
+   0.061348,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -2.356194490192345,
+  "upper": 2.061670178918302,
+  "effort": 0.9114,
+  "velocity": 5.817
+ },
+ {
+  "name": "l_hand_ee_fixed_joint",
+  "type": "fixed",
+  "parent": "l_hand",
+  "child": "l_hand_ee",
+  "origin_xyz": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": null,
+  "upper": null,
+  "effort": null,
+  "velocity": null
+ },
+ {
+  "name": "body_to_base_link",
+  "type": "fixed",
+  "parent": "base_link",
+  "child": "body",
+  "origin_xyz": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": null,
+  "upper": null,
+  "effort": null,
+  "velocity": null
+ },
+ {
+  "name": "head_ny_joint",
+  "type": "revolute",
+  "parent": "body",
+  "child": "neck_pitch",
+  "origin_xyz": [
+   0.0038738,
+   0.0,
+   0.132809
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "lower": -0.17671458676442586,
+  "upper": 0.41233403578366035,
+  "effort": 0.9114,
+  "velocity": 5.817
+ },
+ {
+  "name": "head_nz_joint",
+  "type": "revolute",
+  "parent": "neck_pitch",
+  "child": "head_yaw",
+  "origin_xyz": [
+   -0.0103485,
+   0.0,
+   0.011103
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "lower": -0.8246680715673207,
+  "upper": 0.8246680715673207,
+  "effort": 0.9114,
+  "velocity": 5.817
+ },
+ {
+  "name": "head_nx_joint",
+  "type": "revolute",
+  "parent": "head_yaw",
+  "child": "head",
+  "origin_xyz": [
+   0.0,
+   0.0,
+   0.0129
+  ],
+  "origin_rpy": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "lower": -0.38288160465625604,
+  "upper": 0.5006913291658732,
+  "effort": 0.9114,
+  "velocity": 5.817
+ }
+]
