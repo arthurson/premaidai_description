@@ -211,40 +211,86 @@ function teleTick(dt) {
 }
 $('teleOn').addEventListener('change', function () { TL.on = this.checked; TL.keys = {}; tlRender(); });
 // ---- webcam arm mocap (MediaPipe Pose world landmarks -> IK on the arm chains). The runtime (camera, model download) needs network + a camera and is NOT tested here; the landmark -> joint math is (tests/e2e_p2.py).
-var MC = { on: false, lm: null, vid: null, stream: null, raf: 0, seen: 0, sm: {} };
+var MC = { on: false, lm: null, fl: null, face: null, fc: 0, vid: null, stream: null, raf: 0, seen: 0, sm: {}, raw: {}, off: {}, headTg: {} };
 function mcNorm(v) { var n = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / n, v[1] / n, v[2] / n]; }
 function mcCross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
 function mcDot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
 function mcSub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
 function mcPoint(l) { return [l.x, l.y, l.z]; }
-function mcPoseToTargets(lm, cur) {      // lm: 33 MediaPipe world landmarks (right-handed, any axes); returns {k: deg} for both arms
+function mcPoseToTargets(lm, cur, opt) {      // lm: 33 MediaPipe world landmarks (right-handed, any axes); returns {k: deg} for both arms
   var Ls = mcPoint(lm[11]), Rs = mcPoint(lm[12]), Lh = mcPoint(lm[23]), Rh = mcPoint(lm[24]);
   var ex = mcNorm(mcSub(Ls, Rs)), up = mcNorm(mcSub([(Ls[0] + Rs[0]) / 2, (Ls[1] + Rs[1]) / 2, (Ls[2] + Rs[2]) / 2], [(Lh[0] + Rh[0]) / 2, (Lh[1] + Rh[1]) / 2, (Lh[2] + Rh[2]) / 2]));
   var fw = mcNorm(mcCross(ex, up)); ex = mcNorm(mcCross(up, fw));      // person frame: forward, left, up  (= the robot base frame)
-  var b = function (v) { return [mcDot(v, fw), mcDot(v, ex), mcDot(v, up)]; }, out = {};
-  [['l', 11, 13, 15], ['r', 12, 14, 16]].forEach(function (c) {
+  var mir = opt && opt.mirror ? -1 : 1, b = function (v) { return [mcDot(v, fw), mir * mcDot(v, ex), mcDot(v, up)]; }, out = {};      // mirror: lateral axis flipped and left/right swapped below
+  (mir < 0 ? [['l', 12, 14, 16], ['r', 11, 13, 15]] : [['l', 11, 13, 15], ['r', 12, 14, 16]]).forEach(function (c) {
     var ch = A.chains[c[0] + '_arm']; if (!ch) return; var S0 = mcPoint(lm[c[1]]), E = mcPoint(lm[c[2]]), W = mcPoint(lm[c[3]]), sh = ch.joints[0].pos;
     var robotLen = Math.hypot.apply(null, ikFK(ch, ch.joints.map(function () { return 0; })).p.map(function (v, i) { return v - sh[i]; })), pl = Math.hypot.apply(null, mcSub(E, S0)) + Math.hypot.apply(null, mcSub(W, E)), sc = 0.88 * robotLen / (pl || 1);      // a fully stretched human arm maps to 88 % of the robot's reach (the IK cannot hit the exact limit)
     var d = b(mcSub(W, S0)), pt = [sh[0] + sc * d[0], sh[1] + sc * d[1], sh[2] + sc * d[2]], q0 = ch.joints.map(function (j) { return (cur ? cur[j.k] : target[j.k]) * D2R; }), res = ikSolve(ch, q0, pt);
     ch.joints.forEach(function (j, i) { out[j.k] = res.q[i] / D2R; }); out['err_' + c[0]] = res.err;
-  }); return out;
+  }); if (opt && opt.legs) mcLegs(lm, b, out, mir < 0); return out;
+}
+// ---- head + legs (added): pure joint maths, person frame = [forward, left, up] = the robot base frame; joint axes from A.chains (hpz=z, hpx=x, hpy=y, kny=y, aky=y, akx=x)
+function mcKey(joint) { if (!mcKey.c) { mcKey.c = {}; A.servos.forEach(function (sv, k) { mcKey.c[sv.joint] = k; }); } return mcKey.c[joint]; }
+function mcAngle(a, b) { return Math.acos(Math.max(-1, Math.min(1, mcDot(mcNorm(a), mcNorm(b))))) / D2R; }
+function mcLegAngles(hip, knee, ankle, heel, toe, yawOff) {      // person-frame points -> degrees {hpz, hpx, hpy, kny, aky, akx, yawRaw}
+  var d = mcNorm(mcSub(knee, hip)), f = mcSub(toe, heel), yawRaw = Math.atan2(f[1], f[0]) / D2R;      // toe turned to the left = +
+  var a = Math.max(-40, Math.min(40, yawRaw - (yawOff || 0))) * D2R, c = Math.cos(a), sn = Math.sin(a);
+  var x = d[0] * c + d[1] * sn, y = -d[0] * sn + d[1] * c, z = d[2];      // undo the hip yaw (hpz is the first joint of the chain)
+  var roll = Math.atan2(y, -z) / D2R, pitch = Math.atan2(-x, Math.hypot(y, z)) / D2R, kn = mcAngle(d, mcSub(ankle, knee));      // thigh forward = negative pitch; knee bends the shin backwards
+  return { hpz: a / D2R, hpx: roll, hpy: pitch, kny: kn, aky: -(pitch + kn), akx: -roll, yawRaw: yawRaw };      // ankle cancels hip + knee so the foot stays level
+}
+function mcLegs(lm, b, out, mirror) {
+  (mirror ? [['l', 24, 26, 28, 30, 32], ['r', 23, 25, 27, 29, 31]] : [['l', 23, 25, 27, 29, 31], ['r', 24, 26, 28, 30, 32]]).forEach(function (c) {
+    for (var i = 1; i < 6; i++) if (lm[c[i]].visibility !== undefined && lm[c[i]].visibility < 0.5) return;      // leg hidden -> keep the last pose
+    var P = function (n) { return b(mcPoint(lm[n])); }, g = mcLegAngles(P(c[1]), P(c[2]), P(c[3]), P(c[4]), P(c[5]), MC.off['hz_' + c[0]]);
+    MC.raw['hz_' + c[0]] = g.yawRaw;
+    ['hpz', 'hpx', 'hpy', 'kny', 'aky', 'akx'].forEach(function (n) { out[mcKey(c[0] + '_' + n + '_joint')] = g[n]; });
+  });
+}
+function mcFaceAngles(m) {      // 4x4 facial transformation matrix (canonical face -> camera) -> degrees; yaw + = face turns to the person's left, pitch + = nod down, roll + = tilt to the person's right
+  if (Math.abs(m[12]) + Math.abs(m[13]) + Math.abs(m[14]) < 1e-6 && Math.abs(m[3]) + Math.abs(m[7]) + Math.abs(m[11]) > 1e-6) m = [m[0], m[4], m[8], m[12], m[1], m[5], m[9], m[13], m[2], m[6], m[10], m[14], m[3], m[7], m[11], m[15]];      // row-major -> column-major
+  var n = Math.hypot(m[8], m[9], m[10]) || 1;
+  return { yaw: Math.atan2(m[8], m[10]) / D2R, pitch: Math.asin(Math.max(-1, Math.min(1, -m[9] / n))) / D2R, roll: Math.atan2(m[1], m[5]) / D2R };
 }
 async function mcStart() {
   if (MC.on) { mcStop(); return; } $('mcInfo').textContent = t('mcLoading');
   try {
-    MC.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }); MC.vid = $('mcVid'); MC.vid.srcObject = MC.stream; await MC.vid.play();
+    MC.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }); MC.vid = $('mcVid'); MC.vid.srcObject = MC.stream; await MC.vid.play(); $('mcPrev').hidden = false; mcPrevMirror();
     var V = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs'), fs = await V.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
     MC.lm = await V.PoseLandmarker.createFromOptions(fs, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task' }, runningMode: 'VIDEO', numPoses: 1 });
-    MC.on = true; $('mcBtn').textContent = t('mcStop'); $('mcInfo').textContent = t('mcOn'); touch(); mcLoop();
+    MC.fl = null; MC.face = null; MC.headTg = {}; var warn = '';
+    { try { MC.fl = await V.FaceLandmarker.createFromOptions(fs, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task' }, runningMode: 'VIDEO', numFaces: 1, outputFacialTransformationMatrixes: true }); } catch (e) { warn = t('mcFaceErr', e && e.message || String(e)); } }
+    MC.on = true; $('mcBtn').textContent = t('mcStop'); $('mcInfo').textContent = warn || t('mcOn'); touch(); mcLoop();
   } catch (e) { $('mcInfo').textContent = t('mcErr', e && e.message || String(e)); mcStop(true); }
+}
+function mcPrevMirror() { $('mcPrev').classList.toggle('mir', $('mcMirror').checked); }
+var MC_BONES = [[11, 13], [13, 15], [12, 14], [14, 16], [11, 12], [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [27, 29], [27, 31], [24, 26], [26, 28], [28, 30], [28, 32]];
+function mcDraw(lm) {      // skeleton over the preview; lm = normalised image landmarks
+  var cv = $('mcCv'), v = MC.vid; if (!cv || !v || !v.videoWidth) return; if (cv.width !== v.videoWidth) { cv.width = v.videoWidth; cv.height = v.videoHeight; }
+  var g = cv.getContext('2d'), W = cv.width, H = cv.height, ok = function (p) { return p.visibility === undefined || p.visibility >= 0.5; }; g.clearRect(0, 0, W, H); if (!lm) return;
+  g.lineWidth = 3; g.strokeStyle = '#a78bfa'; g.fillStyle = '#fb923c';
+  MC_BONES.forEach(function (e) { var p = lm[e[0]], q = lm[e[1]]; if (!ok(p) || !ok(q)) return; g.beginPath(); g.moveTo(p.x * W, p.y * H); g.lineTo(q.x * W, q.y * H); g.stroke(); });
+  [0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28].forEach(function (i) { var p = lm[i]; if (!ok(p)) return; g.beginPath(); g.arc(p.x * W, p.y * H, 4, 0, 7); g.fill(); });
 }
 function mcLoop() {
   if (!MC.on) return; MC.raf = requestAnimationFrame(mcLoop); var now = performance.now(); if (now - MC.seen < 40 || MC.vid.readyState < 2) return; MC.seen = now;
-  var r = MC.lm.detectForVideo(MC.vid, now); if (!r.worldLandmarks || !r.worldLandmarks[0]) return;
-  var tg = mcPoseToTargets(r.worldLandmarks[0]); Object.keys(tg).forEach(function (k) { if (/^err/.test(k)) return; k = +k; var v = MC.sm[k] === undefined ? tg[k] : MC.sm[k] * 0.6 + tg[k] * 0.4; MC.sm[k] = v; setTarget(k, v); });
+  var mir = $('mcMirror').checked, ms = mir ? -1 : 1, r = MC.lm.detectForVideo(MC.vid, now), tg = {};
+  mcDraw(r.landmarks && r.landmarks[0]);
+  if (r.worldLandmarks && r.worldLandmarks[0]) tg = mcPoseToTargets(r.worldLandmarks[0], null, { legs: true, mirror: mir });
+  if (MC.fl) {      // the face model runs every second frame to save CPU; mirror flips yaw and roll (not pitch)
+    if ((MC.fc++ & 1) === 0) {
+      try { var fr = MC.fl.detectForVideo(MC.vid, now), m = fr.facialTransformationMatrixes && fr.facialTransformationMatrixes[0];
+        if (m) { var h = mcFaceAngles(Array.prototype.slice.call(m.data)); MC.raw.nz = h.yaw; MC.raw.ny = h.pitch; MC.raw.nx = h.roll;
+          MC.headTg = {}; MC.headTg[mcKey('head_nz_joint')] = ms * (h.yaw - (MC.off.nz || 0)); MC.headTg[mcKey('head_ny_joint')] = h.pitch - (MC.off.ny || 0); MC.headTg[mcKey('head_nx_joint')] = ms * (h.roll - (MC.off.nx || 0)); } } catch (e) { }
+    }
+    Object.keys(MC.headTg).forEach(function (k) { tg[k] = MC.headTg[k]; });
+  }
+  Object.keys(tg).forEach(function (k) { if (/^err/.test(k)) return; k = +k; var v = MC.sm[k] === undefined ? tg[k] : MC.sm[k] * 0.6 + tg[k] * 0.4; MC.sm[k] = v; setTarget(k, v); });
 }
-function mcStop(keepMsg) { MC.on = false; cancelAnimationFrame(MC.raf); if (MC.stream) MC.stream.getTracks().forEach(function (tr) { tr.stop(); }); MC.stream = null; $('mcBtn').textContent = t('mcStart'); if (!keepMsg) $('mcInfo').textContent = ''; }
+function mcStop(keepMsg) { MC.on = false; if (MC.fl) { try { MC.fl.close(); } catch (e) { } MC.fl = null; } MC.headTg = {}; MC.sm = {}; $('mcPrev').hidden = true; var pc = $('mcCv'); if (pc) pc.getContext('2d').clearRect(0, 0, pc.width, pc.height); cancelAnimationFrame(MC.raf); if (MC.stream) MC.stream.getTracks().forEach(function (tr) { tr.stop(); }); MC.stream = null; $('mcBtn').textContent = t('mcStart'); if (!keepMsg) $('mcInfo').textContent = ''; }
 $('mcBtn').addEventListener('click', mcStart);
+$('mcCal').addEventListener('click', function () { MC.off = {}; Object.keys(MC.raw).forEach(function (k) { MC.off[k] = MC.raw[k]; }); MC.sm = {}; });
+$('mcMirror').addEventListener('change', function () { MC.off = {}; MC.sm = {}; mcPrevMirror(); });      // calibration offsets belong to one mapping -> reset
 // ---- AI policy: a trained MLP (rl/train.py -> rl/export_policy.py -> policy.json) runs inside the simulator, 50 Hz, same observation layout as the Gymnasium env
 var POL = { p: null, on: false, cnt: 0, last: [], k: [], t0: 0, uiT: 0, cmd: 0 };
 function polLoad(j) {

@@ -297,6 +297,15 @@ I18N.ja = {
 };
 var LANG = 'zh';
 try { var _l = localStorage.getItem('pmsim.lang'); if (_l === 'zh' || _l === 'en' || _l === 'ja') LANG = _l; } catch (e) {}
+Object.assign(I18N.zh, { mcTitle: '鏡頭動作捕捉（頭／雙手／雙腿）', mcCalB: '🎯 校正（企直、望鏡頭）', mcMirrorL: '鏡像', mcMirrorTip: '鏡像：預覽左右反轉，而且左右對調（你舉右手＝機器人嘅左手，好似照鏡）。切換後請重新校正。',
+  mcFaceErr: function (m) { return '頭部模型載入失敗（只做手臂／腿）：' + m; },
+  mcNote: '開始後頭、雙手、雙腿一齊追蹤，鏡頭預覽會一直開住（右上角，附骨架）。手臂用 MediaPipe Pose 世界座標經 IK；頭用 Face Landmarker 嘅臉部轉換矩陣；腿由髖、膝角度直接帶動（腳掌保持水平）。校正會將而家嘅頭同腳尖朝向記做零點。腿喺模擬入面無吊起機身會跌；真機請先吊起機身，手放喺電源附近。需要鏡頭權限同網絡（由 CDN 載入模型）；呢部分未用真鏡頭實測。' });
+Object.assign(I18N.en, { mcTitle: 'Webcam mocap (head / arms / legs)', mcCalB: '🎯 Calibrate (stand straight, face the camera)', mcMirrorL: 'Mirror', mcMirrorTip: 'Mirror: the preview is flipped and left/right are swapped (raise your right hand = the robot\'s left hand, like a mirror). Recalibrate after switching.',
+  mcFaceErr: function (m) { return 'Head model failed to load (arms/legs only): ' + m; },
+  mcNote: 'Once started, head, both arms and both legs are tracked together and the camera preview stays open (top right, with a skeleton overlay). Arms use MediaPipe Pose world landmarks through IK; the head uses the Face Landmarker transformation matrix; legs are driven directly from hip and knee angles (feet kept level). Calibrate stores the current head pose and toe direction as zero. In the simulator the legs can make the robot fall unless the body is hung; on the real robot hang it first and keep a hand near the power switch. Needs camera permission and network (models come from a CDN); not tested with a real camera.' });
+Object.assign(I18N.ja, { mcTitle: 'Web カメラ モーキャプ（頭／両腕／両脚）', mcCalB: '🎯 キャリブレーション（直立・カメラ正面）', mcMirrorL: 'ミラー', mcMirrorTip: 'ミラー：プレビューを反転し、左右も入れ替えます（右手を上げる＝ロボットの左手、鏡のように）。切り替えたら再キャリブレーションしてください。',
+  mcFaceErr: function (m) { return '頭モデルの読み込みに失敗（腕／脚のみ）：' + m; },
+  mcNote: '開始すると頭・両腕・両脚を同時に追跡し、カメラのプレビューは開いたままです（右上、骨格付き）。腕は MediaPipe Pose のワールド座標から IK、頭は Face Landmarker の変換行列、脚は股関節と膝の角度から直接（足裏は水平維持）。キャリブレーションで現在の頭とつま先の向きをゼロにします。シミュレータでは吊り下げないと脚で転倒します。実機は先に吊り下げ、電源スイッチの近くに手を置いてください。カメラ権限とネットワークが必要で、実カメラでは未テストです。' });
 function t(key) {
   var d = I18N[LANG][key]; if (d === undefined && LANG !== 'zh') d = I18N.en[key]; if (d === undefined) d = I18N.zh[key];
   return typeof d === 'function' ? d.apply(null, Array.prototype.slice.call(arguments, 1)) : d;

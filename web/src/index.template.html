@@ -111,6 +111,11 @@
   body.kiosk #leftcol, body.kiosk #rightpanel, body.kiosk #hud, body.kiosk #estop, body.kiosk #mtop, body.kiosk #senHud { display: none !important; }
   body.kiosk.nobar #playbar { display: none !important; }
   @media (max-width: 1100px) { #senHud { left: 8px; top: 108px; } }
+  .mcprev { position: fixed; z-index: 14; top: 10px; right: 356px; width: 208px; background: #000; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: 0 2px 14px rgba(0,0,0,.25); }
+  .mcprev video { display: block; width: 100%; height: auto; } .mcprev canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .mcprev.mir video, .mcprev.mir canvas { transform: scaleX(-1); }
+  @media (max-width: 980px) { .mcprev { right: 8px; top: 60px; width: 140px; } }
+  body.kiosk .mcprev { display: none !important; }
 </style>
 </head>
 <body>
@@ -290,7 +295,7 @@
       <div class="lbl2" data-i18n="teleTitle"></div>
       <label class="chip"><input type="checkbox" id="teleOn"><span data-i18n="teleOn"></span></label> <span id="teleInfo" class="sub"></span><p class="sub" data-i18n="teleNote"></p>
       <div class="lbl2" data-i18n="mcTitle"></div>
-      <div class="group"><button id="mcBtn"></button></div><video id="mcVid" muted playsinline style="display:none"></video><p class="sub" id="mcInfo"></p><p class="sub" data-i18n="mcNote"></p>
+      <div class="group"><button id="mcBtn"></button><button id="mcCal" data-i18n="mcCalB"></button><label class="chip" data-i18n-title="mcMirrorTip"><input type="checkbox" id="mcMirror"><span data-i18n="mcMirrorL"></span></label></div><div id="mcPrev" class="mcprev" hidden><video id="mcVid" muted playsinline></video><canvas id="mcCv"></canvas></div><p class="sub" id="mcInfo"></p><p class="sub" data-i18n="mcNote"></p>
       <div class="lbl2" data-i18n="polTitle"></div>
       <div class="group"><button id="polLoad" data-i18n="polLoadB"></button><button id="polFileBtn" data-i18n="polFileB"></button><input type="file" id="polFile" accept=".json" hidden><button id="polPose" data-i18n="polPoseB"></button></div>
       <label class="chip"><input type="checkbox" id="polOn"><span data-i18n="polOnL"></span></label> <span id="polInfo" class="sub"></span><p class="sub" data-i18n="polNote"></p>
